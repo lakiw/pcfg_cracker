@@ -1,8 +1,32 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
-//   UnLock - creates password guesses using a probablistic context free grammar
+//  PCFG Password Cracker
+//  --Probabilistic Context Free Grammar (PCFG) Password Guessing Program
 //
-//   copyright © 2011 (Matt Weir, Sudhir Aggarwal, Breno de Medeiros) at Florida State University. Patent pending.  All rights reserved
+//  Written by Matt Weir
+//  Backend algorithm developed by Matt Weir, Sudhir Aggarwal, and Breno de Medeiros
+//  Special thanks to Bill Glodek for work on an earlier version
+//  Special thanks to the National Institute of Justice and the NW3C for support with the initial reasearch
+//  Special thanks to the John the Ripper community where some of the code was copied from
+//  Huge thanks to Florida State University's ECIT lab where this was developed
+//  And the list goes on and on... And thank you whoever is reading this. Be good!
+//
+//  Copyright (C) 2013  Matt Weir, Sudhir Aggarwal, and Breno de Medeiros at Florida State University.
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; either version 2
+//  of the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//   
 //
 //   pcfg_manager.h
 //

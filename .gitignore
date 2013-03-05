@@ -1,0 +1,4 @@
+*.i
+*.o
+*.rec
+pcfg_manager
