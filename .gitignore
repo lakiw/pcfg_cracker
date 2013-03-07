@@ -1,4 +1,5 @@
 *.i
 *.o
 *.rec
+*.swp
 pcfg_manager

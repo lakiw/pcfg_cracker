@@ -35,6 +35,8 @@
 
 #include "pcfg_manager.h"
 #include "tty.h"
+#include "brown_grammar.h"
+#include "global_def.h"
 
 //-----------Crash restore specific variables-----------------//
 fstream crashFile;  //the crashfile to save the current status to
@@ -208,23 +210,25 @@ list <unsigned long> allSpecial[MAXWORDSIZE+1]; //used to store all the special 
 
 bool memoryTest=false;  //if the session is only testing memory usage and not actually cracking passwords
 
+//--Pssphrase functions-----------------------------------//
+bool processPassphraseDic(deque <ntGenTopType> *phraseValues, deque <fileInfoType> *fileInfo);
+
 
 int main(int argc, char *argv[]) {
 
-  string inputDicFileName[MAXINPUTDIC];
-  string ruleName = "Default";
-  string sessionName = "save";
-  string clientName = "import";
-  bool inputDicExists[MAXINPUTDIC];
-  double inputDicProb[MAXINPUTDIC];
-  double restorePoint;
+  string inputDicFileName[MAXINPUTDIC];   //Filenames for the input dictionaries
+  string ruleName = "Default";            //Name of rules to use
+  string sessionName = "save";            //Session name used to save/restore cracking sessions
+  string clientName = "import";           //Session name used when in client mode
+  bool inputDicExists[MAXINPUTDIC];       //Keeps track of which input dictionaries were specified, in case the user did something like dic1 and dic8
+  double inputDicProb[MAXINPUTDIC];       //Total probability of input dictionaries. Aka if a dic would crack 60% of passwords it will be .6
+  double restorePoint;                    //Probability of guesses to restore a session at.
 
-  ntContainerType *dicWords[MAXWORDSIZE+1];
-  ntContainerType *numWords[MAXWORDSIZE+1];
-  ntContainerType *specialWords[MAXWORDSIZE+1];
-  ntContainerType *capWords[MAXWORDSIZE+1];
-  ntContainerType *keyboardWords[MAXWORDSIZE+1];
-  deque <ntContainerType *> directLink[5][MAXWORDSIZE+1];
+  ntContainerType *dicWords[MAXWORDSIZE+1];   //Holds the actual dictionary words
+  ntContainerType *numWords[MAXWORDSIZE+1];   //Holds all the digits
+  ntContainerType *specialWords[MAXWORDSIZE+1];  //holds all the special characters
+  ntContainerType *capWords[MAXWORDSIZE+1];      //holds all the capitalization info
+  ntContainerType *keyboardWords[MAXWORDSIZE+1];    //holds all the keyboard combinations
   long long maxGuesses=0;
   pqueueType pqueue;
   list <pqReplacementType> baseStructures;   //used to rebuild the prioirty queue from scratch. Aka for memory management to lower the min probability
@@ -426,7 +430,7 @@ int main(int argc, char *argv[]) {
         return 0;
       }
     }
-    else if (commandLineInput.find("-passphrae")!=string::npos) {
+    else if (commandLineInput.find("-passphrase")!=string::npos) {
       isPassphrase = true;
     }
       
@@ -455,6 +459,13 @@ int main(int argc, char *argv[]) {
 
   //----------End Parsing the command line--------------------//
 
+  //--Haven't fully integrated passphrases with other options so process that first and then exit------//
+  if (isPassphrase) {
+    deque <ntGenTopType> phraseValues;
+    deque <fileInfoType> fileInfo;
+    processPassphraseDic(&phraseValues, &fileInfo);
+    return 0;
+  }
   //---------Restore Settings From File if it is a Restore Session-----------------//
   if (isRestoreSession) {
     if (loadCrashFile(baseDir, sessionName, ruleName, removeUpper, removeSpecial, removeDigits,inputDicFileName, inputDicProb, inputDicExists, restorePoint, precomputeMode)) {
@@ -1079,6 +1090,8 @@ short findSize(string input) { //used to find the size of a string that may cont
   }
   return size;
 }
+
+
 
 
 bool processProbFromFile(ntContainerType **mainContainer,string fileDir, int type) {  //processes the number probabilities
@@ -1933,4 +1946,14 @@ bool onlyChild(pqReplacementType *childNode, double maxProbLimit, double curProb
 }
 
 
-
+//////////////////////////////////////////////////////////////////
+//Passphrase specific functions
+//Eventually may roll normal passwords into this as well
+//
+bool processPassphraseDic(deque <ntGenTopType> *phraseValues, deque <fileInfoType> *fileInfo) {
+  deque <ppPointerType> phraseList;
+  brown_initialize(phraseValues);
+  orderPointers(phraseValues, &phraseList);
+  add_user_dics(&phraseList, fileInfo);
+  return true;
+}

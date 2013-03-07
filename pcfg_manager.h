@@ -55,16 +55,6 @@
 
 using namespace std;
 
-#define MAXWORDSIZE 18 //Maximum size of a word from the input dictionaries
-#define MAXINPUTDIC 10  //Maximum number of user inputed dictionaries
-#define CHECKINPUTTIME 5 //Time to check to see if the user wants a status update
-
-//---Note, these are optimized by analyzing letter frequency analysis. Quite honestly I don't remember the dataset I used for that...---//
-string alpha = "aeoirlnstmcudbpghyvfkjzxwq";
-string digits = "0l29837654";
-//string digits = "0123456789";
-string special = "!._-*@/+,\\$&!=?'#\")(%^<> ;";
-
 ///////////////////////////////////////////
 //Used for initially parsing the dictionary words
 typedef struct mainDicHolderStruct {
@@ -102,7 +92,14 @@ typedef struct pqReplacementStruct {
   int pivotPoint;           //not used anymore, keeping it in for some comparison tests
 }pqReplacementType;
 
-
+/////////////////////////////////////////
+//Holds info about a dictionary
+typedef struct fileInfoStruct {
+  int id;   //The id for this file, used to process info from the user's command line
+  string type; //The grammar type. Aka L = letters, D = digits.
+  string filename; //the file where the actual dictioanry is stored;
+  double probability;     //The total probability of the dictionary. Default is 100%, eg 1.0.
+}fileInfoType;
 
 ///////////////////////////////////////////
 //Non-Terminal Generic Top Container
@@ -110,10 +107,22 @@ typedef struct pqReplacementStruct {
 //Used to abstract away a lot of the hardcoded logic previously, (aka LDS non-terminals)
 //Hopefully will allow the easier inclusion of new types of non-terminals
 typedef struct ntGenTopStruct {
-  
+  deque <string> names;  //the names as seen in the grammar. Aka L = letters, D = Digits. Can have multiple names if some replacements go to the same terminals.
+  deque <fileInfoType> fileInfo;  //Information about the various dictioanries;
+  deque <ntContainerType> data;  //The actual dictionaries
+    
 
 }ntGenTopType;
 
+
+//////////////////////////////////////////////
+//Eventually thrown into a list to have an ordered pointer to every possible
+//replacement type based on the string info
+//Makes loading a new session faster
+typedef struct ppPointerStruct {
+  string name;
+  ntGenTopType * pointer;
+}ppPointerType;
 
 #endif
 
