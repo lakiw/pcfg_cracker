@@ -89,7 +89,6 @@ typedef struct pqReplacementStruct {
   deque <ntContainerStruct *> replacement;    //the actual containers and mangling rules to apply
   double probability;       //the preterminal probability
   double base_probability;  //the probability of the base structure
-  int pivotPoint;           //not used anymore, keeping it in for some comparison tests
 }pqReplacementType;
 
 /////////////////////////////////////////

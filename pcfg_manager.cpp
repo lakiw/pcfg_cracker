@@ -173,7 +173,6 @@ bool processBasicStruct(pqueueType *pqueue,list <pqReplacementType> *baseStructu
 bool generateGuesses(pqueueType *pqueue, list <pqReplacementType> *baseStructures, long long maxGuesses, double probLimit, long maxPQueueSize);
 bool generateRules(pqueueType *pqueue, list <pqReplacementType> *baseStructures, long long maxGuesses, double probLimit, long maxPQueueSize);
 int createTerminal(pqReplacementType *curQueueItem, long long  *maxGuesses, int workingSection, string *curOutput);
-bool pushNewValues(pqueueType *pqueue,pqReplacementType *curQueueItem);
 void help();  //prints out the usage info
 unsigned long generateBruteForce(unsigned long cuPos, string *curBrtueForceType,int size, string * bruteGuess);  //generates brute force guesses
 bool calculateBrutePos(string input, string *charset,unsigned long *returnValue);
@@ -1256,7 +1255,6 @@ bool processBasicStruct(pqueueType *pqueue, list <pqReplacementType> *baseStruct
     std::cerr << "Could not open the grammar file\n";
     return false;
   }
-  inputValue.pivotPoint=0;
   getline(inputFile,inputLine);
   while (!inputFile.eof()) {
     badInput=false;
@@ -1461,7 +1459,6 @@ bool generateGuesses(pqueueType *pqueue,list <pqReplacementType> *baseStructures
     }
 
     numberOfPreTerminals++;  //tracks the number of preTerminals.
-    //pushNewValues(pqueue,&curQueueItem);  //The old next function
     pushDeadbeat(pqueue,&curQueueItem, probLimit,maxPQueueSize);    //The deadbeat dad function
     if (pqueue->empty()) {
       double baseLimit=probLimit;
@@ -1545,7 +1542,6 @@ bool generateRules(pqueueType *pqueue,list <pqReplacementType> *baseStructures,l
       break;
     }
     numberOfPreTerminals++;  //tracks the number of preTerminals.
-    //pushNewValues(pqueue,&curQueueItem);  //The old next function
     pushDeadbeat(pqueue,&curQueueItem, probLimit,maxPQueueSize);    //The deadbeat dad function
     if (pqueue->empty()) {
       double baseLimit=probLimit;
@@ -1683,35 +1679,6 @@ unsigned long generateBruteForce(unsigned long curPos, string *curBruteForceType
   return curPos;
 }
 
-///////////////////////////////////////////////////////////////////////////////////
-//The next algorithm as described in the IEEE S&P Paper
-//
-bool pushNewValues(pqueueType *pqueue,pqReplacementType *curQueueItem) {
-  pqReplacementType insertValue;
-
-  insertValue.base_probability=curQueueItem->base_probability;
-  for (int i=curQueueItem->pivotPoint;i<curQueueItem->replacement.size();i++) {
-    if (curQueueItem->replacement[i]->next!=NULL) {
-      insertValue.pivotPoint=i;
-      insertValue.replacement.clear();
-      insertValue.probability=curQueueItem->base_probability;
-      for (int j=0;j<curQueueItem->replacement.size();j++) {
-        if (j!=i) {
-          insertValue.replacement.push_back(curQueueItem->replacement[j]);
-          insertValue.probability=insertValue.probability*curQueueItem->replacement[j]->probability;
-        }
-        else {
-          insertValue.replacement.push_back(curQueueItem->replacement[j]->next);
-          insertValue.probability=insertValue.probability*curQueueItem->replacement[j]->next->probability;
-        }
-      }
-      if (insertValue.probability>0.0000000001) {  //limit used to control the size of the pqueue
-        pqueue->push(insertValue); 
-      }
-    }
-  }
-  return true;
-}
 
 //////////////////////////////////////////////////////////////
 //Alternate way to build the tree based on the deadbeat dad algorithm
