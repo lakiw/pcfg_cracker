@@ -1922,5 +1922,7 @@ bool processPassphraseDic(deque <ntGenTopType> *phraseValues, deque <fileInfoTyp
   brown_initialize(phraseValues);
   orderPointers(phraseValues, &phraseList);
   add_user_dics(&phraseList, fileInfo);
+  add_default_dics(&phraseList);
+  load_all_dics(phraseValues);
   return true;
 }

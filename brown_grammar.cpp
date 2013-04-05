@@ -317,3 +317,127 @@ int add_user_dics(deque <ppPointerType> *phraseList, deque <fileInfoType> *fileI
 
   return 0;
 }
+
+///////////////////////////////////////////////////////////////////////////////////
+// Add default dictionaries if no user dictionary was specified
+int add_default_dics(deque <ppPointerType> *phraseList) {
+  string basepath="Passphrase_Wordlists/";
+  //---Go through all the pre-terminal to terminal replacements------//
+  for (int i=0; i<phraseList->size();i++) {
+    if (phraseList->at(i).pointer->fileInfo.size()==0) { //No existing dictionaries
+      for (int j=0; j<phraseList->at(i).pointer->names.size();j++) {
+        //---Only try default dictionaries for replacements that start with alphanum letters------//
+        if (isalpha(phraseList->at(i).pointer->names.at(j).at(0))){
+          fileInfoType tempFile;
+          tempFile.isUserDic=false;
+          tempFile.type=phraseList->at(i).pointer->names.at(j);
+          tempFile.filename=basepath + phraseList->at(i).pointer->names.at(j) + ".txt";
+          ///--For now, assign 100% to each dictionary. If multiple dictionaires are used for a
+          ///--replacement then normalization will take care of that to get them at the correct prob
+          ///--In the future if multiple default dictionaries are added with different probabilities
+          ///--For example "BobLovesAlice" types of replacements, I may include a custom default prob info
+          ///--in the dictioanry file itself
+          tempFile.probability = 1.0 + (rand() % 100)/100.0;
+	  phraseList->at(i).pointer->fileInfo.push_front(tempFile);
+        }
+      }
+    }
+  }
+  return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+//  Loads the words for a single dictionary
+//  Note, right now I'm not lowercaseing the input or removing special characters
+//  Aka that info for passphrases might be important, (vs mostly creating junk in regular password
+//  cracking attacks.) For example, I don't want to change "don't" into "dont".
+//  Later on it might be useful to revisit this and only leave in certain types of special characters
+//
+int load_dic(fileInfoType *fileInfo, ntContainerType *data) {
+  ifstream inputFile;
+  size_t curPos;
+  string inputWord;
+
+  inputFile.open(fileInfo->filename.c_str());
+  if (!inputFile.is_open()) {  //--If it failed to open the dictionary
+    if (fileInfo->isUserDic) { //--Only print out if it can't open user dics
+      std::cerr << "Could not open file " << fileInfo->filename << endl;
+    }
+    return -1;
+  }
+
+  //--------Now process the input dictionary-------------//
+  while (!inputFile.eof()) {
+    std::getline(inputFile,inputWord);
+    curPos=inputWord.find("\r");  //remove carrige returns
+    if (curPos!=string::npos) {
+      inputWord.resize(curPos);
+    }
+    if (inputWord.size()>0) {
+      data->word.push_back(inputWord);
+    }
+  }
+  if (data->word.size() == 0) { //No words were loaded
+    std::cerr << "Warning: No words loaded for " << fileInfo->filename << endl;
+    return -1;
+  }
+
+  return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+// Sets all of the values for a passphrase dictionary except for actual words
+// Most of these values could be removed if I actually forked the passphrase and password
+// cracking portions of this program into different programs
+int set_passphrase_dic_values(fileInfoType *fileInfo, ntContainerType *data) {
+  if (data->word.size()==0) {
+    std::cerr << "Weird, there is an empty dictionary even though that should have been removed earlier\n";
+    return -1;
+  }
+  data->replaceRule=0; //final terminal
+  data->next = NULL; //will set these later but might as well be careful
+  data->prev = NULL;
+  data->isBruteForce = false; //not a brute force guess
+  data->rainbowCategory = 3; //dictionary word
+  //---Other rainbow values don't really fit into passphrases, need to revisit that later--//
+  data->probability = fileInfo->probability; //not the final probability, but need to save the prob of the dictionary here so it follows the datastructure
+  return 0;
+}
+
+bool ntCompare(ntContainerStruct a, ntContainerStruct b) {
+  return (a.probability > b.probability);
+}
+
+//////////////////////////////////////////////////////////////////////////////////////
+// Load all the dictionairies. 
+// Includes logic for normalizing the probability between multiple dictionaries and then
+// sorting the replacements in probability order
+int load_all_dics(deque <ntGenTopType> *phraseValues) {
+  for (int i=0; i<phraseValues->size(); i++) {
+    //--Load up all the dictionaries------//
+    for (int j=0; j< phraseValues->at(i).fileInfo.size();j++) {
+      ntContainerType data;
+      if (load_dic(&phraseValues->at(i).fileInfo.at(j),&data)==0) {
+        if (set_passphrase_dic_values(&phraseValues->at(i).fileInfo.at(j),&data)==0) {
+          phraseValues->at(i).data.push_back(data);
+        }
+      }
+    }
+    //---Now calculate the probability of each dictionary so all the replacements for a pre-terminal add up t  1.0---//
+    ///---First find the current sum of all the probabilities---------//
+    double totalProb = 0.0;
+    for (int j=0; j< phraseValues->at(i).data.size();j++) {
+      totalProb = totalProb + phraseValues->at(i).data.at(j).probability;
+    }
+    ///---Now calculate the true probability of a final terminal value--------------//
+    for (int j=0; j< phraseValues->at(i).data.size();j++) {
+      //--first find the normalizd probability for the full dictionary
+      phraseValues->at(i).data.at(j).probability = (phraseValues->at(i).data.at(j).probability * (1.0)) / totalProb;
+      //--next find the true probability of each word based on the size of the dictionary---//
+      phraseValues->at(i).data.at(j).probability = (phraseValues->at(i).data.at(j).probability * (1.0)) / phraseValues->at(i).data.at(j).word.size();
+    }
+    //---Now sort them by probability-----//
+    sort(phraseValues->at(i).data.begin(), phraseValues->at(i).data.end(), ntCompare);
+  }
+  return 0;
+}

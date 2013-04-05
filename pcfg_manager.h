@@ -52,7 +52,7 @@
 #include <list>
 #include <queue>
 #include <iterator>
-
+#include <ctype.h>
 using namespace std;
 
 ///////////////////////////////////////////
@@ -98,6 +98,7 @@ typedef struct fileInfoStruct {
   string type; //The grammar type. Aka L = letters, D = digits.
   string filename; //the file where the actual dictioanry is stored;
   double probability;     //The total probability of the dictionary. Default is 100%, eg 1.0.
+  bool isUserDic;  //Simply a flag to print out an error if a user dic does not load vs a defalt dic
 }fileInfoType;
 
 ///////////////////////////////////////////
