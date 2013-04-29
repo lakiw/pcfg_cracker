@@ -156,19 +156,6 @@ void sig_alrm(int signo)
   }
 }
 
-
-////////////////////////////////////////////////////
-//Used to sort the probability queue
-class queueOrder {
-  public:
-    queueOrder() {
-    }
-  bool operator() (const pqReplacementType& lhs, const pqReplacementType& rhs) const{
-    return (lhs.probability<rhs.probability);
-  }
-};
-
-typedef priority_queue <pqReplacementType,vector <pqReplacementType>,queueOrder> pqueueType;
 bool processBasicStruct(pqueueType *pqueue,list <pqReplacementType> *baseStructures, ntContainerType **dicWords,  ntContainerType **numWords, ntContainerType **specialWords, ntContainerType **capWords, ntContainerType **keyboardWords, string ruleName, double probLimit);
 bool generateGuesses(pqueueType *pqueue, list <pqReplacementType> *baseStructures, long long maxGuesses, double probLimit, long maxPQueueSize);
 bool generateRules(pqueueType *pqueue, list <pqReplacementType> *baseStructures, long long maxGuesses, double probLimit, long maxPQueueSize);
@@ -210,7 +197,7 @@ list <unsigned long> allSpecial[MAXWORDSIZE+1]; //used to store all the special 
 bool memoryTest=false;  //if the session is only testing memory usage and not actually cracking passwords
 
 //--Pssphrase functions-----------------------------------//
-bool processPassphraseDic(deque <ntGenTopType> *phraseValues, deque <fileInfoType> *fileInfo);
+bool processPassphraseDic(deque <ntGenTopType> *phraseValues, deque <fileInfoType> *fileInfo, pqueueType *pqueue);
 
 
 int main(int argc, char *argv[]) {
@@ -462,7 +449,7 @@ int main(int argc, char *argv[]) {
   if (isPassphrase) {
     deque <ntGenTopType> phraseValues;
     deque <fileInfoType> fileInfo;
-    processPassphraseDic(&phraseValues, &fileInfo);
+    processPassphraseDic(&phraseValues, &fileInfo, &pqueue);
     return 0;
   }
   //---------Restore Settings From File if it is a Restore Session-----------------//
@@ -1917,12 +1904,13 @@ bool onlyChild(pqReplacementType *childNode, double maxProbLimit, double curProb
 //Passphrase specific functions
 //Eventually may roll normal passwords into this as well
 //
-bool processPassphraseDic(deque <ntGenTopType> *phraseValues, deque <fileInfoType> *fileInfo) {
+bool processPassphraseDic(deque <ntGenTopType> *phraseValues, deque <fileInfoType> *fileInfo, pqueueType *pqueue) {
   deque <ppPointerType> phraseList;
   brown_initialize(phraseValues);
   orderPointers(phraseValues, &phraseList);
   add_user_dics(&phraseList, fileInfo);
   add_default_dics(&phraseList);
   load_all_dics(phraseValues);
+  load_passphrase_grammar(pqueue,&phraseList,"Passphrase_Default");
   return true;
 }

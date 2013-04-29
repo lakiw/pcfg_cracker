@@ -91,6 +91,23 @@ typedef struct pqReplacementStruct {
   double base_probability;  //the probability of the base structure
 }pqReplacementType;
 
+
+////////////////////////////////////////////////////
+//Used to sort the probability queue
+class queueOrder {
+  public:
+    queueOrder() {
+    }
+  bool operator() (const pqReplacementType& lhs, const pqReplacementType& rhs) const{
+    return (lhs.probability<rhs.probability);
+  }
+};
+
+///////////////////////////////////////////
+//Main priority queue definition
+typedef priority_queue <pqReplacementType,vector <pqReplacementType>,queueOrder> pqueueType;
+
+
 /////////////////////////////////////////
 //Holds info about a dictionary
 typedef struct fileInfoStruct {

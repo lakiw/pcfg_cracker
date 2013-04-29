@@ -75,6 +75,26 @@ int brown_initialize(deque <ntGenTopType> *phraseValues) {
   tempHolder.names.push_back("BEDZ");
   phraseValues->push_back(tempHolder);
   tempHolder.names.clear();
+ 
+  tempHolder.names.push_back("BEG");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
+  tempHolder.names.push_back("BEM");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
+  tempHolder.names.push_back("BEN");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
+  tempHolder.names.push_back("BER");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
+  tempHolder.names.push_back("BEZ");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
 
   tempHolder.names.push_back("CC");
   phraseValues->push_back(tempHolder);
@@ -262,12 +282,14 @@ int pp_binary_search(deque <ppPointerType> * A, string key, int imin, int imax) 
       int imid = imin + ((imax - imin) / 2);
  
       // three-way comparison
-      if (A->at(imid).name.compare(key))
+      if (A->at(imid).name.compare(key) > 0) {
         // key is in lower subset
         return pp_binary_search(A, key, imin, imid-1);
-      else if (A->at(imid).name.compare(key))
+      }
+      else if (A->at(imid).name.compare(key) < 0) {
         // key is in upper subset
         return pp_binary_search(A, key, imid+1, imax);
+      }
       else
         // key has been found
         return imid;
@@ -302,7 +324,7 @@ int add_user_dics(deque <ppPointerType> *phraseList, deque <fileInfoType> *fileI
   for (int i=0; i < fileInfo->size(); i++) {
     
     //--Next find the transform this dictionary is associated with--------------//
-    int index = pp_binary_search(phraseList, fileInfo->at(i).type, 0, phraseList->size());
+    int index = pp_binary_search(phraseList, fileInfo->at(i).type, 0, phraseList->size()-1);
     if (index != -1) { //it exists
       ntGenTopType * tempNtGen = phraseList->at(index).pointer;
       tempNtGen->fileInfo.push_front(fileInfo->at(i));
@@ -439,5 +461,105 @@ int load_all_dics(deque <ntGenTopType> *phraseValues) {
     //---Now sort them by probability-----//
     sort(phraseValues->at(i).data.begin(), phraseValues->at(i).data.end(), ntCompare);
   }
+  return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// Load Passphrase Grammar
+//
+int load_passphrase_grammar(pqueueType *pqueue,deque <ppPointerType> *phraseList,string ruleName) {
+  ifstream inputFile;
+  string inputLine;
+  string tempLine;
+  pqReplacementType inputValue;
+  bool badInput=false;
+  size_t marker;
+  size_t cleanMark;
+  double prob;
+
+  #ifdef _WIN32
+  inputFile.open(string(".\\Rules\\"+ruleName+"\\Grammar\\Grammar.txt").c_str());
+  #else
+  inputFile.open(string("./Rules/"+ruleName+"/Grammar/Grammar.txt").c_str());
+  #endif
+  if (!inputFile.is_open()) {
+    std::cerr << "Could not open the rules file " << ruleName << endl;
+    return -1;
+  }
+  getline(inputFile,inputLine);
+  while (!inputFile.eof()) {
+    badInput=false;
+    marker=inputLine.find("\t");
+    if (marker!=string::npos) {
+      prob=atof(inputLine.substr(0,marker).c_str());
+      inputValue.probability=prob;
+      inputValue.base_probability=prob;
+      //---------Now process the structure---------------//
+      inputLine = inputLine.substr(marker+1,inputLine.size());
+      while (marker!=string::npos) {
+        marker = inputLine.find('\t');
+        //--Process the individual part of the structure here--------//
+        tempLine = inputLine.substr(0,marker);
+
+        //------------For now clean up input to exclude types this doesn't support yet-------//
+        cleanMark = tempLine.find("-");
+        if (cleanMark!=string::npos) {
+          tempLine = tempLine.substr(0,cleanMark);
+        }
+        cleanMark = tempLine.find(",");
+        if (cleanMark!=string::npos) {
+          tempLine = tempLine.substr(0,cleanMark);
+        }
+        cleanMark = tempLine.find("*");
+        if (cleanMark!=string::npos) {
+          tempLine = tempLine.substr(0,cleanMark);
+        }
+        cleanMark = tempLine.find("+");
+        if (cleanMark!=string::npos) {
+          tempLine = tempLine.substr(0,cleanMark);
+        }
+        cleanMark = tempLine.find("(");
+        if (cleanMark!=string::npos) {
+          tempLine = tempLine.substr(0,cleanMark);
+        }
+        cleanMark = tempLine.find(")");
+        if (cleanMark!=string::npos) {
+          tempLine = tempLine.substr(0,cleanMark);
+        }
+        cleanMark = tempLine.find(":");
+        if (cleanMark!=string::npos) {
+          tempLine = tempLine.substr(0,cleanMark);
+        }
+        //----------End cleanup code----------------------//
+        std::transform(tempLine.begin(), tempLine.end(),tempLine.begin(), ::toupper);
+        int index = pp_binary_search(phraseList, tempLine, 0, phraseList->size()-1);
+
+        //----Could Not Parse Input Line-----------------//
+        if ((index == -1)&& (tempLine.size()>0)) {
+          //Used to catch errors with my parsing script
+          //cout << "notfound:" << tempLine << ":" << endl;
+        } 
+        if (index == -1) {
+          badInput = true;
+          break;
+        } 
+        
+        //----Add subsectin-------------------------------//
+        if (phraseList->at(index).pointer->data.size()==0) {
+          cout << "Dictionary " << tempLine << " is empty\n";
+          badInput = true;
+          break; 
+        }
+//        cout  << "prob section =" << phraseList->at(index).pointer->data.at(0).probability << endl;
+//        inputValue.replacement.push_back(&phraseList->at(index).pointer->data.at(0));
+//        inputValue.probability=inputValue.probability*phraseList->at(index).pointer->data.at(0)->probability;
+
+        inputLine =inputLine.substr(marker+1,inputLine.size());
+      }
+      
+    }
+    getline(inputFile,inputLine);
+  }
+
   return 0;
 }
