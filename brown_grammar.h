@@ -10,6 +10,6 @@ int orderPointers(deque <ntGenTopType> *phraseValues, deque <ppPointerType> *phr
 int add_user_dics(deque <ppPointerType> *phraseList, deque <fileInfoType> *fileInfo);
 int add_default_dics(deque <ppPointerType> *phraseList);
 int load_all_dics(deque <ntGenTopType> *phraseValues);
-int load_passphrase_grammar(pqueueType *pqueue,deque <ppPointerType> *phraseList,string ruleName);
+int load_passphrase_grammar(pqueueType *pqueue, list <pqReplacementType> *baseStructures,deque <ppPointerType> *phraseList,string ruleName, double probLimit);
 
 #endif

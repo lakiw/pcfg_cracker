@@ -467,7 +467,7 @@ int load_all_dics(deque <ntGenTopType> *phraseValues) {
 /////////////////////////////////////////////////////////////////////////////////////////
 // Load Passphrase Grammar
 //
-int load_passphrase_grammar(pqueueType *pqueue,deque <ppPointerType> *phraseList,string ruleName) {
+int load_passphrase_grammar(pqueueType *pqueue, list <pqReplacementType> *baseStructures, deque <ppPointerType> *phraseList,string ruleName, double probLimit) {
   ifstream inputFile;
   string inputLine;
   string tempLine;
@@ -550,14 +550,29 @@ int load_passphrase_grammar(pqueueType *pqueue,deque <ppPointerType> *phraseList
           badInput = true;
           break; 
         }
-//        cout  << "prob section =" << phraseList->at(index).pointer->data.at(0).probability << endl;
-//        inputValue.replacement.push_back(&phraseList->at(index).pointer->data.at(0));
-//        inputValue.probability=inputValue.probability*phraseList->at(index).pointer->data.at(0)->probability;
+        inputValue.replacement.push_back(&phraseList->at(index).pointer->data.at(0));
+        inputValue.probability=inputValue.probability*phraseList->at(index).pointer->data.at(0).probability;
 
         inputLine =inputLine.substr(marker+1,inputLine.size());
       }
-      
     }
+    else {
+      badInput = true;
+    }
+
+    if (!badInput) {
+      if (inputValue.probability==0) {
+        std::cerr << "Error, we are getting some values with 0 probability\n";
+        return false;
+      }
+      if (inputValue.probability >=probLimit) {
+        pqueue->push(inputValue);
+        baseStructures->push_back(inputValue);
+      }
+    }
+    inputValue.probability=0;
+    inputValue.replacement.clear();
+
     getline(inputFile,inputLine);
   }
 

@@ -197,7 +197,7 @@ list <unsigned long> allSpecial[MAXWORDSIZE+1]; //used to store all the special 
 bool memoryTest=false;  //if the session is only testing memory usage and not actually cracking passwords
 
 //--Pssphrase functions-----------------------------------//
-bool processPassphraseDic(deque <ntGenTopType> *phraseValues, deque <fileInfoType> *fileInfo, pqueueType *pqueue);
+bool processPassphraseDic(deque <ntGenTopType> *phraseValues, list <pqReplacementType> *baseStructures, deque <fileInfoType> *fileInfo, pqueueType *pqueue, double probLimit);
 
 
 int main(int argc, char *argv[]) {
@@ -449,7 +449,11 @@ int main(int argc, char *argv[]) {
   if (isPassphrase) {
     deque <ntGenTopType> phraseValues;
     deque <fileInfoType> fileInfo;
-    processPassphraseDic(&phraseValues, &fileInfo, &pqueue);
+    processPassphraseDic(&phraseValues, &baseStructures, &fileInfo, &pqueue, probLimit);
+    if (generateGuesses(&pqueue,&baseStructures, maxGuesses, probLimit, maxPQueueSize)==false) {
+      std::cerr<< "\nError generating guesses\n";
+      return 0;
+    }
     return 0;
   }
   //---------Restore Settings From File if it is a Restore Session-----------------//
@@ -1904,13 +1908,14 @@ bool onlyChild(pqReplacementType *childNode, double maxProbLimit, double curProb
 //Passphrase specific functions
 //Eventually may roll normal passwords into this as well
 //
-bool processPassphraseDic(deque <ntGenTopType> *phraseValues, deque <fileInfoType> *fileInfo, pqueueType *pqueue) {
+bool processPassphraseDic(deque <ntGenTopType> *phraseValues, list <pqReplacementType> *baseStructures, deque <fileInfoType> *fileInfo, pqueueType *pqueue, double probLimit) {
   deque <ppPointerType> phraseList;
   brown_initialize(phraseValues);
   orderPointers(phraseValues, &phraseList);
   add_user_dics(&phraseList, fileInfo);
   add_default_dics(&phraseList);
   load_all_dics(phraseValues);
-  load_passphrase_grammar(pqueue,&phraseList,"Passphrase_Default");
+  load_passphrase_grammar(pqueue,baseStructures, &phraseList,"Passphrase_Default", probLimit);
+  cout << "pqueue size now is " << pqueue->size() << endl;
   return true;
 }
