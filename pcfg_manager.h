@@ -53,7 +53,11 @@
 #include <queue>
 #include <iterator>
 #include <ctype.h>
+
+#include "global_def.h"
+
 using namespace std;
+
 
 ///////////////////////////////////////////
 //Used for initially parsing the dictionary words
@@ -140,6 +144,8 @@ typedef struct ppPointerStruct {
   string name;
   ntGenTopType * pointer;
 }ppPointerType;
+
+short findSize(string input);  //used to find the length of a possible non-ascii string, used because MACOSX had problems with wstring
 
 #endif
 

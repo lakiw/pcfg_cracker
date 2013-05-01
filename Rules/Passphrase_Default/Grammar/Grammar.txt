@@ -1,30 +1,38 @@
+0.007579	(-hl	np-hl
+0.005414	(-hl	cd-hl
 0.004795	np	vbd
 0.004331	pps	vbd
-0.003712	np-hl	,-hl
+0.003712	np-hl	,-hl	np-hl
 0.003558	at	nn
 0.003094	np	vbd	pp$
 0.003094	np	,
-0.002475	nn$-hl	nn-hl
-0.002475	in-hl	at-hl
+0.002475	nn$-hl	nn-hl	nn-hl
 0.002320	pps	vbd
-0.002011	wrb-hl	to-hl
-0.002011	in-hl	at-hl	nn-hl	in-hl	at-hl
-0.001856	wdt-hl	pps-hl
-0.001856	np	np
+0.002320	in-hl	at-hl	nn-hl
+0.002166	)	cd-hl
+0.002011	nn-hl	in-hl
+0.001856	wdt-hl	pps-hl	doz-hl
 0.001856	at	nn	vbd
+0.001701	wrb-hl	to-hl	vb-hl
 0.001701	pps	vbd	pp$
 0.001701	np	vbd	in	at
+0.001701	nn-tl-hl	cd-hl
+0.001701	jj-hl	nns-hl
 0.001701	(	vb	nn-tl
 0.001547	pps	bedz
 0.001547	np	vbd
-0.001547	nn-hl	in-hl
-0.001392	nn-hl	in-hl
+0.001547	np	np
+0.001547	nn-hl	cc-hl
+0.001547	jj-hl	nn-hl
+0.001392	nn-tl-hl	cd-tl-hl
+0.001392	at-hl	jj-hl
 0.001237	ppss	vbd
 0.001237	pp$	nn
+0.001237	np-hl	,-hl
 0.001237	np	vbd
 0.001237	np	vbd	in
-0.001237	nn-hl	in-hl
-0.001237	nn-hl	cc-hl
+0.001237	nn-hl	in-hl	nn-hl
+0.001237	nn-hl	cd-hl
 0.001083	pps	vbd	in	pp$
 0.001083	pps	vbd	at
 0.001083	pps	dod	*
@@ -32,28 +40,41 @@
 0.001083	pps	bedz	at	jj
 0.001083	pp$	nn	bedz
 0.001083	np	vbd	at
+0.001083	nns-hl	in-hl
+0.001083	nns-hl	in-hl
 0.001083	at-hl	nn-hl
 0.001083	at	nn	bedz
 0.000928	pps	vbd	in	at
 0.000928	pps	bedz
+0.000928	np-hl	np-hl
 0.000928	np	np	,
+0.000928	nn-hl	nns-hl
+0.000928	nn-hl	nn-hl	cd-hl
 0.000928	nn-hl	nn-hl
+0.000928	nn-hl	in-hl	jj-hl
 0.000928	cd-tl	nn-tl	np-tl
 0.000928	at	jj
+0.000928	(	cd
+0.000773	vbg-hl	at-hl
 0.000773	ppss	vbd
 0.000773	ppss	vbd	at
 0.000773	pps	vbd
 0.000773	pps	vbd	in	ppo
 0.000773	pps	bez
 0.000773	pps	bedz	ql
-0.000773	np-hl	,-hl	np-hl	,-hl
+0.000773	np-hl	,-hl	np-hl	,-hl	np-hl
 0.000773	np	vbd	in
 0.000773	np	vbd	at	jj
+0.000773	nns-hl	cc-hl
 0.000773	nn-tl	np-tl
+0.000773	jj-hl	nn-hl
 0.000773	ex	bedz	at
 0.000773	cd-tl	nn-tl	np-tl	cd-tl	:-tl
 0.000773	at	nn	bedz
+0.000773	at	nn
 0.000773	wdt	do	ppss
+0.000619	vbz-hl	in-hl
+0.000619	vbn-hl	in-hl
 0.000619	vb	nn-tl
 0.000619	rb	pps
 0.000619	ppss	vbd	rp	in
@@ -61,25 +82,28 @@
 0.000619	ppss	bed
 0.000619	pps	vbd	to	vb
 0.000619	pps	vbd	to
-0.000619	pps	vbd
 0.000619	pps	vbd	pp$	nns
 0.000619	pps	vbd	at	nn
 0.000619	pps	hvd
 0.000619	pps	bez
 0.000619	pps	bez	at	jj
 0.000619	pps	bedz	at
-0.000619	np-hl	(-hl
+0.000619	np-hl	(-hl	np-hl
 0.000619	np	vbd	ppo
 0.000619	np	vbd	pp$	nn
 0.000619	np	np	np	,
 0.000619	np	np	,
 0.000619	np	bedz	at
-0.000619	nns-hl	in-hl
-0.000619	nns-hl	in-hl
-0.000619	nn-hl	in-hl
-0.000619	nn	in
+0.000619	nns-hl	in-hl	nns-hl
+0.000619	nn-hl	in-hl	nns-hl
+0.000619	nn-hl	in-hl	at-hl
+0.000619	nn-hl	in-hl	at-hl
+0.000619	nn-hl	cc-hl	nn-hl
+0.000619	jj-hl	nn-hl
 0.000619	cd-tl	np-tl	np-tl	,	in
-0.000619	cc	(-hl
+0.000619	cc	(-hl	cd-hl
+0.000619	at-hl	vbg-hl
+0.000619	at-hl	nn-hl	in-hl
 0.000619	at	nn	vbd
 0.000619	at	jj	nn
 0.000619	wdt	bez
@@ -88,6 +112,7 @@
 0.000464	wpo	md	ppss
 0.000464	vbd	at
 0.000464	vb	at
+0.000464	rb-hl	cc-hl
 0.000464	rb	pps	vbd
 0.000464	rb	pps	bedz
 0.000464	rb	bedz	at
@@ -98,6 +123,7 @@
 0.000464	ppss	md	vb
 0.000464	pps+bez	at
 0.000464	pps	vbd	rp
+0.000464	pps	vbd
 0.000464	pps	vbd	rb	in	at
 0.000464	pps	vbd	ppo
 0.000464	pps	vbd	ppo
@@ -114,25 +140,29 @@
 0.000464	pp$	nn	bedz	vbn	in
 0.000464	pp$	nn	bedz
 0.000464	nps-tl	cd-tl	:-tl
+0.000464	np-hl	np-hl
 0.000464	np	vbd	pp$
 0.000464	np	vbd
 0.000464	np	vbd
 0.000464	np	vbd	in	at	jj
 0.000464	np	dod	*	vb
 0.000464	np	dod	*
-0.000464	nns-hl	cc-hl
+0.000464	nns-hl	in-hl	vbg-hl
 0.000464	nns	in
 0.000464	nn-hl	nn-hl
 0.000464	nn-hl	nn-hl
+0.000464	nn-hl	nn-hl
+0.000464	nn-hl	in-hl
+0.000464	nn-hl	in-hl
 0.000464	nn	bez	at	jj
-0.000464	jj-hl	nn-hl	nn-hl	cd-hl
 0.000464	jj-hl	nn-hl
+0.000464	jj-hl	nn-hl	nn-hl	cd-hl	-hl
+0.000464	jj-hl	jj-hl
 0.000464	in	wpo	md	ppss	be
 0.000464	in	nn	:
-0.000464	ex	ber	ap
 0.000464	dt+bez	at
-0.000464	cd-hl	at	jj
-0.000464	at-hl	nn-hl	in-hl	at-hl
+0.000464	cd-hl	at	jj	jj
+0.000464	at-hl	nn-hl	in-hl	at-hl	jj-hl
 0.000464	at	nns	bed
 0.000464	at	nn$	nns
 0.000464	at	nn	vbd	pp$
@@ -152,7 +182,6 @@
 0.000464	rb	,	np
 0.000464	ql	rb	,	np
 0.000464	ppss	md
-0.000309	wrb-hl	to-hl	vb-hl
 0.000309	wrb	md	ppss
 0.000309	wrb	md
 0.000309	wrb	in
@@ -163,8 +192,11 @@
 0.000309	wdt	dod	pps
 0.000309	wdt	bez	at
 0.000309	wdt	bedz	pps
+0.000309	vbz-hl	jj-hl
 0.000309	vbn	np	cd	,
-0.000309	vbg-hl	in-hl
+0.000309	vbg-hl	nns-hl
+0.000309	vb-hl	nn-hl
+0.000309	vb-hl	in-hl
 0.000309	vb	vbg	nn	in	nn
 0.000309	vb	ppo
 0.000309	vb	ppo	,
@@ -174,6 +206,7 @@
 0.000309	uh	--
 0.000309	uh	,	ppss	vbd
 0.000309	uh	,
+0.000309	to-hl	vb-hl	nn-hl
 0.000309	to-hl	vb-hl
 0.000309	rb	ppss	md	vb	dt
 0.000309	rb	ppss	bed	in	jj
@@ -204,6 +237,7 @@
 0.000309	ppss	rb
 0.000309	ppss	md*	vb
 0.000309	ppss	md*
+0.000309	ppss	md*
 0.000309	ppss	md	vb	pp$
 0.000309	ppss	md	rb
 0.000309	ppss	bem	at
@@ -231,6 +265,7 @@
 0.000309	pps	vbd	in	at	nn
 0.000309	pps	vbd	in	at	jj
 0.000309	pps	vbd	at	nn	in
+0.000309	pps	vbd
 0.000309	pps	vbd	,	cc	vbd
 0.000309	pps	rb	vbd	at
 0.000309	pps	md	vb
@@ -263,12 +298,11 @@
 0.000309	pp$	jj	nn
 0.000309	pn	vbd	at
 0.000309	np-tl	nn-tl	,
-0.000309	np-hl	np-hl
-0.000309	np-hl	nn-hl
 0.000309	np-hl	cc-hl
-0.000309	np-hl	,-hl	np-hl	cd-hl	(-hl
-0.000309	np-hl	,-hl	np-hl	(-hl
-0.000309	np-hl	(-hl
+0.000309	np-hl	at-hl
+0.000309	np-hl	,-hl	np-hl	(-hl	nn-hl
+0.000309	np-hl	(-hl	jj-hl
+0.000309	np$-hl	nn-hl
 0.000309	np$	nns	vbd
 0.000309	np$	nn
 0.000309	np$	nn	bedz
@@ -284,14 +318,15 @@
 0.000309	np	vbd	in	pp$
 0.000309	np	vbd	in	pp$
 0.000309	np	vbd	cc
-0.000309	np	vbd	at	vbg
 0.000309	np	vbd	at	nn	nn
 0.000309	np	vbd	at	nn	in
 0.000309	np	vbd	,
 0.000309	np	rb
 0.000309	np	np	vbd
 0.000309	np	np	vbd	at
+0.000309	np	np	vbd
 0.000309	np	np	np	,
+0.000309	np	np
 0.000309	np	np	bedz
 0.000309	np	hvd	to	vb	pp$
 0.000309	np	hvd	ap	to
@@ -306,43 +341,53 @@
 0.000309	np	bedz	in
 0.000309	np	,	np
 0.000309	np	,
-0.000309	nns-hl	in-hl
-0.000309	nns-hl	in-hl	at-hl
-0.000309	nns-hl	in-hl
+0.000309	nns-hl	cc-hl	nns-hl
+0.000309	nns-hl	,-hl
 0.000309	nns	vbd	in
 0.000309	nns	in
 0.000309	nns	ber	pp$	nn	,
+0.000309	nn-tl-hl	nn-tl-hl
 0.000309	nn-tl	np-tl	cd-tl	:-tl
 0.000309	nn-tl	np-tl	cd-tl	,-tl
 0.000309	nn-tl	np
+0.000309	nn-hl	vbz-hl
+0.000309	nn-hl	vbz-hl
+0.000309	nn-hl	nns-hl
+0.000309	nn-hl	nn-hl	nn-hl
+0.000309	nn-hl	nn-hl	cc-hl
+0.000309	nn-hl	in-hl	vbg-hl
+0.000309	nn-hl	in-hl	jj-hl	nns-hl
+0.000309	nn-hl	in-hl	jj-hl
 0.000309	nn-hl	in-hl
-0.000309	nn-hl	in-hl	jj-hl
-0.000309	nn-hl	in-hl	jj-hl
-0.000309	nn-hl	cd-hl	,	nn-hl
-0.000309	nn-hl	,-hl	nn-hl	,-hl	cc-hl
+0.000309	nn-hl	cs-hl
+0.000309	nn-hl	cc-hl	nn-hl
 0.000309	nn	vbn	in	nn
 0.000309	nn	nns	vbd	at
+0.000309	nn	in
 0.000309	nn	cc
 0.000309	nn	bez	at	vbg
 0.000309	md*	vb	pp$	jj	jj
 0.000309	md	pps	vb
+0.000309	jj-tl-hl	nn-tl-hl
 0.000309	jj-tl	np-tl	,
-0.000309	jj-tl	np-tl	(-hl
-0.000309	jj-hl	nns-hl	in-hl
-0.000309	jj-hl	nn-hl
+0.000309	jj-tl	np-tl	(-hl	np-hl
+0.000309	jj-hl	nns-hl	in-hl	nn-hl
+0.000309	jj-hl	nn-hl	to-hl
+0.000309	jj-hl	nn-hl	in-hl	nns-hl
 0.000309	jj-hl	nn-hl	in-hl
-0.000309	jj-hl	nn-hl	in-hl
-0.000309	jj-hl	nn-hl	in-hl	jj-hl
-0.000309	jj-hl	nn-hl	cc-hl
-0.000309	jj-hl	jj-hl
+0.000309	jj-hl	nn-hl	in-hl	jj-hl	nn-hl
+0.000309	jj-hl	nn-hl	cc-hl	nn-hl
+0.000309	jj-hl	jj-hl	nns-hl
 0.000309	jj	nn	,	jj
 0.000309	jj	jj
 0.000309	jj	cc	jj
 0.000309	jj	--
-0.000309	in-hl	at-hl
+0.000309	in-hl	jj-hl
 0.000309	in	np
+0.000309	in	nn
 0.000309	in	at	ql	jj
 0.000309	ex	ber	cd	nns	in
+0.000309	ex	ber	ap
 0.000309	ex	ber	ap	jj
 0.000309	ex	bedz	at	jj
 0.000309	dt	bez	pp$
@@ -355,7 +400,8 @@
 0.000309	dt	bedz
 0.000309	dt	bedz	at	jj
 0.000309	dod	ppss	vb	at	jj
-0.000309	cd-hl	)
+0.000309	cd-hl	nns-hl
+0.000309	cd-hl	)	np-hl
 0.000309	cd	np	,	in
 0.000309	cd	nns	vbd	at
 0.000309	cd	in
@@ -364,20 +410,17 @@
 0.000309	cc	ppss+md	vb	ppo	in
 0.000309	cc	pps	bez	at	jj
 0.000309	cc	pps
-0.000309	cc	np
 0.000309	cc	np	,
 0.000309	cc	at	nn	in
-0.000309	cc	(-hl
+0.000309	cc	(-hl	np-hl
 0.000309	ber	ppss
-0.000309	at-hl	nns-hl
+0.000309	at-hl	np-hl
 0.000309	at-hl	nn-hl	in-hl
-0.000309	at-hl	jj-hl
 0.000309	at	pn	vbd	at
 0.000309	at	pn
 0.000309	at	pn	hvd
 0.000309	at	od	nn	ql
 0.000309	at	np
-0.000309	at	np	nn
 0.000309	at	nns	vb
 0.000309	at	nns	bed	vbn
 0.000309	at	nns	bed
@@ -402,7 +445,8 @@
 0.000309	at	jj	nn	vbd
 0.000309	at	jj	nn	vbd
 0.000309	--	rb	,
-0.000309	--	pp$	jj	nn	in
+0.000309	(-hl	ppss-hl
+0.000309	(-hl	nn-tl-hl
 0.000309	(	vb	nn
 0.000309	(	cd
 0.000309	wrb	do	ppss	vb
@@ -464,13 +508,15 @@
 0.000309	at-hl	jj-hl
 0.000309	at	nn+bez	ql
 0.000309	at	jj	nn	in	jj-tl
-0.000155	wrb-hl	vb-hl	np-hl
+0.000155	wrb-hl	vb-hl	np-hl	-hl
+0.000155	wrb-hl	to-hl	vb-hl
 0.000155	wrb-hl	to-hl	vb-hl	:-hl
-0.000155	wrb-hl	ppss-hl
-0.000155	wrb-hl	nn-hl	bez-hl
-0.000155	wrb-hl	md-hl	pps-hl	be-hl	vbn-hl
-0.000155	wrb-hl	cc-hl	wrb-hl
-0.000155	wrb-hl	at-hl	nn-hl	in-hl	nns-hl
+0.000155	wrb-hl	to-hl	vb-hl	:-hl	nn-hl
+0.000155	wrb-hl	to-hl	vb-hl	:-hl
+0.000155	wrb-hl	to-hl	vb-hl
+0.000155	wrb-hl	ppss-hl	vb-hl
+0.000155	wrb-hl	nn-hl	bez-hl	jj-hl
+0.000155	wrb-hl	cc-hl	wrb-hl	to-hl
 0.000155	wrb+bez	pp$
 0.000155	wrb+bez	np	,	do	ppss
 0.000155	wrb	vb
@@ -479,7 +525,6 @@
 0.000155	wrb	rb	at	nn	in
 0.000155	wrb	pps	vbd
 0.000155	wrb	pps	vbd	np	bedz
-0.000155	wrb	pps	hvd	vbn	ppss
 0.000155	wrb	nn	bez	ql
 0.000155	wrb	md*	ppss	vb
 0.000155	wrb	md	ppss	vb	ppo
@@ -552,14 +597,14 @@
 0.000155	wps	do	ppss
 0.000155	wps	bez	vbn	rb
 0.000155	wps	bez	at
-0.000155	wdt-hl	nns-hl	to-hl	vb-hl
-0.000155	wdt-hl	nn-hl	nn-hl
-0.000155	wdt-hl	md-hl	at-hl	nn-hl	vb-hl
-0.000155	wdt-hl	in-hl	nns-hl
-0.000155	wdt-hl	bez-hl	at-hl	nn-hl
-0.000155	wdt-hl	at-hl
-0.000155	wdt-hl	at-hl	jj-hl
-0.000155	wdt+bez-hl	jj-hl
+0.000155	wdt-hl	nns-hl	to-hl	vb-hl	-hl
+0.000155	wdt-hl	nn-hl
+0.000155	wdt-hl	nn-hl	nn-hl	-hl
+0.000155	wdt-hl	in-hl	nns-hl	-hl
+0.000155	wdt-hl	bez-hl	at-hl	nn-hl	-hl
+0.000155	wdt-hl	at-hl	nns-hl
+0.000155	wdt-hl	at-hl	jj-hl	nn-hl
+0.000155	wdt+bez-hl	jj-hl	in-hl
 0.000155	wdt+bez	vbg	rp
 0.000155	wdt+bez	vbg	rp	in
 0.000155	wdt+bez	rp
@@ -576,7 +621,7 @@
 0.000155	wdt	rb	bedz	ex	to
 0.000155	wdt	ppss	vbd	,	ppss
 0.000155	wdt	ppss	ber	vbg
-0.000155	wdt	pps
+0.000155	wdt	pps	doz
 0.000155	wdt	nns	hvd	dti
 0.000155	wdt	nn	wps	md
 0.000155	wdt	nn	bedz
@@ -593,7 +638,7 @@
 0.000155	wdt	dod	ppo	do	in
 0.000155	wdt	do	ppss
 0.000155	wdt	do	ppss	do
-0.000155	wdt	do
+0.000155	wdt	do	ppss
 0.000155	wdt	do	ppo	do	in
 0.000155	wdt	cs	at	nns	rb
 0.000155	wdt	bez	pps	jj	to
@@ -613,8 +658,16 @@
 0.000155	wdt	bedz	nn
 0.000155	wdt	bedz	at
 0.000155	wdt	at	nn	dt	np
-0.000155	vbz-hl	to-hl
-0.000155	vbz-hl	np-hl	nn-hl	nn-hl
+0.000155	vbz-hl	to-hl	vb-hl
+0.000155	vbz-hl	np-hl
+0.000155	vbz-hl	np-hl	nn-hl	nn-hl	nn-hl
+0.000155	vbz-hl	nn-hl
+0.000155	vbz-hl	nn-hl
+0.000155	vbz-hl	nn-hl
+0.000155	vbz-hl	nn-hl
+0.000155	vbz-hl	jjr-hl
+0.000155	vbz-hl	in-hl
+0.000155	vbz-hl	cc-hl
 0.000155	vbz-hl	vbn-hl
 0.000155	vbz	nn
 0.000155	vbz	in	nn	cc
@@ -622,13 +675,19 @@
 0.000155	vbz	cd
 0.000155	vbz	at	nn	nn	vbz
 0.000155	vbz	at	jj
-0.000155	vbn-tl-hl	nns-tl-hl	jj-tl-hl
-0.000155	vbn-hl	nr-hl
-0.000155	vbn-hl	nns-hl	in-hl
+0.000155	vbn-tl-hl	nns-tl-hl	jj-tl-hl	nn-tl-hl
+0.000155	vbn-hl	vbg-hl
+0.000155	vbn-hl	nr-hl	in-hl
+0.000155	vbn-hl	nns-hl	in-hl	nn-hl
 0.000155	vbn-hl	nn-hl
-0.000155	vbn-hl	nn-hl
+0.000155	vbn-hl	nn-hl	nn-hl
+0.000155	vbn-hl	nn-hl	cc-hl
+0.000155	vbn-hl	jj-hl	nn-hl
 0.000155	vbn-hl	jj-hl
 0.000155	vbn-hl	in-hl
+0.000155	vbn-hl	in-hl
+0.000155	vbn-hl	in-hl	at-hl
+0.000155	vbn-hl	cd-hl
 0.000155	vbn	rp	in	at
 0.000155	vbn	rp	at	nn	jj
 0.000155	vbn	rb	in
@@ -645,25 +704,39 @@
 0.000155	vbn	in	nn
 0.000155	vbn	cd	in	at
 0.000155	vbn	wdt+bez-tl	jj-tl	in-tl
-0.000155	vbg-tl	nn-tl	,
-0.000155	vbg-tl	jj-tl
-0.000155	vbg-hl	rb-hl
-0.000155	vbg-hl	nns-hl
+0.000155	vbg-tl	nn-tl	,	nn-tl
+0.000155	vbg-tl	nn-tl
+0.000155	vbg-tl	jj-tl	nn-tl
+0.000155	vbg-hl	vbz-hl
+0.000155	vbg-hl	vbn-hl
+0.000155	vbg-hl	rb-hl	in-hl
+0.000155	vbg-hl	np-hl
+0.000155	vbg-hl	nns-hl	jj-hl
 0.000155	vbg-hl	nns-hl	in-hl
+0.000155	vbg-hl	nns-hl	in-hl	nn-hl
 0.000155	vbg-hl	nns-hl
-0.000155	vbg-hl	nns-hl
-0.000155	vbg-hl	nn-hl	in-hl
-0.000155	vbg-hl	nn-hl	in-hl	jj-hl	nn-hl
-0.000155	vbg-hl	nn-hl	in-hl
+0.000155	vbg-hl	nns-hl	,-hl
 0.000155	vbg-hl	nn-hl
+0.000155	vbg-hl	nn-hl	in-hl	nns-hl
+0.000155	vbg-hl	nn-hl	in-hl
+0.000155	vbg-hl	nn-hl	in-hl	jj-hl
+0.000155	vbg-hl	nn-hl	cc-hl
 0.000155	vbg-hl	nn-hl
-0.000155	vbg-hl	jj-hl	cc-hl
+0.000155	vbg-hl	jj-hl
+0.000155	vbg-hl	jj-hl	cc-hl	jj-hl
 0.000155	vbg-hl	in-hl
+0.000155	vbg-hl	in-hl	nns-hl
 0.000155	vbg-hl	in-hl
+0.000155	vbg-hl	in-hl	in-hl
+0.000155	vbg-hl	in-hl	at-hl
+0.000155	vbg-hl	in-hl	at-hl
+0.000155	vbg-hl	at-hl
+0.000155	vbg-hl	at-hl
+0.000155	vbg-hl	at-hl
+0.000155	vbg-hl	at-hl	nn-hl	to-hl
 0.000155	vbg-hl	at-hl	nn-hl
-0.000155	vbg-hl	at-hl
-0.000155	vbg-hl	at-hl
-0.000155	vbg-hl	---hl
+0.000155	vbg-hl	at-hl	jj-hl
+0.000155	vbg-hl	---hl	rb-hl
 0.000155	vbg	vbd
 0.000155	vbg	vbd	in	at	jj
 0.000155	vbg	vbd	cs	at	jjs
@@ -676,7 +749,7 @@
 0.000155	vbg	pp$	nns
 0.000155	vbg	nr	in	at	jj
 0.000155	vbg	nn	pp$	nns	vbd
-0.000155	vbg	nn	in
+0.000155	vbg	nn	in	jj
 0.000155	vbg	nn	bez	rb
 0.000155	vbg	nn	(	np
 0.000155	vbg	jj	nn	vbz	ppo
@@ -700,7 +773,8 @@
 0.000155	vbg	,	nns	vbd	cc
 0.000155	vbg	,	jj
 0.000155	vbg	,	cs	cs
-0.000155	vbd-hl	nn-hl
+0.000155	vbd-hl	nn-hl	in-hl
+0.000155	vbd-hl	cd-hl
 0.000155	vbd	rp	np	cs	pps
 0.000155	vbd	rp	at	vbg
 0.000155	vbd	ppo
@@ -716,13 +790,12 @@
 0.000155	vbd	at	jj
 0.000155	vbd	at	jj	jj
 0.000155	vbd	at	ap
-0.000155	vb-hl	in-hl	np-tl	nn-tl	in-hl
-0.000155	vb-hl	in-hl
-0.000155	vb-hl	at-hl	nns-hl	vb-hl	nn-hl
+0.000155	vb-hl	nns-hl
+0.000155	vb-hl	in-hl	jj-hl
 0.000155	vb+rp	rb
 0.000155	vb+ppo	vb	vb	at
 0.000155	vb+ppo	vb
-0.000155	vb+ppo	vb	ppo
+0.000155	vb+ppo	vb	ppo	rb
 0.000155	vb+ppo	vb	ppo
 0.000155	vb+ppo	vb
 0.000155	vb+ppo	vb
@@ -795,7 +868,7 @@
 0.000155	vb	pp$	nns	in
 0.000155	vb	pp$	nn	in	pp$
 0.000155	vb	pp$	nn	,	md*
-0.000155	vb	pp$
+0.000155	vb	pp$	nn
 0.000155	vb	pp$
 0.000155	vb	pp$
 0.000155	vb	pp$	jj
@@ -895,7 +968,7 @@
 0.000155	vb	,	ppss	ber	vbn
 0.000155	vb	,	nn	,
 0.000155	vb	,	cs	ppss
-0.000155	uh-hl	,-hl
+0.000155	uh-hl	,-hl	np-hl
 0.000155	uh	wrb	ppss
 0.000155	uh	uh	,
 0.000155	uh	rb	ppss+bem
@@ -923,24 +996,26 @@
 0.000155	uh	,	do*
 0.000155	uh	,	at	nn	in
 0.000155	uh	,	at	jj	nn
-0.000155	to-hl	vb-hl	rp-hl
+0.000155	to-hl	vb-hl	rp-hl	nns-hl
+0.000155	to-hl	vb-hl	nns-hl	rb-hl
+0.000155	to-hl	vb-hl	nns-hl	in-hl	nn-hl
 0.000155	to-hl	vb-hl	nns-hl
-0.000155	to-hl	vb-hl	nns-hl	in-hl
-0.000155	to-hl	vb-hl
-0.000155	to	vb-hl
+0.000155	to	vb-hl	in-hl
 0.000155	to	vb	rp	at
 0.000155	to	vb	rb	md	be
-0.000155	to	vb
+0.000155	to	vb	jj
 0.000155	to	vb	dt	nn	pps
 0.000155	to	be	vbn	rp
 0.000155	rp	jj	,	cs	*
 0.000155	rbr	cs	dt	,
-0.000155	rb-hl	vb-hl	nn-tl-hl
-0.000155	rb-hl	in-hl
-0.000155	rb-hl	cd-hl	,-hl	rb-hl
-0.000155	rb-hl	bez-hl	wrb-hl	nns-hl	vb-hl
+0.000155	rb-hl	vbg-hl
+0.000155	rb-hl	vb-hl	nn-tl-hl	nn-tl-hl
+0.000155	rb-hl	in-hl	jj-hl
+0.000155	rb-hl	cd-hl	,-hl	rb-hl	at-hl
 0.000155	rb-hl	,-hl
+0.000155	rb-hl	,-hl	at-hl
 0.000155	rb+bez	wrb	pps	md	be
+0.000155	rb+bez	wrb
 0.000155	rb+bez	wdt	ppss
 0.000155	rb+bez	at
 0.000155	rb	wrb	dod	ppss	do
@@ -959,9 +1034,9 @@
 0.000155	rb	vb+ppo	vb	jj	ppss+ber
 0.000155	rb	vb	wrb	ppss
 0.000155	rb	vb
-0.000155	rb	vb
+0.000155	rb	vb	rb
 0.000155	rb	vb	ppo	vb	in
-0.000155	rb	vb	ppo	rp+in
+0.000155	rb	vb	ppo	rp+in	rn
 0.000155	rb	vb	ppo
 0.000155	rb	vb
 0.000155	rb	vb	in	dt
@@ -1020,7 +1095,6 @@
 0.000155	rb	pps	md	hv	dt
 0.000155	rb	pps	md
 0.000155	rb	pps	hvd	vbn
-0.000155	rb	pps	hvd	np	np
 0.000155	rb	pps	bez	vbn	cc
 0.000155	rb	pps
 0.000155	rb	pps	bedz*
@@ -1030,7 +1104,9 @@
 0.000155	rb	pps	bedz	np
 0.000155	rb	pps	bedz	jj	in
 0.000155	rb	pps	bedz
+0.000155	rb	pps
 0.000155	rb	ppo	,	np
+0.000155	rb	pp$$	rb
 0.000155	rb	pp$$
 0.000155	rb	pp$	nns	ber
 0.000155	rb	pp$	nn	vbd
@@ -1064,6 +1140,7 @@
 0.000155	rb	in	at	jj
 0.000155	rb	in	at	jj
 0.000155	rb	in	at	ap
+0.000155	rb	in
 0.000155	rb	in	abn
 0.000155	rb	in
 0.000155	rb	hv
@@ -1088,7 +1165,7 @@
 0.000155	rb	cd
 0.000155	rb	cd	,	cd	,
 0.000155	rb	bez	at	nn	in
-0.000155	rb	ber
+0.000155	rb	ber	ap
 0.000155	rb	bedz	pp$
 0.000155	rb	bedz	jj	in
 0.000155	rb	bedz	dt	jj
@@ -1126,7 +1203,7 @@
 0.000155	rb	,	uh
 0.000155	rb	,	rb
 0.000155	rb	,	rb	ppss	vbd
-0.000155	rb	,	ql
+0.000155	rb	,	ql	rb
 0.000155	rb	,	ppss+md	vb	at
 0.000155	rb	,	ppss+ber	vbg	rp
 0.000155	rb	,	ppss	vbd	jj
@@ -1163,13 +1240,12 @@
 0.000155	rb	,	at	nn	hvz
 0.000155	rb	,	at	nn	bez
 0.000155	rb	,	at	nn	bedz
-0.000155	rb	,	at	nn	bedz
 0.000155	rb	,	at	jj	nn
 0.000155	rb	,	*
 0.000155	rb	,	ppss+bem	*
 0.000155	rb	(	np	)
 0.000155	rb	--	pps	vbd
-0.000155	ql-hl	jj-hl	cc-hl	at-hl
+0.000155	ql-hl	jj-hl	cc-hl	at-hl	nn-hl
 0.000155	ql	rb	ql
 0.000155	ql	rb	pps
 0.000155	ql	rb	nns	ber
@@ -1183,7 +1259,7 @@
 0.000155	ql	at	ap
 0.000155	ql	ap	in	at
 0.000155	ql	ap	in	abn
-0.000155	ppss-hl	md-hl	vb-hl	in-hl	at-hl
+0.000155	ppss-hl	vb-hl
 0.000155	ppss+md	vb	to	vb
 0.000155	ppss+md	vb	to	vb
 0.000155	ppss+md	vb	to	vb	in
@@ -1215,7 +1291,6 @@
 0.000155	ppss+md	be	rb	vbg	in
 0.000155	ppss+md	be
 0.000155	ppss+md	be
-0.000155	ppss+md	be	jj	to	vb
 0.000155	ppss+md	be	in	jj	nn
 0.000155	ppss+hvd	vbn	pp$
 0.000155	ppss+hvd	vbn	jj-tl	np-tl	rp
@@ -1266,7 +1341,7 @@
 0.000155	ppss+bem	in	pp$
 0.000155	ppss+bem	at	nn	in
 0.000155	ppss+bem	at	jjt	in	cd
-0.000155	ppss+bem	*	vbg
+0.000155	ppss+bem	*	vbg	rb
 0.000155	ppss+bem	*	vbg	in	at
 0.000155	ppss+bem	*	jj	,
 0.000155	ppss+bem	*	at	nn
@@ -1403,7 +1478,7 @@
 0.000155	ppss	vb	abn	in
 0.000155	ppss	vb	:	bez	vbg
 0.000155	ppss	vb	,	wrb	bez
-0.000155	ppss	vb	,	rb
+0.000155	ppss	vb	,	rb	ppss+hv
 0.000155	ppss	vb
 0.000155	ppss	vb
 0.000155	ppss	rb	vbn	rb	,
@@ -1450,7 +1525,7 @@
 0.000155	ppss	md	vb	in	at
 0.000155	ppss	md	vb
 0.000155	ppss	md	vb	cs
-0.000155	ppss	md	vb	at
+0.000155	ppss	md	vb	at	vbg
 0.000155	ppss	md	vb	at
 0.000155	ppss	md
 0.000155	ppss	md
@@ -1578,7 +1653,6 @@
 0.000155	ppss	bed	vbg	at	nn
 0.000155	ppss	bed	vbg	at
 0.000155	ppss	bed
-0.000155	ppss	bed	rp	to	vb
 0.000155	ppss	bed	rb
 0.000155	ppss	bed	rb	jj	in
 0.000155	ppss	bed	rb
@@ -1600,7 +1674,6 @@
 0.000155	ppss	abn	vb	pp$	jj
 0.000155	ppss	abn	ber	in
 0.000155	ppss	,
-0.000155	pps-hl	md-hl	vb-hl	at-hl	nn-hl
 0.000155	pps+md	vb	rp	at
 0.000155	pps+md	vb
 0.000155	pps+md	vb	np	in	at
@@ -1619,6 +1692,7 @@
 0.000155	pps+hvz	ben	ql	jj	abn
 0.000155	pps+hvz	ben	jj
 0.000155	pps+hvd	rb	vbn	ppo	in
+0.000155	pps+bez-hl	jj-hl
 0.000155	pps+bez	vbg	nn	in
 0.000155	pps+bez	to	be	at	jj
 0.000155	pps+bez	rb	vbg	in
@@ -1659,7 +1733,6 @@
 0.000155	pps	vbz	rb	in
 0.000155	pps	vbz	rb	at	ap
 0.000155	pps	vbz
-0.000155	pps	vbz	ppl	in	:
 0.000155	pps	vbz	pp$	nn$
 0.000155	pps	vbz	pp$
 0.000155	pps	vbz	pp$
@@ -1670,7 +1743,7 @@
 0.000155	pps	vbz	nn	in	pp$
 0.000155	pps	vbz	nn	in	at
 0.000155	pps	vbz	in	ql	ap
-0.000155	pps	vbz	in
+0.000155	pps	vbz	in	ppo
 0.000155	pps	vbz	in	np	,
 0.000155	pps	vbz	in
 0.000155	pps	vbz	in	at	nn
@@ -1689,7 +1762,7 @@
 0.000155	pps	vbz	at	ap	nn
 0.000155	pps	vbz	at	ap	cs
 0.000155	pps	vbz	ap	nns
-0.000155	pps	vbz	:
+0.000155	pps	vbz	:	nn
 0.000155	pps	vbz	,	cc
 0.000155	pps	vbd	wrb	to
 0.000155	pps	vbd	wrb	pps
@@ -1715,6 +1788,7 @@
 0.000155	pps	vbd	rp	cc	vbd
 0.000155	pps	vbd	rp	cc
 0.000155	pps	vbd	rp	cc
+0.000155	pps	vbd	rp
 0.000155	pps	vbd	rb	vbn	,
 0.000155	pps	vbd	rb	to	vb
 0.000155	pps	vbd	rb
@@ -1789,7 +1863,7 @@
 0.000155	pps	vbd	in
 0.000155	pps	vbd	in
 0.000155	pps	vbd	in	nn	in
-0.000155	pps	vbd	in
+0.000155	pps	vbd	in	nn
 0.000155	pps	vbd	in	jj	nns
 0.000155	pps	vbd	in	in	cd
 0.000155	pps	vbd	in
@@ -1802,7 +1876,7 @@
 0.000155	pps	vbd	dt	jj
 0.000155	pps	vbd
 0.000155	pps	vbd	cs	np	md
-0.000155	pps	vbd	cs	at
+0.000155	pps	vbd	cs	at	nns
 0.000155	pps	vbd	cs	at	jj
 0.000155	pps	vbd	cc	vbd	ppo
 0.000155	pps	vbd	cc	vbd
@@ -1905,7 +1979,7 @@
 0.000155	pps	md	hv	vbn
 0.000155	pps	md	hv	ben	cs
 0.000155	pps	md	hv	ben	at
-0.000155	pps	md
+0.000155	pps	md	hv
 0.000155	pps	md	be
 0.000155	pps	md	be
 0.000155	pps	md	be	vbg	ql
@@ -1936,7 +2010,7 @@
 0.000155	pps	hvd*	vbn	ppo
 0.000155	pps	hvd*	vbn
 0.000155	pps	hvd*	vbn	in
-0.000155	pps	hvd*	rb	vbn
+0.000155	pps	hvd*	rb	vbn	ppo
 0.000155	pps	hvd	vbn	rp	at
 0.000155	pps	hvd	vbn	rb	in
 0.000155	pps	hvd	vbn
@@ -2123,8 +2197,8 @@
 0.000155	pps	abn	vbd	ql
 0.000155	pps	abn	vbd	ql
 0.000155	pps	:	in	nn	cc
-0.000155	pp$-hl	nns-hl	do-hl	*-hl
-0.000155	pp$-hl	nn-hl
+0.000155	pp$-hl	nns-hl	do-hl	*-hl	vb-hl
+0.000155	pp$-hl	nn-hl	in-hl
 0.000155	pp$	vbg
 0.000155	pp$	ql	od
 0.000155	pp$	od	nn	vbd
@@ -2219,6 +2293,7 @@
 0.000155	pp$	jj	nn	bedz
 0.000155	pp$	jj
 0.000155	pp$	uh	bedz	jj	dt
+0.000155	pn-hl	to-hl
 0.000155	pn+md	hv+to	vb
 0.000155	pn+bez	in	at
 0.000155	pn	vbz	jj
@@ -2239,7 +2314,7 @@
 0.000155	pn	rb	bez	vbn
 0.000155	pn	rb	bedz
 0.000155	pn	rb	bedz	in	nn
-0.000155	pn	ql
+0.000155	pn	ql	jj
 0.000155	pn	md	vb
 0.000155	pn	md	vb
 0.000155	pn	md	rb	vb	pp$
@@ -2271,9 +2346,10 @@
 0.000155	pn	bedz
 0.000155	pn	ap	md
 0.000155	pn	abn	in	ppo	md
+0.000155	od-hl	nn-hl
 0.000155	od	,	at	jj
+0.000155	nr-hl	nn-hl	nns-hl
 0.000155	nr-hl	nn-hl
-0.000155	nr-hl	,-hl	nr-hl	,-hl	cc-hl
 0.000155	nr	pps	bez	rp	in
 0.000155	nr	np	np	vbz
 0.000155	nr	nns	in	nn
@@ -2283,37 +2359,46 @@
 0.000155	nr	at	nn	bez
 0.000155	nr	:	at
 0.000155	nr	,	nn	bez	in
-0.000155	nps-hl	,-hl
+0.000155	nps-hl	,-hl	nps-hl
 0.000155	nps	vb	ql	ap
 0.000155	nps	vb	ql
 0.000155	nps	cd-tl	:-tl	cd-tl	,
+0.000155	np-tl-hl	vbz-hl
 0.000155	np-tl	nn-tl	vbz-hl	np$	nn-tl
 0.000155	np-tl	nn-tl
 0.000155	np-tl	in-tl	vbn-tl	nns-tl	,
 0.000155	np-tl	cd-tl	np
 0.000155	np-tl	cd-tl	:-tl
 0.000155	np-hl	vbz-hl
-0.000155	np-hl	vbd-hl	in-hl
-0.000155	np-hl	np-hl	np-hl	vbz-hl
-0.000155	np-hl	np-hl	np-hl	np-hl	,-hl
+0.000155	np-hl	vbz-hl
+0.000155	np-hl	vbz-hl	od-hl
+0.000155	np-hl	vbz-hl
+0.000155	np-hl	vbd-hl	in-hl	nn-hl
 0.000155	np-hl	np-hl
+0.000155	np-hl	np-hl	np-hl	vbz-hl	od-hl
+0.000155	np-hl	np-hl
+0.000155	np-hl	np-hl	in-hl
+0.000155	np-hl	np-hl	,-hl	od-hl
 0.000155	np-hl	np-hl	,-hl
-0.000155	np-hl	np-hl	,-hl	np-hl	,-hl
-0.000155	np-hl	nn-tl-hl	,-hl
-0.000155	np-hl	nn-hl	vbz-hl	vbn-tl-hl
-0.000155	np-hl	nn-hl	vbz-hl	nn-hl	bez-hl
-0.000155	np-hl	nn-hl
-0.000155	np-hl	md-hl
-0.000155	np-hl	md-hl
-0.000155	np-hl	cc-tl-hl
-0.000155	np-hl	:-hl
-0.000155	np-hl	,-hl	np-hl
-0.000155	np-hl	,-hl	np-hl	cd-hl	(-hl
-0.000155	np-hl	,-hl	np-hl
-0.000155	np-hl	,-hl	np-hl	--	(
-0.000155	np-hl	,-hl	np-hl	,-hl	np-hl
-0.000155	np-hl	,-hl	np-hl	,-hl
-0.000155	np-hl	,-hl	np-hl	(-hl
+0.000155	np-hl	np-hl	,-hl
+0.000155	np-hl	nn-tl-hl
+0.000155	np-hl	nn-tl-hl	,-hl	np-hl
+0.000155	np-hl	nn-hl	vbz-hl	vbn-tl-hl	nns-tl-hl
+0.000155	np-hl	nn-hl	nns-hl
+0.000155	np-hl	nn-hl	in-hl
+0.000155	np-hl	nn-hl	in-hl
+0.000155	np-hl	md-hl	vb-hl
+0.000155	np-hl	md-hl	be-hl
+0.000155	np-hl	in-hl
+0.000155	np-hl	cc-tl-hl	np-hl
+0.000155	np-hl	cc-hl	np-hl
+0.000155	np-hl	cc-hl	np-hl
+0.000155	np-hl	ap-hl
+0.000155	np-hl	:-hl	ap
+0.000155	np-hl	,-hl	np-hl	in-hl
+0.000155	np-hl	,-hl	np-hl	cd-hl
+0.000155	np-hl	,-hl	np-hl	,-hl	cc-hl
+0.000155	np-hl	,-hl	np-hl	(-hl	np-hl
 0.000155	np+hvz	vbn	pp$
 0.000155	np+bez	rb	cs	np
 0.000155	np+bez	ql
@@ -2322,7 +2407,7 @@
 0.000155	np$	nns	vbd	rb	at
 0.000155	np$	nns	vbd	dti
 0.000155	np$	nns	ber	pn	in
-0.000155	np$	nn-tl
+0.000155	np$	nn-tl	in-tl
 0.000155	np$	nn	vbd	rb
 0.000155	np$	nn	vbd
 0.000155	np$	nn	vbd	in	np$
@@ -2430,6 +2515,8 @@
 0.000155	np	vbd	cc	vbd
 0.000155	np	vbd	cc	vbd	at
 0.000155	np	vbd	cc	rb	vbd
+0.000155	np	vbd	at	vbg	nn
+0.000155	np	vbd	at	vbg
 0.000155	np	vbd	at	np	cc
 0.000155	np	vbd	at	nns	in
 0.000155	np	vbd	at
@@ -2440,6 +2527,7 @@
 0.000155	np	vbd	ap
 0.000155	np	vbd	abn	in
 0.000155	np	vbd	abl	at	jj
+0.000155	np	vbd
 0.000155	np	vbd	,
 0.000155	np	vbd	,	vbd	at
 0.000155	np	vbd	,	in	jj
@@ -2459,6 +2547,7 @@
 0.000155	np	rb	vbd	in
 0.000155	np	rb	vbd	at
 0.000155	np	rb	vbd	,
+0.000155	np	rb
 0.000155	np	rb	md
 0.000155	np	rb
 0.000155	np	rb	bedz	ql
@@ -2491,8 +2580,8 @@
 0.000155	np	np	rb
 0.000155	np	np	np	vbd
 0.000155	np	np	np	np	bez
-0.000155	np	np	np
-0.000155	np	np	np
+0.000155	np	np	np	np
+0.000155	np	np	np	nn-tl
 0.000155	np	np	np	in	np
 0.000155	np	np	np	dod	jj
 0.000155	np	np	np	,	nn
@@ -2524,8 +2613,8 @@
 0.000155	np	np	,	dt+bez
 0.000155	np	np	,	at	jj
 0.000155	np	nn-tl	np-tl	nn-tl
+0.000155	np	nn-tl
 0.000155	np	nn	in	pp$
-0.000155	np	nn	in	np	vbn
 0.000155	np	md*	vb	np	in
 0.000155	np	md*	vb	cc	be
 0.000155	np	md*
@@ -2539,7 +2628,7 @@
 0.000155	np	md
 0.000155	np	md	be
 0.000155	np	md	be	in
-0.000155	np	hvz	vbn	in
+0.000155	np	hvz	vbn	in	np
 0.000155	np	hvz	vbn	cd
 0.000155	np	hvz	vbn	at
 0.000155	np	hvz	at	nn	nns
@@ -2574,6 +2663,7 @@
 0.000155	np	cc	np	hvd	at
 0.000155	np	cc	np	bed
 0.000155	np	cc	np	,
+0.000155	np	cc
 0.000155	np	cc
 0.000155	np	bez	vbg	ppo	in
 0.000155	np	bez	rb	vbn	in
@@ -2629,33 +2719,50 @@
 0.000155	np	(	np	)
 0.000155	np	(
 0.000155	nns-tl	vb	ppo	abn	at
-0.000155	nns-hl	wrb-hl	nn-hl
-0.000155	nns-hl	vbn-hl	in-hl	at-hl
-0.000155	nns-hl	vbn-hl
-0.000155	nns-hl	vbg-hl	---hl
-0.000155	nns-hl	vb-hl	nns-hl
-0.000155	nns-hl	to-hl	vb-hl	jj-hl	nn-hl
-0.000155	nns-hl	jj-hl	in-hl	at-hl	nn-hl
-0.000155	nns-hl	jj-hl	in-hl	at-hl	nn-hl
-0.000155	nns-hl	in-hl	vbg-hl	nn-hl
-0.000155	nns-hl	in-hl	vbg-hl	jj-hl
-0.000155	nns-hl	in-hl	np-tl-hl
+0.000155	nns-hl	wrb-hl	nn-hl	vbz-hl
+0.000155	nns-hl	vbn-hl	in-hl
+0.000155	nns-hl	vbn-hl	in-hl	at-hl	jj-hl
+0.000155	nns-hl	vbg-hl
+0.000155	nns-hl	vbg-hl	---hl	nns-hl
+0.000155	nns-hl	vb-hl
+0.000155	nns-hl	vb-hl	nns-hl	in-hl
+0.000155	nns-hl	to-hl
+0.000155	nns-hl	nn-hl
+0.000155	nns-hl	nn-hl
+0.000155	nns-hl	md-hl
+0.000155	nns-hl	in-hl	vbg-hl	nn-hl	nn-hl
+0.000155	nns-hl	in-hl	vbg-hl
+0.000155	nns-hl	in-hl	vbg-hl	jj-hl	nn-hl
+0.000155	nns-hl	in-hl	np-tl-hl	nn-tl-hl
+0.000155	nns-hl	in-hl
+0.000155	nns-hl	in-hl	nn-hl	in-hl	vbg-hl
 0.000155	nns-hl	in-hl	nn-hl	in-hl
 0.000155	nns-hl	in-hl	nn-hl
-0.000155	nns-hl	in-hl
-0.000155	nns-hl	in-hl	jj-tl-hl	np-hl	np-hl
-0.000155	nns-hl	in-hl	in-hl	np-hl	vb-hl
+0.000155	nns-hl	in-hl	jj-hl
+0.000155	nns-hl	in-hl	jj-hl
 0.000155	nns-hl	in-hl	at-hl
-0.000155	nns-hl	cs-hl
-0.000155	nns-hl	cs-hl
+0.000155	nns-hl	in-hl	at-hl	nn-hl
+0.000155	nns-hl	in-hl	at-hl	nn-hl
+0.000155	nns-hl	in-hl	at-hl
+0.000155	nns-hl	in-hl	at-hl	jj-hl
+0.000155	nns-hl	do-hl
+0.000155	nns-hl	cs-hl	rb-hl
+0.000155	nns-hl	cs-hl	jj-hl
+0.000155	nns-hl	cc-hl	vbg-hl
 0.000155	nns-hl	cc-hl
-0.000155	nns-hl	cc-hl	jj-hl	nns-hl
-0.000155	nns-hl	,-hl	nn-hl	rp-hl
-0.000155	nns$-tl-hl	nn-tl-hl
+0.000155	nns-hl	cc-hl	nns-hl
+0.000155	nns-hl	cc-hl
+0.000155	nns-hl	cc-hl	jj-hl	nns-hl	nn-hl
+0.000155	nns-hl	ber-hl
+0.000155	nns-hl	,-hl
+0.000155	nns-hl	,-hl	nn-hl	rp-hl	,-hl
+0.000155	nns$-tl-hl	nn-tl-hl	nn-tl-hl
 0.000155	nns$-hl	nns-hl
+0.000155	nns$-hl	nns-hl
+0.000155	nns$-hl	nns-hl	,-hl
+0.000155	nns$-hl	nn-hl
 0.000155	nns$	vbg	rb	doz*	vb
 0.000155	nns$	nns	md	be
-0.000155	nns	vbg	dti	jj	nns
 0.000155	nns	vbd	to	vb	in
 0.000155	nns	vbd	rb	in	pp$
 0.000155	nns	vbd
@@ -2675,6 +2782,7 @@
 0.000155	nns	rb	vbd	in	np$
 0.000155	nns	rb	vb
 0.000155	nns	rb	vb	pp$
+0.000155	nns	rb
 0.000155	nns	nn
 0.000155	nns	md	vb	pp$
 0.000155	nns	md	vb	in	ppo
@@ -2718,11 +2826,16 @@
 0.000155	nns	:	jj
 0.000155	nns	,	nn	nn
 0.000155	nn-tl-hl	vbz-hl
-0.000155	nn-tl-hl	np$-hl	nn-hl
-0.000155	nn-tl-hl	nn-tl-hl	bez-hl
-0.000155	nn-tl-hl	nn-tl-hl	(-hl
+0.000155	nn-tl-hl	vbz-hl	jj-hl
+0.000155	nn-tl-hl	np$-hl	nn-hl	in-hl
+0.000155	nn-tl-hl	nn-tl-hl
+0.000155	nn-tl-hl	nn-tl-hl	bez-hl	jj-hl
+0.000155	nn-tl-hl	nn-tl-hl	(-hl	jj-hl
+0.000155	nn-tl-hl	jj-tl-hl
+0.000155	nn-tl-hl	in-hl
+0.000155	nn-tl-hl	cd-tl-hl	vb-hl
+0.000155	nn-tl-hl	cd-tl-hl	,	nn
 0.000155	nn-tl-hl	cd-tl-hl
-0.000155	nn-tl-hl	cd-tl-hl	,
 0.000155	nn-tl	vbz	in	at
 0.000155	nn-tl	vbd	pp$
 0.000155	nn-tl	vbd	in	at
@@ -2733,13 +2846,13 @@
 0.000155	nn-tl	np	,	md	ppo
 0.000155	nn-tl	nn-tl	np	np	md
 0.000155	nn-tl	nn-tl	np
-0.000155	nn-tl	nn-tl	,
+0.000155	nn-tl	nn-tl	,	np
 0.000155	nn-tl	nn-tl	,
 0.000155	nn-tl	hvd	at	nn	in
 0.000155	nn-tl	cd-tl	vbz	at
 0.000155	nn-tl	cd-tl	,	ppss
 0.000155	nn-tl	cd-tl	,	nn-tl
-0.000155	nn-tl	cd-tl	,
+0.000155	nn-tl	cd-tl	,	ap
 0.000155	nn-tl	cc-tl
 0.000155	nn-tl	bedz	jj	to	vb
 0.000155	nn-tl	bedz
@@ -2747,82 +2860,107 @@
 0.000155	nn-tl	at
 0.000155	nn-tl	--
 0.000155	nn-tl	,
-0.000155	nn-tl	,
-0.000155	nn-hl	wrb-hl	nn-hl	bez-hl	*-hl
-0.000155	nn-hl	vbz-hl
-0.000155	nn-hl	vbz-hl	nn-hl	nns-hl
-0.000155	nn-hl	vbz-hl
-0.000155	nn-hl	vbz-hl
+0.000155	nn-tl	,	jj-tl
+0.000155	nn-hl	wrb-hl
+0.000155	nn-hl	vbz-hl	rp-hl
+0.000155	nn-hl	vbz-hl	nn-hl	nns-hl	ber-hl
+0.000155	nn-hl	vbz-hl	in-hl
+0.000155	nn-hl	vbz-hl	cd-hl
+0.000155	nn-hl	vbz-hl	at-hl	nn-hl
 0.000155	nn-hl	vbz-hl	at-hl
-0.000155	nn-hl	vbz-hl
-0.000155	nn-hl	vbn-hl	nn-hl	in-hl	nn-hl
 0.000155	nn-hl	vbn-hl
-0.000155	nn-hl	vbd-hl
-0.000155	nn-hl	rp-hl	in-hl	nns-hl
-0.000155	nn-hl	rb-hl	vbn-hl
-0.000155	nn-hl	nns-hl	in-hl
-0.000155	nn-hl	nns-hl	in-hl	jj-hl	nn-hl
-0.000155	nn-hl	nns-hl	in-hl	at-hl
-0.000155	nn-hl	nns-hl	in-hl	ap-hl
+0.000155	nn-hl	vbn-hl
+0.000155	nn-hl	vbn-hl	in-hl
+0.000155	nn-hl	vbg-hl
+0.000155	nn-hl	vbg-hl
+0.000155	nn-hl	vbg-hl
+0.000155	nn-hl	vbd-hl	cd-hl
+0.000155	nn-hl	rp-hl	in-hl	nns-hl	at-hl
+0.000155	nn-hl	rb-hl	vbn-hl	nn-hl
+0.000155	nn-hl	rb-hl
 0.000155	nn-hl	nns-hl
-0.000155	nn-hl	nns-hl	cc-hl
-0.000155	nn-hl	nns-hl	cc-hl	jj-hl
-0.000155	nn-hl	nn-hl	vbz-hl	nn-hl
-0.000155	nn-hl	nn-hl	vbd-hl
+0.000155	nn-hl	nns-hl
+0.000155	nn-hl	nns-hl	in-hl
+0.000155	nn-hl	nns-hl	in-hl	nn-hl
+0.000155	nn-hl	nns-hl	in-hl	jj-hl	nn-hl
+0.000155	nn-hl	nns-hl	in-hl	at-hl	ap-hl
+0.000155	nn-hl	nns-hl	in-hl	ap-hl	nns-hl
+0.000155	nn-hl	nns-hl	cc-hl	nn-hl
+0.000155	nn-hl	nns-hl	cc-hl	jj-hl	vbg-hl
+0.000155	nn-hl	nn-hl	vbz-hl	nn-hl	in-hl
 0.000155	nn-hl	nn-hl
-0.000155	nn-hl	nn-hl	in-hl	nn-hl	to-hl
-0.000155	nn-hl	nn-hl	in-hl	nn-hl
-0.000155	nn-hl	nn-hl	in-hl	at-hl
-0.000155	nn-hl	nn-hl	bez-hl
-0.000155	nn-hl	nn-hl	:-hl	jj-tl-hl
+0.000155	nn-hl	nn-hl	vbd-hl	ap-hl
 0.000155	nn-hl	nn-hl
-0.000155	nn-hl	nn-hl	---hl
-0.000155	nn-hl	md-hl	vb-hl	in-hl	jj-hl
-0.000155	nn-hl	md-hl
-0.000155	nn-hl	md-hl	be-hl	vbn-hl
+0.000155	nn-hl	nn-hl	nns-hl
+0.000155	nn-hl	nn-hl	nn-hl
+0.000155	nn-hl	nn-hl
+0.000155	nn-hl	nn-hl	in-hl	nn-hl	nns-hl
+0.000155	nn-hl	nn-hl	in-hl	at-hl	ap-hl
+0.000155	nn-hl	nn-hl
+0.000155	nn-hl	nn-hl	cc-hl
+0.000155	nn-hl	nn-hl	bez-hl	*-hl
+0.000155	nn-hl	nn-hl	:-hl	jj-tl-hl	nn-tl-hl
+0.000155	nn-hl	nn-hl	-hl
+0.000155	nn-hl	nn-hl	---hl	nn-hl
+0.000155	nn-hl	md-hl	vb-hl
+0.000155	nn-hl	md-hl	be-hl	vbn-hl	in-hl
 0.000155	nn-hl	in-hl	vbn-hl
+0.000155	nn-hl	in-hl	vbn-hl	nn-hl
+0.000155	nn-hl	in-hl	vbg-hl	nns-hl
+0.000155	nn-hl	in-hl	vbg-hl	nn-hl
+0.000155	nn-hl	in-hl	vbg-hl	jj-tl-hl	nns-hl
 0.000155	nn-hl	in-hl
-0.000155	nn-hl	in-hl	vbg-hl
-0.000155	nn-hl	in-hl	vbg-hl
-0.000155	nn-hl	in-hl	vbg-hl	jj-tl-hl
-0.000155	nn-hl	in-hl
-0.000155	nn-hl	in-hl
-0.000155	nn-hl	in-hl	nns-hl	nn-hl
-0.000155	nn-hl	in-hl	nns-hl
-0.000155	nn-hl	in-hl	nn-tl-hl
-0.000155	nn-hl	in-hl	nn-hl	vbn-hl
-0.000155	nn-hl	in-hl	nn-hl	nns-hl	cc-hl
-0.000155	nn-hl	in-hl	nn-hl	nn-hl
-0.000155	nn-hl	in-hl	nn-hl	nn-hl
+0.000155	nn-hl	in-hl	np-tl
+0.000155	nn-hl	in-hl	np-hl
+0.000155	nn-hl	in-hl	nns-hl	nn-hl	nn-hl
+0.000155	nn-hl	in-hl	nns-hl	cc-hl
+0.000155	nn-hl	in-hl	nn-tl-hl	in-hl
+0.000155	nn-hl	in-hl	nn-hl	vbn-hl	nn-hl
 0.000155	nn-hl	in-hl	nn-hl
-0.000155	nn-hl	in-hl	nn-hl	cc-hl	nn-hl
-0.000155	nn-hl	in-hl	jj-hl	vbg-hl
+0.000155	nn-hl	in-hl	nn-hl	nn-hl	nns-hl
+0.000155	nn-hl	in-hl	nn-hl	nn-hl
+0.000155	nn-hl	in-hl	nn-hl	nn-hl	nn-hl
+0.000155	nn-hl	in-hl	nn-hl
+0.000155	nn-hl	in-hl	jj-hl	vbg-hl	vbg-hl
+0.000155	nn-hl	in-hl	jj-hl	nn-hl
+0.000155	nn-hl	in-hl	jj-hl	nn-hl
+0.000155	nn-hl	in-hl	at-hl	np-hl
+0.000155	nn-hl	in-hl	at-hl	nns-hl	in-hl
+0.000155	nn-hl	in-hl	at-hl	nn-tl-hl
 0.000155	nn-hl	in-hl	at-hl
-0.000155	nn-hl	in-hl	at-hl	nns-hl
-0.000155	nn-hl	in-hl	at-hl
+0.000155	nn-hl	in-hl	at-hl	jj-hl	nn-hl
 0.000155	nn-hl	in-hl	at-hl	jj-hl
-0.000155	nn-hl	in-hl	at-hl
-0.000155	nn-hl	in-hl	at-hl
-0.000155	nn-hl	in-hl
-0.000155	nn-hl	cd-hl	at-hl	jj-hl
-0.000155	nn-hl	cd-hl	,	nns-hl
+0.000155	nn-hl	in-hl	at-hl	cd-hl
+0.000155	nn-hl	in-hl	ap-hl
+0.000155	nn-hl	cs-hl
+0.000155	nn-hl	cd-hl	at-hl	jj-hl	od-hl
+0.000155	nn-hl	cd-hl	,	nns-hl	in-hl
+0.000155	nn-hl	cd-hl	,	nn-hl	in-hl
+0.000155	nn-hl	cd-hl	,	nn-hl	in-hl
 0.000155	nn-hl	cd-hl	,
-0.000155	nn-hl	cd-hl
-0.000155	nn-hl	cc-hl	nns-hl
-0.000155	nn-hl	cc-hl	nn-hl	in-hl
-0.000155	nn-hl	bez-hl	jj-hl
-0.000155	nn-hl	bez-hl	at-hl
-0.000155	nn-hl	:-hl	nn-hl	in-hl	nn-hl
-0.000155	nn-hl	:-hl	nn	fw-in
-0.000155	nn-hl	:-hl	at-hl
+0.000155	nn-hl	cd-hl	,	jj-hl
+0.000155	nn-hl	cc-hl
+0.000155	nn-hl	cc-hl	nns-hl	in-hl
+0.000155	nn-hl	cc-hl
+0.000155	nn-hl	cc-hl	nn-hl
+0.000155	nn-hl	cc-hl	nn-hl	in-hl	at-hl
+0.000155	nn-hl	cc-hl	nn-hl
+0.000155	nn-hl	bez-hl
+0.000155	nn-hl	bez-hl
+0.000155	nn-hl	bez-hl	jj-hl	dt-hl
+0.000155	nn-hl	bez-hl
+0.000155	nn-hl	bez-hl	at-hl	nn-hl
+0.000155	nn-hl	bedz-hl
+0.000155	nn-hl	:-hl	nn	fw-in	fw-at
+0.000155	nn-hl	:-hl	at-hl	nn-hl
 0.000155	nn-hl	:-hl
-0.000155	nn-hl	---hl	vb-hl	output
-0.000155	nn-hl	,-hl	jj-hl	---hl	rb-hl
-0.000155	nn-hl	,-hl	jj-hl	---hl	nn-hl
+0.000155	nn-hl	---hl	vb-hl	output	nn-hl
 0.000155	nn+hvd-tl	ben	jj	in	dt
 0.000155	nn+bez-tl	vbn	in	nn	in
 0.000155	nn+bez	jj	in
 0.000155	nn+bez	at
+0.000155	nn$-hl	nn-hl
+0.000155	nn$-hl	jj-hl
 0.000155	nn$	nn	bedz	np
 0.000155	nn$	nn	,	ppss	rbr
 0.000155	nn	vbz
@@ -2860,7 +2998,7 @@
 0.000155	nn	rp	,
 0.000155	nn	rb	vbz	vbn	in
 0.000155	nn	rb	vbz	at	jj
-0.000155	nn	rb	cc	(-hl
+0.000155	nn	rb	cc	(-hl	np-hl
 0.000155	nn	ppl	bedz	vbn	in
 0.000155	nn	nns	vb	in	at
 0.000155	nn	nns	in
@@ -2871,7 +3009,8 @@
 0.000155	nn	nns	ber
 0.000155	nn	nns	ber	at	jj
 0.000155	nn	nns	bed	at	jj
-0.000155	nn	nn	vbz	cs
+0.000155	nn	nn-hl
+0.000155	nn	nn	vbz	cs	vbz
 0.000155	nn	nn	vbd	in	at
 0.000155	nn	nn	rb	md	be
 0.000155	nn	nn	nns	vbd	jj
@@ -2880,7 +3019,7 @@
 0.000155	nn	nn	in
 0.000155	nn	nn	in
 0.000155	nn	nn	in	nn
-0.000155	nn	nn
+0.000155	nn	nn	in
 0.000155	nn	nn	bez
 0.000155	nn	nn	bez	rb
 0.000155	nn	nn	bez	at	vbg
@@ -2891,12 +3030,15 @@
 0.000155	nn	in	ppo	bez
 0.000155	nn	in	ppo	,	pp$
 0.000155	nn	in	pp$
-0.000155	nn	in	np$
+0.000155	nn	in	np$	jj
 0.000155	nn	in	np	bez	*
 0.000155	nn	in
 0.000155	nn	in	nn	rb
+0.000155	nn	in	nn
+0.000155	nn	in	nn
 0.000155	nn	in	nn	,
 0.000155	nn	in	nn	,
+0.000155	nn	in
 0.000155	nn	in
 0.000155	nn	in	jj
 0.000155	nn	in	jj	nn	md
@@ -2962,7 +3104,11 @@
 0.000155	nn	,
 0.000155	nn	,
 0.000155	nn	nn	bez	4
-0.000155	md-hl	np-hl	vb-hl	vbn-hl
+0.000155	nil	nil
+0.000155	md-hl	vb-hl
+0.000155	md-hl	np-hl	vb-hl	vbn-hl	-hl
+0.000155	md-hl	be-hl
+0.000155	md*-hl	vb-hl
 0.000155	md*	ppss	vb
 0.000155	md*	ppss	vb	dt
 0.000155	md*	hv
@@ -2987,61 +3133,78 @@
 0.000155	md	at	nn	vb	cc
 0.000155	md	at	nn	vb	at
 0.000155	md	at	nn	rb	be
-0.000155	jjt-hl	in-hl
+0.000155	jjt-hl	in-hl	rb-hl
 0.000155	jjt	nn	wps	rb
 0.000155	jjt	nn	in	nn	bez
 0.000155	jjt	nn	in	abn
-0.000155	jjs-hl	nn-hl	:-hl
-0.000155	jjr-hl	vb-hl
-0.000155	jjr-hl	nns-hl	in-hl	vbg-hl	cc-hl
-0.000155	jjr-hl	nns-hl	in-hl	nn-hl
+0.000155	jjs-hl	nn-hl	:-hl	nn-hl
+0.000155	jjr-hl	vb-hl	cs-hl
+0.000155	jjr-hl	np-hl
+0.000155	jjr-hl	nns-hl	in-hl	nn-hl	rb-hl
+0.000155	jjr-hl	nn-hl	vbz-hl
+0.000155	jjr-hl	nn-hl	in-hl	nns-hl
 0.000155	jjr-hl	nn-hl
-0.000155	jjr-hl	nn-hl	in-hl
-0.000155	jjr-hl	jj-hl	nns-hl	in-hl
-0.000155	jj-tl-hl	nn-tl-hl	in-hl
+0.000155	jjr-hl	jj-hl	nns-hl	in-hl	nns-hl
+0.000155	jj-tl-hl	np-tl
+0.000155	jj-tl-hl	nn-tl-hl	in-hl	at-hl
 0.000155	jj-tl-hl	nn-tl-hl
+0.000155	jj-tl-hl	nn-tl-hl
+0.000155	jj-tl-hl	nn-tl-hl	,-hl
+0.000155	jj-tl-hl	jj-tl-hl
+0.000155	jj-tl	np-tl	vbz-hl
+0.000155	jj-tl	np-tl	vbd
 0.000155	jj-tl	np-tl
-0.000155	jj-tl	np-tl
-0.000155	jj-tl	np-tl	:-hl
-0.000155	jj-tl	np-tl	--	(
+0.000155	jj-tl	np-tl	:-hl	nps$-hl
+0.000155	jj-tl	np-tl	--	(	np
 0.000155	jj-tl	nns-tl	vbd
 0.000155	jj-tl	nns-tl	bedz	in	at
 0.000155	jj-tl	nn-tl	vbz
 0.000155	jj-tl	nn-tl	md*	vb	in
-0.000155	jj-tl	nn-tl	hvz
+0.000155	jj-tl	nn-tl	hvz	vbn
 0.000155	jj-tl	nn-tl	--	jj
-0.000155	jj-tl	jj-tl
+0.000155	jj-tl	jj-tl	nn-tl
 0.000155	jj-tl	hvd	ppo
+0.000155	jj-hl	vbg-hl	nns-hl
 0.000155	jj-hl	vbg-hl
 0.000155	jj-hl	np-hl
-0.000155	jj-hl	nns-hl	vb-hl
+0.000155	jj-hl	np-hl
+0.000155	jj-hl	np-hl	-hl
+0.000155	jj-hl	nns-hl	vb-hl	ap-hl
+0.000155	jj-hl	nns-hl	nns-hl
+0.000155	jj-hl	nns-hl	nn-hl
+0.000155	jj-hl	nns-hl	in-hl	vbg-hl
+0.000155	jj-hl	nns-hl	in-hl	np-tl-hl	nn-hl
+0.000155	jj-hl	nns-hl	in-hl	np-hl	np-hl
+0.000155	jj-hl	nns-hl	in-hl	at-hl
+0.000155	jj-hl	nns-hl	in-hl	ap-hl
 0.000155	jj-hl	nns-hl
-0.000155	jj-hl	nns-hl
-0.000155	jj-hl	nns-hl	in-hl
-0.000155	jj-hl	nns-hl	in-hl	np-tl-hl
-0.000155	jj-hl	nns-hl	in-hl	np-hl
-0.000155	jj-hl	nns-hl	in-hl
-0.000155	jj-hl	nns-hl	in-hl
-0.000155	jj-hl	nns-hl	cc-hl	nns-hl	in-hl
-0.000155	jj-hl	nns-hl	,-hl
+0.000155	jj-hl	nns-hl	,-hl	at-hl
+0.000155	jj-hl	nn-hl	vbz-hl
 0.000155	jj-hl	nn-hl
+0.000155	jj-hl	nn-hl	vbg-hl
 0.000155	jj-hl	nn-hl
-0.000155	jj-hl	nn-hl
+0.000155	jj-hl	nn-hl	nns-hl
+0.000155	jj-hl	nn-hl	nn-hl	-hl
 0.000155	jj-hl	nn-hl	nn-hl
 0.000155	jj-hl	nn-hl
-0.000155	jj-hl	nn-hl	jj-hl
-0.000155	jj-hl	nn-hl	in-hl	pp$-hl
+0.000155	jj-hl	nn-hl	jj-hl	-hl
 0.000155	jj-hl	nn-hl	in-hl
-0.000155	jj-hl	nn-hl	cc-hl
-0.000155	jj-hl	nn-hl	cc-hl	nn-hl
-0.000155	jj-hl	nn-hl	:-hl	nns-hl
-0.000155	jj-hl	nn-hl	,-hl
-0.000155	jj-hl	jj-hl	nn-hl	(-hl	np-hl
-0.000155	jj-hl	jj-hl
+0.000155	jj-hl	nn-hl	in-hl	pp$-hl	jj-hl
+0.000155	jj-hl	nn-hl	in-hl	nn-hl
+0.000155	jj-hl	nn-hl	in-hl	nn-hl
+0.000155	jj-hl	nn-hl	in-hl	at-hl
+0.000155	jj-hl	nn-hl	cc-hl	pp$-hl
+0.000155	jj-hl	nn-hl	cc-hl	nn-hl	nn-hl
+0.000155	jj-hl	nn-hl	:-hl	nns-hl	cc-hl
+0.000155	jj-hl	nn-hl	,-hl	jj-hl
+0.000155	jj-hl	jj-hl	nn-hl
+0.000155	jj-hl	in-hl	nn-hl
 0.000155	jj-hl	in-hl
+0.000155	jj-hl	cc-hl	nps-hl
 0.000155	jj-hl	cc-hl
-0.000155	jj-hl	cc-hl	at-hl
-0.000155	jj-hl	,-hl
+0.000155	jj-hl	cc-hl
+0.000155	jj-hl	cc-hl	at-hl	nn-hl
+0.000155	jj-hl	,-hl	jj-hl
 0.000155	jj	to	vb	ppss
 0.000155	jj	to	vb	pp$
 0.000155	jj	qlp	,	pps
@@ -3080,6 +3243,7 @@
 0.000155	jj	nn	nns	ber
 0.000155	jj	nn	nns	ber	ql
 0.000155	jj	nn	nn
+0.000155	jj	nn
 0.000155	jj	nn
 0.000155	jj	nn	md	vb	nn
 0.000155	jj	nn	md	vb	ap
@@ -3120,15 +3284,20 @@
 0.000155	jj	,	do*	vb
 0.000155	jj	,	cc	pps
 0.000155	jj	,	cc
-0.000155	in-hl	jjr-hl
-0.000155	in-hl	jj-tl-hl	np-tl
-0.000155	in-hl	in-hl	nn-hl
-0.000155	in-hl	in-hl
-0.000155	in-hl	dti-hl	nns-hl	,-hl
-0.000155	in-hl	dti-hl
-0.000155	in-hl	at-hl	nns-hl
-0.000155	in-hl	at-hl	nn-hl	np-hl
+0.000155	in-hl	nn-tl-hl
+0.000155	in-hl	jjr-hl	nn-hl
+0.000155	in-hl	jj-tl-hl	np-tl	,-hl
+0.000155	in-hl	in-hl	nn-hl	in-hl
+0.000155	in-hl	in-hl	at-hl
+0.000155	in-hl	dti-hl	nns-hl	,-hl	nns-hl
+0.000155	in-hl	dti-hl	nn-hl
+0.000155	in-hl	at-hl	nns-hl	,-hl
+0.000155	in-hl	at-hl	nn-hl	np-hl	cc-hl
+0.000155	in-hl	at-hl	nn-hl	in-hl
 0.000155	in-hl	at-hl	nn-hl
+0.000155	in-hl	at-hl
+0.000155	in-hl	at-hl	jj-hl
+0.000155	in-hl	at-hl	jj-hl
 0.000155	in	wdt+bez-nc	at-nc
 0.000155	in	wdt	do	at	nns
 0.000155	in	vbg	at	nn	in
@@ -3150,12 +3319,12 @@
 0.000155	in	np$
 0.000155	in	np	cd
 0.000155	in	np	cd	,	,
+0.000155	in	np
 0.000155	in	np	,	pn	bez
 0.000155	in	np	,	ex	bedz
 0.000155	in	nns	pps+hvz	ben	rb
-0.000155	in	nns	in	at	jj
 0.000155	in	nn	ppss	md	hv
-0.000155	in	nn	pps+bez	rp
+0.000155	in	nn	pps+bez	rp	--
 0.000155	in	nn	pps	vbz	jj
 0.000155	in	nn	pps
 0.000155	in	nn	pps	dod	dti
@@ -3193,12 +3362,12 @@
 0.000155	in	at	nn	wps	bez
 0.000155	in	at	nn	pps
 0.000155	in	at	nn	np	bedz
-0.000155	in	at	nn	in
+0.000155	in	at	nn	in	np-tl
 0.000155	in	at	nn	cc	abn
+0.000155	in	at	nn
 0.000155	in	at	nn	,
 0.000155	in	at	nn	,
 0.000155	in	at	nn	,	np
-0.000155	in	at
 0.000155	in	at
 0.000155	in	at	jj
 0.000155	in	at	ap
@@ -3216,7 +3385,7 @@
 0.000155	hv	at	nn	in
 0.000155	hv	at	jj
 0.000155	hv	at	nn-tl
-0.000155	fw-od-nc	in	np
+0.000155	fw-od-nc	in	np	vbz
 0.000155	fw-at-hl	np-tl	nn-tl	in-tl	at-tl
 0.000155	fw-at	fw-nn	fw-cc	fw-at
 0.000155	ex+bez	ql	ap	to
@@ -3251,6 +3420,7 @@
 0.000155	ex	ber	in	nn	ap
 0.000155	ex	ber	dti	rb
 0.000155	ex	ber	at	nn	nns
+0.000155	ex	ber	ap	nns
 0.000155	ex	bedz	to	be	at
 0.000155	ex	bedz	rb	ql	ap
 0.000155	ex	bedz	nn	cc
@@ -3280,7 +3450,6 @@
 0.000155	dts	nns	vbd	ql
 0.000155	dts	nns	vbd	at	vbg
 0.000155	dts	nns	vb	pn	in
-0.000155	dts	nns	vb	jj	nns
 0.000155	dts	nns	vb
 0.000155	dts	nns	dod	*	vb
 0.000155	dts	nns	ber
@@ -3294,9 +3463,9 @@
 0.000155	dts	bed	np
 0.000155	dts	bed	at	jj
 0.000155	dts	,	wrb	,	ber
-0.000155	dti-hl	in-hl	at-hl	jj-hl	nns-hl
+0.000155	dti-hl	jj-hl
 0.000155	dti	vb	in	pp$
-0.000155	dti	np
+0.000155	dti	np	nns
 0.000155	dti	nns	vb	pps
 0.000155	dti	nns	vb
 0.000155	dti	nns	vb
@@ -3306,7 +3475,7 @@
 0.000155	dti	jj	nns	vb
 0.000155	dti	jj	nns	ber
 0.000155	dti	hvd	ben	rb	in
-0.000155	dt-hl	jj-hl
+0.000155	dt-hl	jj-hl	nn-hl
 0.000155	dt+bez	wrb	ppss	vb	in
 0.000155	dt+bez	wrb	pps	md
 0.000155	dt+bez	wrb	pp$	nn
@@ -3353,7 +3522,7 @@
 0.000155	dt	nn-tl	in	abn
 0.000155	dt	nn+bez	vbn
 0.000155	dt	nn+bez	ql
-0.000155	dt	nn$	nn
+0.000155	dt	nn$	nn	bez
 0.000155	dt	nn	vbz	in
 0.000155	dt	nn	vbn	in	jj
 0.000155	dt	nn	vbd	np
@@ -3362,7 +3531,7 @@
 0.000155	dt	nn
 0.000155	dt	nn	md	be
 0.000155	dt	nn	md	*	vb
-0.000155	dt	nn
+0.000155	dt	nn	in
 0.000155	dt	nn	hvz	to
 0.000155	dt	nn	hvz	rb
 0.000155	dt	nn	hvz	pp$	jj
@@ -3458,7 +3627,7 @@
 0.000155	dod	jjr	nns	vb	ql
 0.000155	dod	at	nn	vb
 0.000155	dod	,	ppss
-0.000155	do*-hl	vb-hl	at-hl
+0.000155	do*-hl	vb-hl	at-hl	nn-hl
 0.000155	do*	vb
 0.000155	do*	vb	ql
 0.000155	do*	vb	ppo	in
@@ -3489,12 +3658,12 @@
 0.000155	cs	ppss	vbd	in
 0.000155	cs	ppss	vbd	ap
 0.000155	cs	ppss	vbd	,	ppss
-0.000155	cs	ppss	vb	to
+0.000155	cs	ppss	vb	to	vb
 0.000155	cs	ppss	vb
 0.000155	cs	ppss	hvd	at	jj
 0.000155	cs	ppss	hv
 0.000155	cs	ppss	bem	at
-0.000155	cs	ppss	bed	at
+0.000155	cs	ppss	bed	at	nn
 0.000155	cs	pps	vbd	at
 0.000155	cs	pps	bez
 0.000155	cs	pps	bedz	,	np
@@ -3502,11 +3671,9 @@
 0.000155	cs	np	vbd	rb
 0.000155	cs	np	np	vbd	in
 0.000155	cs	np	np	in	at
-0.000155	cs	nn	md	be	vbn
-0.000155	cs	in	ppo	,
+0.000155	cs	in	ppo	,	np
 0.000155	cs	dt
 0.000155	cs	dt	hvd	ben	pp$
-0.000155	cs	at	nn	ql	rb
 0.000155	cs	at	nn	bez
 0.000155	cs	at	nn	bedz
 0.000155	cs	at
@@ -3515,16 +3682,20 @@
 0.000155	cs	,	wrb	in
 0.000155	cd-tl	nps
 0.000155	cd-tl	np-tl	np-tl
-0.000155	cd-hl	vbn-hl
-0.000155	cd-hl	vbg-hl	at-hl
-0.000155	cd-hl	nps-hl
-0.000155	cd-hl	np-hl
+0.000155	cd-hl	vbn-hl	in-hl
+0.000155	cd-hl	vbg-hl	at-hl	jj-hl
+0.000155	cd-hl	vb-hl
+0.000155	cd-hl	nps-hl	in-hl
+0.000155	cd-hl	np-hl	in-hl
+0.000155	cd-hl	nns-hl	to-hl
 0.000155	cd-hl	nns-hl
-0.000155	cd-hl	nn-hl
-0.000155	cd-hl	jj-hl	nns-hl	in-hl
-0.000155	cd-hl	in-hl	cd-hl
-0.000155	cd-hl	,	at-hl	nns-hl	in-hl
-0.000155	cd-hl	,	at-hl	nn-hl	in-hl
+0.000155	cd-hl	nns-hl
+0.000155	cd-hl	nn-hl	in-hl
+0.000155	cd-hl	jj-hl	nns-hl	in-hl	nn-hl
+0.000155	cd-hl	jj-hl
+0.000155	cd-hl	in-hl
+0.000155	cd-hl	in-hl	cd-hl	vb-hl
+0.000155	cd-hl	-hl
 0.000155	cd	vbd	nns	in	nn
 0.000155	cd	rb
 0.000155	cd	np-tl	nn-tl	nn
@@ -3549,8 +3720,8 @@
 0.000155	cd	nn	vbn
 0.000155	cd	nn
 0.000155	cd	nn	nn	nns	bed
+0.000155	cd	nn	in
 0.000155	cd	nn	in	dt	jj
-0.000155	cd	nn
 0.000155	cd	nn	bez	jj	cc
 0.000155	cd	nn	bedz	vbg	rb
 0.000155	cd	jj-tl	nn-tl	nn-tl
@@ -3563,7 +3734,8 @@
 0.000155	cd	ap	md*	vb	in
 0.000155	cd	,	ppss
 0.000155	cd	wrb	bez	pps
-0.000155	cc-hl	rb-hl	---hl	ap-hl
+0.000155	cc-hl	rb-hl	---hl	ap-hl	nn-hl
+0.000155	cc-hl	nns-hl
 0.000155	cc	wrb	pps	md
 0.000155	cc	wrb	nn	in
 0.000155	cc	wrb	md
@@ -3604,7 +3776,7 @@
 0.000155	cc	rb	nn
 0.000155	cc	rb	ex	bed	ap
 0.000155	cc	rb	do	at
-0.000155	cc	rb
+0.000155	cc	rb	cs
 0.000155	cc	rb
 0.000155	cc	rb	at	nn	bedz
 0.000155	cc	rb	at
@@ -3616,7 +3788,7 @@
 0.000155	cc	ppss+md	be	jj
 0.000155	cc	ppss+hv	vbn	to	vb
 0.000155	cc	ppss+ber	ql	jj	,
-0.000155	cc	ppss+bem	vbn	to
+0.000155	cc	ppss+bem	vbn	to	vb
 0.000155	cc	ppss	vbd	ppo	,
 0.000155	cc	ppss	vbd
 0.000155	cc	ppss	vbd	in
@@ -3644,7 +3816,6 @@
 0.000155	cc	ppss
 0.000155	cc	ppss	bed
 0.000155	cc	pps+bez	in	at
-0.000155	cc	pps+bez	abl	at	jj
 0.000155	cc	pps	vbz	ql
 0.000155	cc	pps	vbz	ap	jj
 0.000155	cc	pps	vbd
@@ -3692,6 +3863,8 @@
 0.000155	cc	np
 0.000155	cc	np	vbd
 0.000155	cc	np	vbd
+0.000155	cc	np	vbd
+0.000155	cc	np
 0.000155	cc	np	rb	vbd	at
 0.000155	cc	np	np	vbd
 0.000155	cc	np	np	np	,
@@ -3699,10 +3872,11 @@
 0.000155	cc	np	np	bedz	*
 0.000155	cc	np	np	--	np
 0.000155	cc	np	np	,
+0.000155	cc	np
 0.000155	cc	np	md	vb	in
 0.000155	cc	np	md	be
+0.000155	cc	np	md
 0.000155	cc	np	md	*	vb
-0.000155	cc	np
 0.000155	cc	np	hvd*	vbn	in
 0.000155	cc	np	hvd	vbn
 0.000155	cc	np	bez	wrb	ppss+ber
@@ -3803,7 +3977,7 @@
 0.000155	cc	*	dti
 0.000155	cc	(	np	)
 0.000155	cc	uh	,	np	,
-0.000155	bez-hl	pps-hl	jj-hl
+0.000155	bez-hl	pps-hl	jj-hl	-hl
 0.000155	bez*	pp$	nn	in	pp$
 0.000155	bez*	dt
 0.000155	bez*	dt	np$
@@ -3843,39 +4017,52 @@
 0.000155	be	pp$
 0.000155	be	nns	in	pp$
 0.000155	be	at	nn	in
-0.000155	at-tl-hl	nn-tl-hl	in-tl-hl	nn-tl-hl	cc-tl-hl
 0.000155	at-tl	nns-tl	nn-tl	nn-tl	in
-0.000155	at-hl	wrb-hl	cc-hl	wrb-hl
+0.000155	at-hl	wrb-hl	cc-hl	wrb-hl	in-hl
+0.000155	at-hl	vbn-hl
+0.000155	at-hl	vbg-hl	nn-hl	in-hl
 0.000155	at-hl	vbg-hl	nn-hl
-0.000155	at-hl	vbg-hl
-0.000155	at-hl	np-tl-hl	nn-tl-hl
-0.000155	at-hl	np-hl	in-hl
+0.000155	at-hl	nr-tl-hl
+0.000155	at-hl	np-tl-hl	nn-tl-hl	nn-hl
+0.000155	at-hl	np-hl
+0.000155	at-hl	np-hl	in-hl	cd-hl
 0.000155	at-hl	np$-hl	jjt-hl
+0.000155	at-hl	nns-hl
+0.000155	at-hl	nns-hl	in-hl	vbg-hl
 0.000155	at-hl	nns-hl	in-hl
-0.000155	at-hl	nns-hl	in-hl	at-hl
-0.000155	at-hl	nns-hl	ber-hl
-0.000155	at-hl	nn-tl-hl	in-tl-hl	np-hl
+0.000155	at-hl	nns-hl	in-hl
+0.000155	at-hl	nns-hl	in-hl	at-hl	nn-hl
+0.000155	at-hl	nns-hl	ber-hl	jj-hl
+0.000155	at-hl	nn-tl-hl	in-tl-hl	np-hl	np-hl
+0.000155	at-hl	nn-hl	vbz-hl
 0.000155	at-hl	nn-hl
+0.000155	at-hl	nn-hl	vbn-hl
+0.000155	at-hl	nn-hl	to-hl	vb-hl	pp$-hl
+0.000155	at-hl	nn-hl	ppl-hl
 0.000155	at-hl	nn-hl
-0.000155	at-hl	nn-hl	to-hl	vb-hl
-0.000155	at-hl	nn-hl
+0.000155	at-hl	nn-hl	nn-hl	in-hl
 0.000155	at-hl	nn-hl	nn-hl
-0.000155	at-hl	nn-hl
-0.000155	at-hl	nn-hl	in-hl	nn-hl	nn-hl
 0.000155	at-hl	nn-hl	in-hl
-0.000155	at-hl	nn-hl	in-hl
+0.000155	at-hl	nn-hl	in-hl	nn-hl
+0.000155	at-hl	nn-hl	in-hl	jj-hl
 0.000155	at-hl	nn-hl	in-hl	at-hl
-0.000155	at-hl	nn-hl	cc-hl
-0.000155	at-hl	nn-hl	:-hl	vbg
-0.000155	at-hl	nn-hl	---hl
-0.000155	at-hl	jj-hl	nns-hl	in-hl	at-hl
-0.000155	at-hl	jj-hl	nn-tl-hl
+0.000155	at-hl	nn-hl	in-hl	at-hl	nn$-hl
+0.000155	at-hl	nn-hl	in-hl	at-hl
+0.000155	at-hl	nn-hl	cc-hl	at-hl
+0.000155	at-hl	nn-hl	:-hl	vbg	cc
+0.000155	at-hl	nn-hl	---hl	cc-hl
+0.000155	at-hl	jjr-hl
+0.000155	at-hl	jj-tl-hl
+0.000155	at-hl	jj-hl	nn-tl-hl	in-tl-hl
+0.000155	at-hl	jj-hl	nn-hl	vbz-hl
+0.000155	at-hl	jj-hl	nn-hl	nn-hl
 0.000155	at-hl	jj-hl	nn-hl
+0.000155	at-hl	jj-hl	nn-hl	jj-hl	nn-hl
+0.000155	at-hl	jj-hl	nn-hl	cc-hl	pp$-hl
 0.000155	at-hl	jj-hl	nn-hl
-0.000155	at-hl	jj-hl	nn-hl	jj-hl
-0.000155	at-hl	jj-hl	nn-hl	cc-hl
-0.000155	at-hl	jj-hl	nn-hl	cc-hl	at-hl
-0.000155	at-hl	jj-hl	,-hl
+0.000155	at-hl	jj-hl	,-hl	vbn-hl
+0.000155	at-hl	jj
+0.000155	at-hl	cd-hl
 0.000155	at	vbn	vbg	nn
 0.000155	at	vbn	nns	hvd	to
 0.000155	at	vbn	nn	np	hvd
@@ -3911,7 +4098,10 @@
 0.000155	at	nps	bed	ql
 0.000155	at	np-tl	np-tl	jj-tl
 0.000155	at	np-tl	nn-tl	vbz	at
+0.000155	at	np-tl
 0.000155	at	np	nns	bed	rb
+0.000155	at	np	nn	vbd
+0.000155	at	np	nn
 0.000155	at	np	nn	bedz
 0.000155	at	np
 0.000155	at	np	bedz
@@ -3928,7 +4118,7 @@
 0.000155	at	nns	vbd	in
 0.000155	at	nns	vbd	in	cd
 0.000155	at	nns	vbd	in	at
-0.000155	at	nns	vbd	dt
+0.000155	at	nns	vbd	dt	nn
 0.000155	at	nns	vbd	cs
 0.000155	at	nns	vb	to	vb
 0.000155	at	nns	vb	rb	at
@@ -3965,12 +4155,12 @@
 0.000155	at	nns	bed	rb
 0.000155	at	nns	,	in	cd
 0.000155	at	nn-tl	vbz
-0.000155	at	nn-tl
+0.000155	at	nn-tl	vbd
 0.000155	at	nn-tl	nn-tl	vbd	dt
-0.000155	at	nn-tl	nn-tl	cc
+0.000155	at	nn-tl	nn-tl	cc	np
 0.000155	at	nn-tl	in-tl	nns-tl
 0.000155	at	nn+hvz	vbn
-0.000155	at	nn+bez
+0.000155	at	nn+bez	jj
 0.000155	at	nn+bez	in
 0.000155	at	nn$	nn	vbd
 0.000155	at	nn$	nn
@@ -4071,7 +4261,6 @@
 0.000155	at	nn	in	ppl	bedz
 0.000155	at	nn	in	pp$	nn
 0.000155	at	nn	in	pp$
-0.000155	at	nn	in	np-tl	nn-tl
 0.000155	at	nn	in	np	np$
 0.000155	at	nn	in	nns	in
 0.000155	at	nn	in
@@ -4081,13 +4270,12 @@
 0.000155	at	nn	in	nn	cc
 0.000155	at	nn	in	nn	bez
 0.000155	at	nn	in	jj-tl
-0.000155	at	nn	in	jj	nns
 0.000155	at	nn	in	jj
 0.000155	at	nn	in	jj
 0.000155	at	nn	in	dt	vbg
-0.000155	at	nn	in	at	nn
 0.000155	at	nn	in
-0.000155	at	nn
+0.000155	at	nn	in	at	nn
+0.000155	at	nn	in	at
 0.000155	at	nn	hvz	rb
 0.000155	at	nn	hvz	jj
 0.000155	at	nn	hvz	ben
@@ -4150,6 +4338,7 @@
 0.000155	at	nn	,	at
 0.000155	at	nn	,	at
 0.000155	at	nn
+0.000155	at	nn
 0.000155	at	jjt	np	bez	at
 0.000155	at	jjt	bedz	rb	to
 0.000155	at	jjr	nn
@@ -4173,7 +4362,7 @@
 0.000155	at	jj	nns	in	at
 0.000155	at	jj	nns	ber
 0.000155	at	jj
-0.000155	at	jj	nn	vbz
+0.000155	at	jj	nn	vbz	rb
 0.000155	at	jj	nn	vbd	rp
 0.000155	at	jj	nn	vbd	ql
 0.000155	at	jj	nn	vbd	in
@@ -4190,17 +4379,17 @@
 0.000155	at	jj	nn	in
 0.000155	at	jj	nn	in
 0.000155	at	jj	nn	in	at
-0.000155	at	jj	nn	in
+0.000155	at	jj	nn	in	at
 0.000155	at	jj	nn	dod*
 0.000155	at	jj	nn	bez
 0.000155	at	jj	nn	bez	rb
-0.000155	at	jj	nn	bedz	vbn
 0.000155	at	jj	nn	bedz	ql
 0.000155	at	jj	nn	bedz	jj
 0.000155	at	jj	nn	bedz
 0.000155	at	jj	nn	bedz
 0.000155	at	jj	nn	,
 0.000155	at	jj	nn	,	at
+0.000155	at	jj
 0.000155	at	jj	md	vb	in
 0.000155	at	jj	jj-tl	vbd	ql
 0.000155	at	jj	jj
@@ -4208,7 +4397,7 @@
 0.000155	at	jj	bed	rb	vbg
 0.000155	at	jj	,	vbg
 0.000155	at	jj	,	jj	nn
-0.000155	at	jj	,
+0.000155	at	jj	,	jj
 0.000155	at	fw-nn	,	at	jj
 0.000155	at	cd	np	nns	vbn
 0.000155	at	cd	nns	vbd	rp
@@ -4217,7 +4406,7 @@
 0.000155	at	cd	hv	rb	ben
 0.000155	at	cd	ber	cs
 0.000155	at	ap
-0.000155	at	ap
+0.000155	at	ap	vb
 0.000155	at	ap	ql
 0.000155	at	ap	nns	rb	vbd
 0.000155	at	ap	nns	bed	vbg
@@ -4232,21 +4421,21 @@
 0.000155	at	nns	vbn	in	jj
 0.000155	at	nn	in	nn	doz
 0.000155	at	jj	nn	vbd	in
-0.000155	at	jj
+0.000155	at	jj	nn
 0.000155	ap-hl	nns-hl
-0.000155	ap-hl	nns-hl
-0.000155	ap-hl	nn-hl	nns-hl	vbn-hl
-0.000155	ap-hl	nn-hl	nns-hl	in-hl
-0.000155	ap-hl	nn-hl	in-hl	nn-hl	nn-hl
-0.000155	ap-hl	nn-hl	,-hl
-0.000155	ap-hl	jj-hl	nn-hl
+0.000155	ap-hl	nns-hl	in-hl
+0.000155	ap-hl	nns-hl	cs-hl
+0.000155	ap-hl	nn-hl	nns-hl	vbn-hl	to-hl
+0.000155	ap-hl	nn-hl	nns-hl	in-hl	at-hl
+0.000155	ap-hl	nn-hl	,-hl	ap-hl
 0.000155	ap-hl	jj-hl
+0.000155	ap-hl	jj-hl	nn-hl	nn-hl
+0.000155	ap-hl	jj-hl	nn-hl
+0.000155	ap-hl	in-hl	vbg-hl
 0.000155	ap-hl	in-hl
 0.000155	ap	vbd	in	nn-tl
 0.000155	ap	pps	md	vb	in
-0.000155	ap	nr	at	jj-tl	nn-tl
 0.000155	ap	nns	vbd	in	dt
-0.000155	ap	nns	vb	to	be
 0.000155	ap	nns
 0.000155	ap	nns	md	be	vbn
 0.000155	ap	nns	in
@@ -4263,7 +4452,6 @@
 0.000155	ap	in	abn	at	nn
 0.000155	ap	cs	in	at
 0.000155	ap	cs	at	nn	hvd
-0.000155	ap	ap	nns	:	jj-hl
 0.000155	ap	ap	md	vb
 0.000155	ap	,	ppss	vb
 0.000155	ap	,	bedz	at
@@ -4278,7 +4466,7 @@
 0.000155	abx	hvd	jj	cc	vbg
 0.000155	abx	ber	rb	vbn	to
 0.000155	abx	bed	vbn	ql
-0.000155	abn-hl	in-hl	nns-hl
+0.000155	abn-hl	in-hl	nns-hl	-hl
 0.000155	abn	vbn	md	be
 0.000155	abn	vbn	,	wrb+bez-tl
 0.000155	abn	nns	vb	in
@@ -4294,8 +4482,8 @@
 0.000155	abl	at	jj
 0.000155	--	wrb	,	nn	ppss
 0.000155	--	wdt
-0.000155	--	vbz	at
-0.000155	--	vbg	cc	jj
+0.000155	--	vbz	at	nn-tl
+0.000155	--	vbg	cc	jj	nn
 0.000155	--	vbd	cs	pps
 0.000155	--	vb+ppo	vb	in	in
 0.000155	--	vb	ppo	vb
@@ -4307,29 +4495,28 @@
 0.000155	--	ppss	vb
 0.000155	--	ppss	md*	be	ql
 0.000155	--	pps	do*
+0.000155	--	pp$
 0.000155	--	nns	in	nn-tl
-0.000155	--	nns	in
+0.000155	--	nns	in	jj
 0.000155	--	nn	in	jj	jj
 0.000155	--	nn	in	at
-0.000155	--	nn	in
+0.000155	--	nn	in	at
 0.000155	--	nn	bez	ql
-0.000155	--	jj
-0.000155	--	jj	jj	nn
-0.000155	--	jj	cc
+0.000155	--	jj	nn
+0.000155	--	jj	jj	nn	cc
+0.000155	--	jj	cc	jj
 0.000155	--	in	at	nn	cc
 0.000155	--	dt	nn	vbd	ap
 0.000155	--	be	jj	in
-0.000155	--	at	jj-tl	nn-tl	cc
 0.000155	--	at	jj
-0.000155	--	at	jj	nn
+0.000155	--	at	jj	nn	in
 0.000155	--	*
 0.000155	--	nn	jj	in	jj
-0.000155	,	od	in	at	nn
-0.000155	,	np	np	,
+0.000155	,	np	np	,	np
+0.000155	,	nn	nn	nn
 0.000155	,	nn	nn
-0.000155	,	nn
-0.000155	,	nn	jj	nn
-0.000155	*-hl	nns-hl
+0.000155	,	nn	jj	nn	nn
+0.000155	*-hl	nns-hl	cc-hl
 0.000155	*	vbn	,	vbn
 0.000155	*	rb
 0.000155	*	rb
@@ -4350,37 +4537,36 @@
 0.000155	*	dt
 0.000155	*	dt	nn	bez*	jj
 0.000155	*	cs	ppss	hv
-0.000155	*	cs	ppss
+0.000155	*	cs	ppss	hv
 0.000155	*	cs	pps	md	be
 0.000155	*	cs	ppo
 0.000155	*	cs	at	nn	bez
 0.000155	*	at	nn
 0.000155	*	at	jj
 0.000155	*	abn	in
-0.000155	)	wdt-hl	pps-hl
+0.000155	)	wdt-hl	pps-hl	doz-hl
 0.000155	)	np	ql
+0.000155	)	nns-hl	in-hl
 0.000155	)	nns-hl
-0.000155	)	nn-hl	in-hl	nns-hl	cc-hl
-0.000155	)	nn-hl	in-hl	nn-hl
+0.000155	)	nn-hl	in-hl	nn-hl	nns-hl
 0.000155	)	nn	nns	vbd	rb
 0.000155	)	cc	pps	vbd
 0.000155	)	cc	bedz
-0.000155	)	ap-hl
-0.000155	(-hl	np-hl	)-hl	nn-hl	in-hl
-0.000155	(-hl	jj-hl	nn-hl	nn-hl
-0.000155	(-hl	cd-hl	)-hl	nns-hl	cc-hl
+0.000155	)	ap-hl	nns-hl
+0.000155	(-hl	jj-hl	nn-hl	nn-hl	)-hl
 0.000155	(	vb	ppo	rb
 0.000155	(	vb	np	:
 0.000155	(	vb	nns-tl	cd	in
 0.000155	(	vb	nn	in	nns
 0.000155	(	vb	in	at	np
-0.000155	(	np	np
+0.000155	(	np	np	np
 0.000155	(	np	np
 0.000155	(	np	cd	,	cd
 0.000155	(	np	)	nns	,
+0.000155	(	np
 0.000155	(	nns
-0.000155	(	nn-tl	cd-tl	:-tl
-0.000155	(	nn
+0.000155	(	nn-tl	cd-tl	:-tl	cd-tl
+0.000155	(	nn	cd
 0.000155	(	nn	,	np	cd
 0.000155	(	cd	)	nns	bed
 0.000155	(	cd	)	nn	cc
@@ -4642,7 +4828,7 @@
 0.000155	uh	,	pps
 0.000155	rp	ppss
 0.000155	rn	ppss+hvd	rbr	vb	in
-0.000155	rb-hl	in-hl
+0.000155	rb-hl	in-hl	at-hl
 0.000155	rb	wrb	ppss	do
 0.000155	rb	wrb	do*	ppss	vb
 0.000155	rb	wdt	bedz
@@ -4685,7 +4871,7 @@
 0.000155	rb	--
 0.000155	rb	--
 0.000155	rb	,	wdt	bez
-0.000155	rb	,	vb
+0.000155	rb	,	vb	rb
 0.000155	rb	,	vb
 0.000155	rb	,	vb	--	np
 0.000155	rb	,	rb
@@ -4776,7 +4962,6 @@
 0.000155	ppss+hv	vbn	nn	,	hv*
 0.000155	ppss+hv	vbn	dt
 0.000155	ppss+hv	vbn	at	jj
-0.000155	ppss+hv	vbn	ap	vbn	nns
 0.000155	ppss+hv	rb	vbn	dti	vbg
 0.000155	ppss+hv	hvn	ap	in
 0.000155	ppss+hv	ben	rb	in	dti
@@ -4867,6 +5052,7 @@
 0.000155	ppss	vb	at
 0.000155	ppss	vb	,
 0.000155	ppss	vb	,	dt+bez	ql
+0.000155	ppss	vb
 0.000155	ppss	vb
 0.000155	ppss	vb	,	vbd
 0.000155	ppss	vb	,	vb	at
@@ -5068,7 +5254,6 @@
 0.000155	np	np	,	vb	at
 0.000155	np	in	np
 0.000155	np	hvz	nns	in
-0.000155	np	hvz	dti	in	at
 0.000155	np	hvz	ben	vbg	at
 0.000155	np	bez	np$	jjt
 0.000155	np	bedz	ql
@@ -5081,7 +5266,7 @@
 0.000155	np	,	ppss	vb
 0.000155	np	,
 0.000155	np	,	md	ppss	vb
-0.000155	np	,	in	nn
+0.000155	np	,	in	nn	nn
 0.000155	np	,	in
 0.000155	np	,	ex+bez
 0.000155	np	,	dod	ppss	vb
@@ -5188,7 +5373,7 @@
 0.000155	in	nn
 0.000155	in	jj	vbn
 0.000155	in	dt
-0.000155	in	at	nn	in
+0.000155	in	at	nn	in	jj
 0.000155	in	at	nn	in	at
 0.000155	in	at	nn	in	at
 0.000155	in	at	nn	,	pps

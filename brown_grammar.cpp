@@ -1,8 +1,19 @@
 #include "brown_grammar.h"
 
-int test() {
 
- return 0;
+//////////////////////////////////////////////////////////////////
+//Controlls all the logic for loading the passphrase dictionaries and initializing everything
+//
+bool main_load_passphrase(deque <ntGenTopType> *phraseValues, list <pqReplacementType> *baseStructures, deque <fileInfoType> *fileInfo, pqueueType *pqueue, double probLimit) {
+  deque <ppPointerType> phraseList;
+  brown_initialize(phraseValues);
+  orderPointers(phraseValues, &phraseList);
+  add_user_dics(&phraseList, fileInfo);
+  add_default_dics(&phraseList);
+  load_all_dics(phraseValues);
+  load_passphrase_grammar(pqueue,baseStructures, &phraseList,"Passphrase_Default", probLimit);
+  cout << "pqueue size now is " << pqueue->size() << endl;
+  return true;
 }
 
 int brown_initialize(deque <ntGenTopType> *phraseValues) {
@@ -565,10 +576,16 @@ int load_passphrase_grammar(pqueueType *pqueue, list <pqReplacementType> *baseSt
         std::cerr << "Error, we are getting some values with 0 probability\n";
         return false;
       }
-      if (inputValue.probability >=probLimit) {
-        pqueue->push(inputValue);
-        baseStructures->push_back(inputValue);
-      }
+      //if (inputValue.probability >=probLimit) {
+        /////////////////////////////////////////////////////////////////////////////////////////
+        //--DEBUG TAKE THIS CHECK OUT LATER WHEN THERE ARE BETTER BASE STURUCTURES AVAILABLE---//
+        /////////////////////////////////////////////////////////////////////////////////////////
+        if (inputValue.replacement.size() > 4) {
+        //------End Debug------//
+          pqueue->push(inputValue);
+          baseStructures->push_back(inputValue);
+        }
+      //}
     }
     inputValue.probability=0;
     inputValue.replacement.clear();
@@ -578,3 +595,7 @@ int load_passphrase_grammar(pqueueType *pqueue, list <pqReplacementType> *baseSt
 
   return 0;
 }
+
+
+
+

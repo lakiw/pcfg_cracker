@@ -4,7 +4,8 @@
 #include "pcfg_manager.h"
 
 
-
+bool main_load_passphrase(deque <ntGenTopType> *phraseValues, list <pqReplacementType> *baseStructures, deque <
+fileInfoType> *fileInfo, pqueueType *pqueue, double probLimit);
 int brown_initialize(deque <ntGenTopType> *phraseValues);
 int orderPointers(deque <ntGenTopType> *phraseValues, deque <ppPointerType> *phraseList);
 int add_user_dics(deque <ppPointerType> *phraseList, deque <fileInfoType> *fileInfo);

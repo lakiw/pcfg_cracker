@@ -19,7 +19,10 @@ nine
 ten
 69
 sixty nine
+sixty-nine
 99
 ninty nine
+ninty-nine
 100
 one hundred
+one-hundred
