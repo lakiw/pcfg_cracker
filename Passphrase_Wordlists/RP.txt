@@ -1,0 +1,12 @@
+on
+about
+off
+up-pp
+over
+after
+up
+down
+through
+in
+across
+out

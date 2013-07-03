@@ -1,0 +1,12 @@
+nearest
+farthest
+least
+loudest
+most
+hardest
+fastest
+brightest
+uppermost
+highest
+best
+deepest

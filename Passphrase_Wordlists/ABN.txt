@@ -1,4 +1,4 @@
-half
-some
+many
 all
-quarter
+nary
+half

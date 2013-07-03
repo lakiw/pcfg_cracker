@@ -6,7 +6,8 @@
 //
 bool main_load_passphrase(deque <ntGenTopType> *phraseValues, list <pqReplacementType> *baseStructures, deque <fileInfoType> *fileInfo, pqueueType *pqueue, double probLimit) {
   deque <ppPointerType> phraseList;
-  brown_initialize(phraseValues);
+//  brown_initialize(phraseValues);
+  simplified_initialize(phraseValues);
   orderPointers(phraseValues, &phraseList);
   add_user_dics(&phraseList, fileInfo);
   add_default_dics(&phraseList);
@@ -16,6 +17,97 @@ bool main_load_passphrase(deque <ntGenTopType> *phraseValues, list <pqReplacemen
   return true;
 }
 
+////////////////////////////////////////////////////////////////////
+// The simplified typing vs the complex typing in the Brown dataset
+// More datasets support this, and it in fact might be more effective
+// for passphrase cracking.
+int simplified_initialize(deque <ntGenTopType> *phraseValues) {
+  ntGenTopType tempHolder;
+
+  tempHolder.names.push_back("ADJ");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
+  tempHolder.names.push_back("ADV");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
+  tempHolder.names.push_back("CNJ");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
+  tempHolder.names.push_back("DET");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
+  tempHolder.names.push_back("EX");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
+  tempHolder.names.push_back("FW");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
+  tempHolder.names.push_back("MOD");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
+  tempHolder.names.push_back("N");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
+  tempHolder.names.push_back("NP");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
+  tempHolder.names.push_back("NUM");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
+  tempHolder.names.push_back("PRO");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
+  tempHolder.names.push_back("P");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
+  tempHolder.names.push_back("TO");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
+  tempHolder.names.push_back("UH");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
+  tempHolder.names.push_back("V");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
+  tempHolder.names.push_back("VB");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
+  tempHolder.names.push_back("VBZ");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
+  tempHolder.names.push_back("VD");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
+  tempHolder.names.push_back("VG");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
+  tempHolder.names.push_back("VN");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
+  tempHolder.names.push_back("WH");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+}
 int brown_initialize(deque <ntGenTopType> *phraseValues) {
   ntGenTopType tempHolder;
 
@@ -113,6 +205,9 @@ int brown_initialize(deque <ntGenTopType> *phraseValues) {
   
   //numbers, (one, 1, first)
   tempHolder.names.push_back("CD");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
   tempHolder.names.push_back("OD");
   phraseValues->push_back(tempHolder);
   tempHolder.names.clear();
@@ -179,8 +274,17 @@ int brown_initialize(deque <ntGenTopType> *phraseValues) {
 
   //Adjective types
   tempHolder.names.push_back("JJ");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
   tempHolder.names.push_back("JJR");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
   tempHolder.names.push_back("JJS");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
   tempHolder.names.push_back("JJT");
   phraseValues->push_back(tempHolder);
   tempHolder.names.clear();
@@ -195,47 +299,113 @@ int brown_initialize(deque <ntGenTopType> *phraseValues) {
 
   //Noun types
   tempHolder.names.push_back("NN");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
   tempHolder.names.push_back("NN$");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
   tempHolder.names.push_back("NNS");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
   tempHolder.names.push_back("NNS$");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
   tempHolder.names.push_back("NR");
   phraseValues->push_back(tempHolder);
   tempHolder.names.clear();
 
   //Proper noun types, (names, places, pets, etc)
   tempHolder.names.push_back("NP");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
   tempHolder.names.push_back("NP$");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
   tempHolder.names.push_back("NPS");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
   tempHolder.names.push_back("NPS$");
   phraseValues->push_back(tempHolder);
   tempHolder.names.clear();
 
   //Pronoun types
   tempHolder.names.push_back("PN");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
   tempHolder.names.push_back("PN$");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
   tempHolder.names.push_back("PP$");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
   tempHolder.names.push_back("PP$$");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
   tempHolder.names.push_back("PPL");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
   tempHolder.names.push_back("PPLS");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
   tempHolder.names.push_back("PPO");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
   tempHolder.names.push_back("PPS");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
   tempHolder.names.push_back("PPSS");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
   tempHolder.names.push_back("PRP");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
   tempHolder.names.push_back("PRP$");
   phraseValues->push_back(tempHolder);
   tempHolder.names.clear();
 
   //Qualifiers, (very, fairly)
   tempHolder.names.push_back("QL");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
   tempHolder.names.push_back("QLP");
   phraseValues->push_back(tempHolder);
   tempHolder.names.clear();
 
   //Adverbs
   tempHolder.names.push_back("RB");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
   tempHolder.names.push_back("RBR");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
   tempHolder.names.push_back("RBT");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
   tempHolder.names.push_back("RN");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
   tempHolder.names.push_back("RP");
   phraseValues->push_back(tempHolder);
   tempHolder.names.clear();
@@ -250,20 +420,50 @@ int brown_initialize(deque <ntGenTopType> *phraseValues) {
 
   //Verb types
   tempHolder.names.push_back("VB");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
   tempHolder.names.push_back("VBD");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
   tempHolder.names.push_back("VBG");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
   tempHolder.names.push_back("VBN");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
   tempHolder.names.push_back("VBP");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
   tempHolder.names.push_back("VBZ");
   phraseValues->push_back(tempHolder);
   tempHolder.names.clear();
 
   //wh- types, (who which, when, etc)
   tempHolder.names.push_back("WDT");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
   tempHolder.names.push_back("WP$");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
   tempHolder.names.push_back("WPO");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
   tempHolder.names.push_back("WPS");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
   tempHolder.names.push_back("WQL");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
   tempHolder.names.push_back("WRB");
   phraseValues->push_back(tempHolder);
   tempHolder.names.clear();
@@ -551,6 +751,7 @@ int load_passphrase_grammar(pqueueType *pqueue, list <pqReplacementType> *baseSt
           //cout << "notfound:" << tempLine << ":" << endl;
         } 
         if (index == -1) {
+          cout << "Did not find :" << tempLine << ": in :" << inputLine<<endl; 
           badInput = true;
           break;
         } 
@@ -574,18 +775,18 @@ int load_passphrase_grammar(pqueueType *pqueue, list <pqReplacementType> *baseSt
     if (!badInput) {
       if (inputValue.probability==0) {
         std::cerr << "Error, we are getting some values with 0 probability\n";
-        return false;
+        //return false;
       }
-      //if (inputValue.probability >=probLimit) {
+      else if (inputValue.probability >=probLimit) {
         /////////////////////////////////////////////////////////////////////////////////////////
         //--DEBUG TAKE THIS CHECK OUT LATER WHEN THERE ARE BETTER BASE STURUCTURES AVAILABLE---//
         /////////////////////////////////////////////////////////////////////////////////////////
-        if (inputValue.replacement.size() > 4) {
+        //if (inputValue.replacement.size() > 4) {
         //------End Debug------//
           pqueue->push(inputValue);
           baseStructures->push_back(inputValue);
-        }
-      //}
+        //}
+      }
     }
     inputValue.probability=0;
     inputValue.replacement.clear();
