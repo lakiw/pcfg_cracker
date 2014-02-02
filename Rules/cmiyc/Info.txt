@@ -1,0 +1,10 @@
+Grammar Generated Florida State's Probabilistic Password Cracker
+Written by Matt Weir - weir@cs.fsu.edu
+Be Good!
+Version:0.7
+Trained on:/Users/laki/Password_Cracking/John/john-contest-1.7.9/run/raw_cracked.txt
+Total Passwords Parsed: 30983
+Minimum Password Size: 2
+Maximum Password Size: 99
+Numbers Allowed: True
+Symbols Allowed: True

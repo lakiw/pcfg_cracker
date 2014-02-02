@@ -9,6 +9,7 @@ bool main_load_passphrase(deque <ntGenTopType> *phraseValues, list <pqReplacemen
 //  brown_initialize(phraseValues);
   simplified_initialize(phraseValues);
   orderPointers(phraseValues, &phraseList);
+  read_dic_config("config.txt",fileInfo);
   add_user_dics(&phraseList, fileInfo);
   add_default_dics(&phraseList);
   load_all_dics(phraseValues);
@@ -108,6 +109,7 @@ int simplified_initialize(deque <ntGenTopType> *phraseValues) {
   phraseValues->push_back(tempHolder);
   tempHolder.names.clear();
 }
+
 int brown_initialize(deque <ntGenTopType> *phraseValues) {
   ntGenTopType tempHolder;
 
@@ -302,6 +304,10 @@ int brown_initialize(deque <ntGenTopType> *phraseValues) {
   phraseValues->push_back(tempHolder);
   tempHolder.names.clear();
 
+  tempHolder.names.push_back("NNP");
+  phraseValues->push_back(tempHolder);
+  tempHolder.names.clear();
+
   tempHolder.names.push_back("NN$");
   phraseValues->push_back(tempHolder);
   tempHolder.names.clear();
@@ -484,14 +490,15 @@ bool compare_ppPointer (ppPointerType first, ppPointerType second) {
 
 int pp_binary_search(deque <ppPointerType> * A, string key, int imin, int imax) {
   // test if array is empty
-  if (imax < imin)
+  if (imax < imin) {
     // set is empty, so return value showing not found
     return -1;
+  }
   else
     {
+       
       // calculate midpoint to cut set in half
       int imid = imin + ((imax - imin) / 2);
- 
       // three-way comparison
       if (A->at(imid).name.compare(key) > 0) {
         // key is in lower subset
@@ -527,13 +534,63 @@ int orderPointers(deque <ntGenTopType> *phraseValues, deque <ppPointerType> *phr
 }
 
 
+int read_dic_config(string configName, deque <fileInfoType> *fileInfo) {
+  ifstream inputFile;
+  size_t curPos;
+  string inputLine;
+  string inputType;
+  string inputPath;
+  double prob;
+  size_t marker;
+
+  inputFile.open(configName.c_str());
+  if (!inputFile.is_open()) {  //--If it failed to open the dictionary
+    std::cerr << "Could not open file " << configName << endl;
+    return -1;
+  }
+  std::getline(inputFile,inputLine);
+  while (!inputFile.eof()) {
+    marker=inputLine.find("\t");
+    if (marker!=string::npos) {
+      inputType = inputLine.substr(0,marker).c_str();
+    }
+    else {
+      std::cerr << "Malformed dictionary config file\n";
+      return -1;
+    }
+    inputLine = inputLine.substr(marker+1,inputLine.size());
+    marker=inputLine.find("\t");
+    if (marker!=string::npos) {
+      inputPath = inputLine.substr(0,marker).c_str();
+    }
+    else {
+      std::cerr << "Malformed dictionary config file\n";
+      return -1;
+    }
+    inputLine = inputLine.substr(marker+1,inputLine.size());
+    prob=atof(inputLine.c_str());
+    if (prob<=0) {
+      std::cerr << "Malformed dictionary config file\n";
+      return -1;
+    }
+
+    //---Now add the dictionaries----------//
+    fileInfoType tempFile;
+    tempFile.type = inputType;
+    tempFile.filename = inputPath;
+    tempFile.probability = prob;
+    tempFile.isUserDic = true;
+    fileInfo->push_back(tempFile);
+    std::getline(inputFile,inputLine);
+  }
+  return 0;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Associate the user specified dicionaries with the types
 int add_user_dics(deque <ppPointerType> *phraseList, deque <fileInfoType> *fileInfo) {
-  
   //---Cycle through all the user specified dictionaries-------------//
   for (int i=0; i < fileInfo->size(); i++) {
-    
     //--Next find the transform this dictionary is associated with--------------//
     int index = pp_binary_search(phraseList, fileInfo->at(i).type, 0, phraseList->size()-1);
     if (index != -1) { //it exists
@@ -543,7 +600,7 @@ int add_user_dics(deque <ppPointerType> *phraseList, deque <fileInfoType> *fileI
     else {
       std::cerr << "You specified a passphrase dictionary type where the type doesn't exist\n";
       std::cerr << "The type was: " << fileInfo->at(i).type << endl;
-      return 1;
+      //return 1;
     }
 
   }
@@ -590,7 +647,6 @@ int load_dic(fileInfoType *fileInfo, ntContainerType *data) {
   ifstream inputFile;
   size_t curPos;
   string inputWord;
-
   inputFile.open(fileInfo->filename.c_str());
   if (!inputFile.is_open()) {  //--If it failed to open the dictionary
     if (fileInfo->isUserDic) { //--Only print out if it can't open user dics
@@ -671,6 +727,11 @@ int load_all_dics(deque <ntGenTopType> *phraseValues) {
     }
     //---Now sort them by probability-----//
     sort(phraseValues->at(i).data.begin(), phraseValues->at(i).data.end(), ntCompare);
+    //---Now establish the links for the values when they are pushed into base structures--------//
+    for (int j=0; j< int(phraseValues->at(i).data.size()-1);j++) {
+      //cout << "DEBUG: " << j << " : " << int(phraseValues->at(i).data.size() -1)<< endl;
+      phraseValues->at(i).data.at(j).next = &phraseValues->at(i).data.at(j+1);
+    }
   }
   return 0;
 }
@@ -751,14 +812,14 @@ int load_passphrase_grammar(pqueueType *pqueue, list <pqReplacementType> *baseSt
           //cout << "notfound:" << tempLine << ":" << endl;
         } 
         if (index == -1) {
-          cout << "Did not find :" << tempLine << ": in :" << inputLine<<endl; 
+          //cout << "Did not find :" << tempLine << ": in :" << inputLine<<endl; 
           badInput = true;
           break;
         } 
         
         //----Add subsectin-------------------------------//
         if (phraseList->at(index).pointer->data.size()==0) {
-          cout << "Dictionary " << tempLine << " is empty\n";
+          //cout << "Dictionary " << tempLine << " is empty\n";
           badInput = true;
           break; 
         }
@@ -781,11 +842,11 @@ int load_passphrase_grammar(pqueueType *pqueue, list <pqReplacementType> *baseSt
         /////////////////////////////////////////////////////////////////////////////////////////
         //--DEBUG TAKE THIS CHECK OUT LATER WHEN THERE ARE BETTER BASE STURUCTURES AVAILABLE---//
         /////////////////////////////////////////////////////////////////////////////////////////
-        //if (inputValue.replacement.size() > 4) {
-        //------End Debug------//
+        if (inputValue.replacement.size() > 4) {
           pqueue->push(inputValue);
           baseStructures->push_back(inputValue);
-        //}
+        }
+	//------End Debug------//
       }
     }
     inputValue.probability=0;

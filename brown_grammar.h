@@ -13,5 +13,5 @@ int add_user_dics(deque <ppPointerType> *phraseList, deque <fileInfoType> *fileI
 int add_default_dics(deque <ppPointerType> *phraseList);
 int load_all_dics(deque <ntGenTopType> *phraseValues);
 int load_passphrase_grammar(pqueueType *pqueue, list <pqReplacementType> *baseStructures,deque <ppPointerType> *phraseList,string ruleName, double probLimit);
-
+int read_dic_config(string configName, deque <fileInfoType> *fileInfo);
 #endif
