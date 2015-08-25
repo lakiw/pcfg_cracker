@@ -3,4 +3,5 @@
 *.rec
 *.swp
 *.swo
+*.pyc
 pcfg_manager
