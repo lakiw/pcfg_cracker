@@ -42,6 +42,7 @@ import argparse
 #Custom modules
 sys.path.append('./lib')
 from file_io import loadConfig, loadRules
+from core_grammar import pcfgClass, testGrammar
 
 
 #########################################################################################
@@ -51,6 +52,8 @@ from file_io import loadConfig, loadRules
 class commandLineVars:
     def __init__(self):
         self.configFile = ""
+        self.ruleName = "Default"
+        self.ruleDirectory = "Rules"
         #Debugging printouts
         self.verbose = True  
 
@@ -83,6 +86,7 @@ def parseCommandLine(c_vars):
 def main():
     c_vars = commandLineVars()
     g_vars = globalVars()
+    pcfg = pcfgClass()
     
     ##--Parse the command line ---##
     parseCommandLine(c_vars)
@@ -96,11 +100,12 @@ def main():
         return True
     
     ##--Load the rules file---##
-    retValue = loadRules(g_vars,c_vars)
+    retValue = loadRules(g_vars,c_vars,pcfg)
     if retValue != g_vars.RETValues['STATUS_OK']:
         print ("Error reading Rules file, exiting")
         return True
     
+    retValue = testGrammar(g_vars,c_vars,pcfg)
     
 
 if __name__ == "__main__":

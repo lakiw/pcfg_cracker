@@ -14,6 +14,8 @@ import string
 import struct
 import os
 
+#Used for debugging and development
+from sample_grammar import s_grammar
 
 
 ##############################################################
@@ -26,7 +28,11 @@ def loadConfig(g_vars,c_vars):
     
     
 ##############################################################
-# Top level function to read the Rules for the grammar
+# Top level function to read the rules for the grammar
 ##############################################################
-def loadRules(g_vars,c_vars):
+def loadRules(g_vars,c_vars,pcfg):
+    ##--Read the top level rules config file --#
+    ##--Right now just cheating and reading in a fully filled out sample grammar
+    pcfg.grammar = s_grammar
+    #processInput(g_vars,c_vars,pcfg,input)
     return g_vars.RETValues['STATUS_OK']

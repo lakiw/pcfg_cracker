@@ -1,0 +1,10 @@
+Grammar Generated Florida State's Probabilistic Password Cracker
+Written by Matt Weir - weir@cs.fsu.edu
+Be Good!
+Version:0.7
+Trained on:/myspace-training.txt
+Total Passwords Parsed: 33559
+Minimum Password Size: 1
+Maximum Password Size: 85
+Numbers Allowed: True
+Symbols Allowed: True
