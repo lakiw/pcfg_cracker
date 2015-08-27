@@ -1,6 +1,6 @@
 #!/usr/local/bin/python3
 
-s_preTerminal = {
+s_queueItem = {
     'isTerminal':True,
     'prob':0.001,
     'parseTree':
@@ -19,6 +19,25 @@ s_preTerminal = {
             ]
         ]
     }
+
+
+s_preTerminal = [
+    0,0,
+        [
+            [
+                1,0,
+                [
+                    [
+                        4,1,[]
+                    ]
+                ]
+            ],
+            [
+                3,1,[]
+            ]
+        ]
+    ]
+
     
     
 s_grammar = [
@@ -62,7 +81,7 @@ s_grammar = [
             },
             {
                 'isTerminal':False,
-                'pos':[5],
+                'pos':[4],
                 'prob':0.2,
                 'pre_terminal':[
                     "mat",
@@ -77,7 +96,7 @@ s_grammar = [
         'replacements':[
             {
                 'isTerminal':False,
-                'pos':[7],
+                'pos':[5],
                 'prob':0.7,
                 'pre_terminal':[
                     "passw",
@@ -87,7 +106,7 @@ s_grammar = [
             },
             {
                 'isTerminal':False,
-                'pos':[7],
+                'pos':[5],
                 'prob':0.3,
                 'pre_terminal':[
                     "chair",
@@ -102,7 +121,7 @@ s_grammar = [
         'replacements':[
             {
                 'isTerminal':True,
-                'prob':0.5,
+                'prob':0.7,
                 'terminal':[
                     '1',
                 ],
@@ -117,12 +136,6 @@ s_grammar = [
                     '4'
                 ],
                 'function':'copy'
-            },
-            {
-                'isTerminal':True,
-                'prob':0.20,
-                'input':{'length':1},
-                'function':'digit_bruteforce'
             }
         ]
     },

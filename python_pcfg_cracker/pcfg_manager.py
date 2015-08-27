@@ -43,6 +43,7 @@ import argparse
 sys.path.append('./lib')
 from file_io import loadConfig, loadRules
 from core_grammar import pcfgClass, testGrammar
+from priority_queue import pcfgQueue, queueItem, testQueue
 
 
 #########################################################################################
@@ -64,7 +65,10 @@ class globalVars:
     def __init__(self):
         self.maxDicWord = 32
         ##--I know, having detailed retvalues doesn't add a lot for a program like this, but it satisfies some sort of OCD itch of mine
-        self.RETValues = {'STATUS_OK':0,'File_IO_Error':1}
+        self.RETValues = {'STATUS_OK':0,'File_IO_Error':1, 'QUEUE_EMPTY':2}
+        
+        ##--The current queueItem we are working on
+        self.qItem = queueItem()
 
 ####################################################
 # Simply parses the command line
@@ -73,7 +77,7 @@ def parseCommandLine(c_vars):
     parser = argparse.ArgumentParser(description='PCFG_Cracker version 3.0. Used to generate password guesses for use in other cracking programs')
     parser.add_argument('--config','-c', help='The configuration file to use',metavar='CONFIG_FILE',required=False, default=c_vars.configFile)
     parser.add_argument('--feature', dest='feature', action='store_true')
-    parser.add_argument('--verbose','-v', help='Verbose prints. Only use for debugging otherwise it will generate junk guesses',dest='verbose', action='store_true')
+    parser.add_argument('--verbose','-v', help='Verbose prints. Only use for debugging otherwise it will generate junk guesses',dest='verbose', action='store_false')
     args=vars(parser.parse_args())
     c_vars.configFile = args['config']
     c_vars.verbose = args['verbose']
@@ -87,6 +91,7 @@ def main():
     c_vars = commandLineVars()
     g_vars = globalVars()
     pcfg = pcfgClass()
+    pQueue = pcfgQueue()
     
     ##--Parse the command line ---##
     parseCommandLine(c_vars)
@@ -97,15 +102,28 @@ def main():
     retValue = loadConfig(g_vars,c_vars)
     if retValue != g_vars.RETValues['STATUS_OK']:
         print ("Error reading config file, exiting")
-        return True
+        return retValue
     
     ##--Load the rules file---##
     retValue = loadRules(g_vars,c_vars,pcfg)
     if retValue != g_vars.RETValues['STATUS_OK']:
         print ("Error reading Rules file, exiting")
-        return True
+        return retValue
     
-    retValue = testGrammar(g_vars,c_vars,pcfg)
+    ##--Initialize the priority queue--##
+    pQueue.initialize(pcfg)
+    
+    ##--Going to break this up eventually into it's own function, but for now, process the queue--##
+    retValue = pQueue.nextFunction(g_vars,c_vars,pcfg)
+    while retValue == g_vars.RETValues['STATUS_OK']:
+        #print(g_vars.qItem.parseTree)
+        #print (pcfg.printTerminals(g_vars.qItem.parseTree))
+        retValue = pQueue.nextFunction(g_vars,c_vars,pcfg)
+    #retValue = testQueue(g_vars,c_vars,pcfg)
+    #retValue = testGrammar(g_vars,c_vars,pcfg)
+   
+    
+    return g_vars.RETValues['STATUS_OK']
     
 
 if __name__ == "__main__":

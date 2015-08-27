@@ -19,6 +19,7 @@ import time
 #Used for debugging and development
 from sample_grammar import s_preTerminal
 
+
 ##########################################################################################
 # Main class of this program as it represents the central grammar of the pcfg cracker
 # I'm trying to keep the actual grammar as generic as possible.
@@ -70,7 +71,7 @@ class pcfgClass:
     def printTerminals(self,preTerminal):
         #First grab a list of all the preterminals. It'll take the form of nested linked lists.
         #For example expantTerminals will return something like [['cat','hat','dog'],[1,2]].
-        guessCombos = self.expandTerminals(preTerminal['parseTree'])
+        guessCombos = self.expandTerminals(preTerminal)
         #Now take the combos and generate guesses. Following the above example, create the guesses cat1,hat1,dog1,cat2,hat2,dog2
         terminalList = self.expandFinalString(guessCombos)
         #Output the guesses
@@ -78,8 +79,8 @@ class pcfgClass:
     
     ##############################################################################
     # Used to expend a nested list of pre-terminals into actual password guesses
-    # Input will be something like this: [['cat','hat','dog'],[1,2]]
-    # Output should be something like this: cat1,hat1,dog1,cat2,hat2,dog2
+    # Input will be something like this: [['cat','hat','dog',Cat,Hat,Dog],[1,2]]
+    # Output should be something like this: cat1,hat1,dog1,Cat1,Hat1,Dog1,cat2,hat2,dog2,Cat2,Hat2,Dog2
     ###############################################################################
     def expandFinalString(self,guessCombos):
         ##--Time to get all recursive!--
@@ -105,17 +106,16 @@ class pcfgClass:
         ##--Overly complicated to read, I know, but it just parses the grammar and grabs the parts we care about for this section, (replacements)
         ##--Some of the craziness is I'm using the values in curSection[0,1] to represent pointers into the grammar
         curDic = self.grammar[curSection[0]]['replacements'][curSection[1]]
-        
         ##----Now deal with the different types of transition functions----------###
         
-        ##----If you are copying the actual values over, aka D1->['1','2','3','4']. This is the simplist one
+        ##----If you are copying the actual values over, aka D1->['1','2','3','4']. This is the simplest one
         if curDic['function']=='copy':
             curCombo = curDic['terminal']
             
         ##----If you are copying over values that aren't terminals. For example L3=>['cat','hat']. They are not terminals since you still need to apply capitalization rules to them
         elif curDic['function']=='shadow':
             ##--Pass the value to the next replacement to take care of
-            curCombo =  self.expandTerminals(curSection[2],curDic['pre_terminal'])
+            curCombo =  self.expandTerminals(curSection[2][0],curDic['pre_terminal'])
         ##----Capitalize the value passed in from the previous section----
         elif curDic['function']=='capitalize':
             tempCombo=[]
@@ -134,7 +134,31 @@ class pcfgClass:
             for rule in curSection[2]:
                 curCombo.append(self.expandTerminals(rule))
         return curCombo
-                    
+        
+    ##############################################################################################
+    # Used to find the probability of a parse tree in the graph
+    ##############################################################################################
+    def findProbability(self,pt):
+        ##--Start at 100%
+        currentProb = self.grammar[pt[0]]['replacements'][pt[1]]['prob']
+        if len(pt[2]) != 0:
+            for x in range(0,len(pt[2])):
+                currentProb =currentProb * self.findProbability(pt[2][x])
+        return currentProb
+        
+        
+    ###############################################################################################
+    # Used to find if a node is ready to be printed out or not
+    ###############################################################################################
+    def findIsTerminal(self,pt):
+        if len(pt[2])==0:
+            if self.grammar[pt[0]]['replacements'][pt[1]]['isTerminal'] == False:
+                return False
+        else:
+            for x in range(0,len(pt[2])):
+                if self.findIsTerminal(pt[2][x]) == False:
+                    return False
+        return True
                 
 ###################################################################
 # Function I'm using to test how the password guesses are being
