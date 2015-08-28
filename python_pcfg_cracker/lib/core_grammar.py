@@ -65,17 +65,17 @@ class pcfgClass:
         self.grammar = []
     
     ##############################################################################
-    # Top level function used to print out all the terminals / password guesses
+    # Top level function used to return all the terminals / password guesses
     # associated with the preTerminal passed it
     ##############################################################################
-    def printTerminals(self,preTerminal):
+    def listTerminals(self,preTerminal):
+        terminalList = []
         #First grab a list of all the preterminals. It'll take the form of nested linked lists.
         #For example expantTerminals will return something like [['cat','hat','dog'],[1,2]].
-        guessCombos = self.expandTerminals(preTerminal)
+        guessCombos = self.expandTerminals(preTerminal,workingValue=[])
         #Now take the combos and generate guesses. Following the above example, create the guesses cat1,hat1,dog1,cat2,hat2,dog2
         terminalList = self.expandFinalString(guessCombos)
-        #Output the guesses
-        print (terminalList)
+        return terminalList
     
     ##############################################################################
     # Used to expend a nested list of pre-terminals into actual password guesses
@@ -143,7 +143,8 @@ class pcfgClass:
         currentProb = self.grammar[pt[0]]['replacements'][pt[1]]['prob']
         if len(pt[2]) != 0:
             for x in range(0,len(pt[2])):
-                currentProb =currentProb * self.findProbability(pt[2][x])
+                childProb = self.findProbability(pt[2][x])
+                currentProb =currentProb * childProb
         return currentProb
         
         

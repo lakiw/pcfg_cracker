@@ -36,12 +36,16 @@ class queueItem:
         
     ##############################################################################
     # Need to have a custom compare functions for use in the priority queue
+    # Really annoying that I have to do this the reverse of what I'd normally expect
+    # since the priority queue will output stuff of lower values first.
+    # Aka if there are two items with probabilities of 0.7 and 0.4, the PQueue will
+    # by default output 0.4 which is ... not what I'd like it to do
     ##############################################################################
     def __lt__(self, other):
-        return self.probability < other.probability
+        return self.probability > other.probability
     
     def __le__(self, other):
-        return self.probability <= other.probability
+        return self.probability >= other.probability
         
     def __eq__(self, other):
         return self.probability == other.probability
@@ -50,10 +54,10 @@ class queueItem:
         return self.probability != other.probability
         
     def __gt__(self, other):
-        return self.probability > other.probability
+        return self.probability < other.probability
         
     def __ge__(self, other):
-        return self.probability >= other.probability
+        return self.probability <= other.probability
     
     ###############################################################################
     # Overloading print operation to make debugging easier
@@ -125,11 +129,13 @@ class pcfgQueue:
     ###############################################################################
     def nextFunction(self,g_vars,c_vars,pcfg):
         ##--First check if the queue is empty
+        
         if self.pQueue.empty() == True:
             return g_vars.RETValues['QUEUE_EMPTY']
             
         ##--Pop the top value off the stack
         g_vars.qItem = self.pQueue.get()
+
         #print("--Popping this value1")
         #print(g_vars.qItem.detailedPrint(pcfg))
         #print("-------Top Value ----------")
@@ -149,8 +155,8 @@ class pcfgQueue:
             self.deadbeatDad(g_vars,c_vars,pcfg)
             self.maxProbability = g_vars.qItem.probability
         
-        print("--Returning this value")
-        print(g_vars.qItem.detailedPrint(pcfg))
+        #print("--Returning this value")
+        #print(g_vars.qItem.detailedPrint(pcfg))
         return g_vars.RETValues['STATUS_OK']
 
     ################################################################################
@@ -171,34 +177,24 @@ class pcfgQueue:
     # TODO: There is a *TON* of optimization I can do in the current version of this "next" function
     def deadbeatDad(self,g_vars,c_vars,pcfg):
         ##--First find all the potential children
-        #print("--g_vars is now this value")
-        #print(g_vars.qItem.detailedPrint(pcfg))
         childrenList = self.findChildren(pcfg,g_vars.qItem.parseTree)
-        #print("--g_vars is now this value")
-        #print(g_vars.qItem.detailedPrint(pcfg))
+
         ##--Now find the children this node is responsible for
-        myChildrenList = self.findMyChildren(pcfg,g_vars.qItem,childrenList)
-        #print("--g_vars is now this value")
-        #print(g_vars.qItem.detailedPrint(pcfg))
-        #print("---children----")
+        myChildrenList = self.findMyChildren(c_vars,pcfg,g_vars.qItem,childrenList)
+
         for child in myChildrenList:
             childNode = queueItem(isTerminal = pcfg.findIsTerminal(child), probability = pcfg.findProbability(child), parseTree = child)
-            #print(child)
-            #print(pcfg.findIsTerminal(child))
-            #print(childNode.isTerminal)
             if childNode.probability <= g_vars.qItem.probability:
                 self.pQueue.put(childNode)
             else:
                 print("Hmmm, trying to push a parent and not a child on the list")
-            
-        #print("---end children--\n")
         
     #####################################################################
     # Given a list of children, find all the children who do not have
     # parents of a lower priority than the current node
     # Returns the children as a list
     #####################################################################
-    def findMyChildren(self,pcfg,qItem,childrenList):
+    def findMyChildren(self,c_vars,pcfg,qItem,childrenList):
         myChildren = []
         for child in childrenList:
             parentList = self.findMyParents(pcfg,child)
@@ -208,8 +204,15 @@ class pcfgQueue:
                 if parent != qItem.parseTree:
                     ##--If there is another parent that will take care of the child node
                     if pcfg.findProbability(parent) < qItem.probability:
-                        isMyChilde = False
+                        isMyChild = False
                         break
+                    ##--Need to make sure only one parent pushes the child in if there are multiple parents of same probability
+                    ##--Currently just cheating and using the python compare operator
+                    elif pcfg.findProbability(parent) == qItem.probability:
+                        if parent < qItem.parseTree:
+                            isMyChild = False
+                            break
+                        
             if isMyChild:
                 myChildren.append(child)
         return myChildren
@@ -219,21 +222,30 @@ class pcfgQueue:
     ######################################################################    
     def findMyParents(self,pcfg,pt):
         retList = []
-        #Check the curnode if is at least one other parent
-        if pt[1] != 0:     
-            retList.append(copy.deepcopy(pt))
-            retList[0][1] = pt[1] - 1
-        if len(pt[2])!=0:
-            ##--First append the non expanded version----#
-            retList.append(copy.deepcopy(pt))
-            retList[0][2] = []
+        ##--Only expand up if the transition options are blank, aka (x,y,[]) vs (x,y,[some values])
+        if len(pt[2])==0:
+            #Check the curnode if is at least one other parent
+            if pt[1] != 0:     
+                retList.append(copy.deepcopy(pt))
+                retList[0][1] = pt[1] - 1
+        else:
+            ###---Used to tell if we need to include the non-expanded parse tree as a parent
+            parentSize = len(retList)
+            
+            ##---Now go through the expanded parse tree and see if there are any parents from them
             for x in range(0,len(pt[2])):
                 #Doing it recursively!
                 tempList = self.findMyParents(pcfg,pt[2][x])
                 #If there were any parents, append them to the main list
                 if len(tempList) != 0:
                     for y in tempList:
-                        retList.append(y)
+                        tempValue = copy.deepcopy(pt)
+                        tempValue[2][x] = y
+                        retList.append(tempValue)
+            ###--If there were no parents from the expanded parse tree add the non-expanded version as a parent
+            if parentSize == len(retList):
+                retList.append(copy.deepcopy(pt))
+                retList[0][2] = []
                             
         return retList
         
@@ -244,17 +256,25 @@ class pcfgQueue:
         #basically we want to increment one step if possible
         #First check for children of the current nodes
         retList = []
-        numReplacements = len(pcfg.grammar[pt[0]]['replacements'])
-        #If there are children
-        if numReplacements > (pt[1]+1):
-            #Return the child
-            retList.append(copy.deepcopy(pt))
-            retList[0][1] = pt[1] + 1
-            retList[0][2] = []
-        
+        ##--Only increment and expand if the transition options are blank, aka (x,y,[]) vs (x,y,[some values])
+        if len(pt[2])==0:
+            numReplacements = len(pcfg.grammar[pt[0]]['replacements'])
+            #Takes care of the incrementing if there are children
+            if numReplacements > (pt[1]+1):
+                #Return the child
+                retList.append(copy.deepcopy(pt))
+                retList[0][1] = pt[1] + 1
+                
+            #Now take care of the expansion
+            if pcfg.grammar[pt[0]]['replacements'][0]['isTerminal'] != True:
+                newExpansion = []
+                for x in pcfg.grammar[pt[0]]['replacements'][pt[1]]['pos']:
+                    newExpansion.append([x,0,[]])
+                retList.append(copy.deepcopy(pt))
+                retList[-1][2] = newExpansion
         ###-----Next check to see if there are any nodes to the right that need to be checked
-        #If the node is a pre-terminal that has already been expanded
-        if len(pt[2])!=0:    
+        ###-----This happens if the node is a pre-terminal that has already been expanded
+        else:    
             for x in range(0,len(pt[2])):
                 #Doing it recursively!
                 tempList = self.findChildren(pcfg,pt[2][x])
@@ -263,14 +283,7 @@ class pcfgQueue:
                     for y in tempList:
                         retList.append(copy.deepcopy(pt))
                         retList[-1][2][x] = y
-        #Else if it needs to be expanded
-        else:
-            if pcfg.grammar[pt[0]]['replacements'][0]['isTerminal'] != True:
-                newExpansion = []
-                for x in pcfg.grammar[pt[0]]['replacements'][pt[1]]['pos']:
-                    newExpansion.append([x,0,[]])
-                retList.append(copy.deepcopy(pt))
-                retList[-1][2] = newExpansion
+        
         return retList
             
 ###################################################################

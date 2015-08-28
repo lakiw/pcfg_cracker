@@ -116,8 +116,9 @@ def main():
     ##--Going to break this up eventually into it's own function, but for now, process the queue--##
     retValue = pQueue.nextFunction(g_vars,c_vars,pcfg)
     while retValue == g_vars.RETValues['STATUS_OK']:
-        #print(g_vars.qItem.parseTree)
-        #print (pcfg.printTerminals(g_vars.qItem.parseTree))
+        #print(str(g_vars.qItem.probability) + " : " + str(g_vars.qItem.parseTree))
+        for guess in pcfg.listTerminals(g_vars.qItem.parseTree):
+            print(guess)
         retValue = pQueue.nextFunction(g_vars,c_vars,pcfg)
     #retValue = testQueue(g_vars,c_vars,pcfg)
     #retValue = testGrammar(g_vars,c_vars,pcfg)

@@ -13,6 +13,7 @@ import sys
 import string
 import struct
 import os
+import configparser
 
 #Used for debugging and development
 from sample_grammar import s_grammar
@@ -32,7 +33,25 @@ def loadConfig(g_vars,c_vars):
 ##############################################################
 def loadRules(g_vars,c_vars,pcfg):
     ##--Read the top level rules config file --#
+    config = configparser.ConfigParser()
+    baseDir = os.path.join(sys.path[0],c_vars.ruleDirectory, c_vars.ruleName)
+    parseConfig(g_vars,c_vars,baseDir,config)
     ##--Right now just cheating and reading in a fully filled out sample grammar
     pcfg.grammar = s_grammar
     #processInput(g_vars,c_vars,pcfg,input)
+    return g_vars.RETValues['STATUS_OK']
+    
+    
+##############################################################
+# Parses a config file
+##############################################################
+def parseConfig(g_vars,c_vars,baseDir,config):
+    ##--still working on this...
+    return g_vars.RETValues['STATUS_OK']
+    filename = os.path.join(baseDir, "grammar.cfg")
+    dataset = config.read(filename)
+    if (len(dataset)==0):
+        print ("Could not open config file: " + filename)
+        return g_vars.RETValues['File_IO_Error']
+    print (config.sections())
     return g_vars.RETValues['STATUS_OK']
