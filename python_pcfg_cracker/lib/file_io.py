@@ -47,7 +47,6 @@ def loadRules(g_vars,c_vars,pcfg):
 ##############################################################
 def parseConfig(g_vars,c_vars,baseDir,config):
     ##--still working on this...
-    return g_vars.RETValues['STATUS_OK']
     filename = os.path.join(baseDir, "grammar.cfg")
     dataset = config.read(filename)
     if (len(dataset)==0):

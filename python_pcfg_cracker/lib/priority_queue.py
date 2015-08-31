@@ -75,29 +75,10 @@ class queueItem:
         retString = "isTerminal = " + str(self.isTerminal) + "\n"
         retString += "Probability = " + str(self.probability) + "\n"
         retString += "ParseTree = "
-        retString += self.printParseTree(pcfg, self.parseTree)
+        retString += pcfg.printParseTree(self.parseTree)
         return retString
         
-    def printParseTree(self,pcfg,pt=[]):
-        retString = ''
-        if len(pt[2])==0:
-            retString += pcfg.grammar[pt[0]]['name']
-            retString += "[" + str(pt[1] + 1) + " of " + str(len(pcfg.grammar[pt[0]]['replacements'])) + "]"
-            if pcfg.grammar[pt[0]]['replacements'][pt[1]]['isTerminal'] == True:
-                retString += "->terminal"
-            else:
-                retString += "->incomplete"
-        else:
-            retString += pcfg.grammar[pt[0]]['name'] 
-            retString += "[" + str(pt[1] + 1) + " of " + str(len(pcfg.grammar[pt[0]]['replacements'])) + "]"
-            retString += "-> ("
-            for x in range(0,len(pt[2])):
-                retString += self.printParseTree(pcfg,pt[2][x])
-                if x != len(pt[2])-1:
-                    retString +=" , "
-            retString += ")"
-        
-        return retString
+    
             
 #######################################################################################################
 # I may make changes to the underlying priority queue code in the future to better support
@@ -177,7 +158,7 @@ class pcfgQueue:
     # TODO: There is a *TON* of optimization I can do in the current version of this "next" function
     def deadbeatDad(self,g_vars,c_vars,pcfg):
         ##--First find all the potential children
-        childrenList = self.findChildren(pcfg,g_vars.qItem.parseTree)
+        childrenList = pcfg.findChildren(g_vars.qItem.parseTree)
 
         ##--Now find the children this node is responsible for
         myChildrenList = self.findMyChildren(c_vars,pcfg,g_vars.qItem,childrenList)
@@ -197,7 +178,7 @@ class pcfgQueue:
     def findMyChildren(self,c_vars,pcfg,qItem,childrenList):
         myChildren = []
         for child in childrenList:
-            parentList = self.findMyParents(pcfg,child)
+            parentList = pcfg.findMyParents(child)
             isMyChild = True
             for parent in parentList:
                 ##--First check to make sure the other parent isn't this node
@@ -216,75 +197,7 @@ class pcfgQueue:
             if isMyChild:
                 myChildren.append(child)
         return myChildren
-            
-    ######################################################################
-    # Returns a list of all the parents for a child node
-    ######################################################################    
-    def findMyParents(self,pcfg,pt):
-        retList = []
-        ##--Only expand up if the transition options are blank, aka (x,y,[]) vs (x,y,[some values])
-        if len(pt[2])==0:
-            #Check the curnode if is at least one other parent
-            if pt[1] != 0:     
-                retList.append(copy.deepcopy(pt))
-                retList[0][1] = pt[1] - 1
-        else:
-            ###---Used to tell if we need to include the non-expanded parse tree as a parent
-            parentSize = len(retList)
-            
-            ##---Now go through the expanded parse tree and see if there are any parents from them
-            for x in range(0,len(pt[2])):
-                #Doing it recursively!
-                tempList = self.findMyParents(pcfg,pt[2][x])
-                #If there were any parents, append them to the main list
-                if len(tempList) != 0:
-                    for y in tempList:
-                        tempValue = copy.deepcopy(pt)
-                        tempValue[2][x] = y
-                        retList.append(tempValue)
-            ###--If there were no parents from the expanded parse tree add the non-expanded version as a parent
-            if parentSize == len(retList):
-                retList.append(copy.deepcopy(pt))
-                retList[0][2] = []
-                            
-        return retList
-        
-    #################################################################
-    # Finds all the potential children and returns them as a list
-    #################################################################
-    def findChildren(self,pcfg,pt):
-        #basically we want to increment one step if possible
-        #First check for children of the current nodes
-        retList = []
-        ##--Only increment and expand if the transition options are blank, aka (x,y,[]) vs (x,y,[some values])
-        if len(pt[2])==0:
-            numReplacements = len(pcfg.grammar[pt[0]]['replacements'])
-            #Takes care of the incrementing if there are children
-            if numReplacements > (pt[1]+1):
-                #Return the child
-                retList.append(copy.deepcopy(pt))
-                retList[0][1] = pt[1] + 1
                 
-            #Now take care of the expansion
-            if pcfg.grammar[pt[0]]['replacements'][0]['isTerminal'] != True:
-                newExpansion = []
-                for x in pcfg.grammar[pt[0]]['replacements'][pt[1]]['pos']:
-                    newExpansion.append([x,0,[]])
-                retList.append(copy.deepcopy(pt))
-                retList[-1][2] = newExpansion
-        ###-----Next check to see if there are any nodes to the right that need to be checked
-        ###-----This happens if the node is a pre-terminal that has already been expanded
-        else:    
-            for x in range(0,len(pt[2])):
-                #Doing it recursively!
-                tempList = self.findChildren(pcfg,pt[2][x])
-                #If there were any children, append them to the main list
-                if len(tempList) != 0:
-                    for y in tempList:
-                        retList.append(copy.deepcopy(pt))
-                        retList[-1][2][x] = y
-        
-        return retList
             
 ###################################################################
 # Random Test Function

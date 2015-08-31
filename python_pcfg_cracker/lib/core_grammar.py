@@ -15,6 +15,8 @@ import struct
 import os
 import types
 import time
+import copy
+
 
 #Used for debugging and development
 from sample_grammar import s_preTerminal
@@ -160,12 +162,107 @@ class pcfgClass:
                 if self.findIsTerminal(pt[2][x]) == False:
                     return False
         return True
+        
+        
+    #################################################################
+    # Finds all the children of the parse tree and returns them as a list
+    #################################################################
+    def findChildren(self,pt):
+        #basically we want to increment one step if possible
+        #First check for children of the current nodes
+        retList = []
+        ##--Only increment and expand if the transition options are blank, aka (x,y,[]) vs (x,y,[some values])
+        if len(pt[2])==0:
+            numReplacements = len(self.grammar[pt[0]]['replacements'])
+            #Takes care of the incrementing if there are children
+            if numReplacements > (pt[1]+1):
+                #Return the child
+                retList.append(copy.deepcopy(pt))
+                retList[0][1] = pt[1] + 1
+                
+            #Now take care of the expansion
+            if self.grammar[pt[0]]['replacements'][0]['isTerminal'] != True:
+                newExpansion = []
+                for x in self.grammar[pt[0]]['replacements'][pt[1]]['pos']:
+                    newExpansion.append([x,0,[]])
+                retList.append(copy.deepcopy(pt))
+                retList[-1][2] = newExpansion
+        ###-----Next check to see if there are any nodes to the right that need to be checked
+        ###-----This happens if the node is a pre-terminal that has already been expanded
+        else:    
+            for x in range(0,len(pt[2])):
+                #Doing it recursively!
+                tempList = self.findChildren(pt[2][x])
+                #If there were any children, append them to the main list
+                for y in tempList:
+                    retList.append(copy.deepcopy(pt))
+                    retList[-1][2][x] = y
+        
+        return retList
+
+    ######################################################################
+    # Returns a list of all the parents for a child node / parse-tree
+    ######################################################################    
+    def findMyParents(self,pt):
+        retList = []
+        ##--Only expand up if the transition options are blank, aka (x,y,[]) vs (x,y,[some values])
+        if len(pt[2])==0:
+            #Check the curnode if is at least one other parent
+            if pt[1] != 0:     
+                retList.append(copy.deepcopy(pt))
+                retList[0][1] = pt[1] - 1
+        else:
+            ###---Used to tell if we need to include the non-expanded parse tree as a parent
+            parentSize = len(retList)
+            
+            ##---Now go through the expanded parse tree and see if there are any parents from them
+            for x in range(0,len(pt[2])):
+                #Doing it recursively!
+                tempList = self.findMyParents(pt[2][x])
+                #If there were any parents, append them to the main list
+                if len(tempList) != 0:
+                    for y in tempList:
+                        tempValue = copy.deepcopy(pt)
+                        tempValue[2][x] = y
+                        retList.append(tempValue)
+            ###--If there were no parents from the expanded parse tree add the non-expanded version as a parent
+            if parentSize == len(retList):
+                retList.append(copy.deepcopy(pt))
+                retList[0][2] = []
+                            
+        return retList
+        
+    
+    ##################################################################################################
+    # Prints out the parse tree in a human readable fashion
+    # Used for debugging but may end up using this for status prints as well
+    ##################################################################################################
+    def printParseTree(self,pt=[]):
+        retString = ''
+        if len(pt[2])==0:
+            retString += self.grammar[pt[0]]['name']
+            retString += "[" + str(pt[1] + 1) + " of " + str(len(self.grammar[pt[0]]['replacements'])) + "]"
+            if self.grammar[pt[0]]['replacements'][pt[1]]['isTerminal'] == True:
+                retString += "->terminal"
+            else:
+                retString += "->incomplete"
+        else:
+            retString += self.grammar[pt[0]]['name'] 
+            retString += "[" + str(pt[1] + 1) + " of " + str(len(self.grammar[pt[0]]['replacements'])) + "]"
+            retString += "-> ("
+            for x in range(0,len(pt[2])):
+                retString += self.printParseTree(pt[2][x])
+                if x != len(pt[2])-1:
+                    retString +=" , "
+            retString += ")"
+        
+        return retString
                 
 ###################################################################
 # Function I'm using to test how the password guesses are being
 # generated from a pre-terminal structure and the PCFG grammar
 ####################################################################                
 def testGrammar(g_vars,c_vars,pcfg):
-    pcfg.printTerminals(s_preTerminal)
+    pcfg.listTerminals(s_preTerminal)
     
         
