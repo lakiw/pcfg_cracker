@@ -27,7 +27,23 @@ from sample_grammar import s_grammar
 def loadConfig(g_vars,c_vars):
     return g_vars.RETValues['STATUS_OK']
     
+
+
+
+def loadBaseStructures(g_vars,c_vars,pcfg):
+    baseDir = os.path.join(sys.path[0],c_vars.ruleDirectory, c_vars.ruleName, "Grammar")
+    try:
+        inputFile = open(os.path.join(baseDir,"Grammar.txt"),'r')
+    except:
+        print ("Could not open config file: " + "Grammar.txt")
+        print( os.path.join(baseDir,"Grammar.txt"))
+        return g_vars.RETValues['File_IO_Error']
     
+    for line in inputFile:
+        print (line)
+        
+    return g_vars.RETValues['STATUS_OK']
+        
 ##############################################################
 # Top level function to read the rules for the grammar
 ##############################################################
@@ -38,6 +54,11 @@ def loadRules(g_vars,c_vars,pcfg):
     parseConfig(g_vars,c_vars,baseDir,config)
     ##--Right now just cheating and reading in a fully filled out sample grammar
     pcfg.grammar = s_grammar
+    
+    ##--Quick and dirty rule input until I have the time to do it right--##
+    retValue = loadBaseStructures(g_vars,c_vars,pcfg)
+    if retValue != g_vars.RETValues['STATUS_OK']:
+        return retValue
     #processInput(g_vars,c_vars,pcfg,input)
     return g_vars.RETValues['STATUS_OK']
     
