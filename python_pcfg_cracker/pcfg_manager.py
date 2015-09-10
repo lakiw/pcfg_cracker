@@ -38,6 +38,7 @@
 from __future__ import print_function
 import sys
 import argparse
+import time
 
 #Custom modules
 sys.path.append('./lib')
@@ -57,6 +58,8 @@ class commandLineVars:
         self.ruleDirectory = "Rules"
         #Debugging printouts
         self.verbose = True  
+        ##--temporary value---
+        self.inputDictionary = "passwords.lst"
 
 ############################################################################################
 # Guess they aren't technically global...
@@ -91,8 +94,10 @@ def main():
     c_vars = commandLineVars()
     g_vars = globalVars()
     pcfg = pcfgClass()
-    pQueue = pcfgQueue()
     
+    ##--Initialize the priority queue--##
+    pQueue = pcfgQueue()
+    pQueue.initialize(pcfg)
     ##--Parse the command line ---##
     parseCommandLine(c_vars)
     if c_vars.verbose == True:
@@ -109,17 +114,36 @@ def main():
     if retValue != g_vars.RETValues['STATUS_OK']:
         print ("Error reading Rules file, exiting")
         return retValue
-    
-    ##--Initialize the priority queue--##
-    pQueue.initialize(pcfg)
-    
+
     ##--Going to break this up eventually into it's own function, but for now, process the queue--##
     retValue = pQueue.nextFunction(g_vars,c_vars,pcfg)
+    numPreTerminals = 0
+    numGuesses = 0
+    pQueueStartTime = 0
+    pQueueStopTime = 0
+    guessStartTime = 0
+    guessStopTime = 0
+    totalTimeStart = time.perf_counter()
     while retValue == g_vars.RETValues['STATUS_OK']:
         #print(str(g_vars.qItem.probability) + " : " + str(g_vars.qItem.parseTree))
+        numPreTerminals = numPreTerminals +1
+        guessStartTime = time.perf_counter()
+        numGuesses = numGuesses + len(pcfg.listTerminals(g_vars.qItem.parseTree))
+        guessStopTime = time.perf_counter() - guessStartTime
+        #if numPreTerminals % 10000 == 0:
+#            print ("PQueue:" + str(pQueue.pQueue.qsize()))
+#            print ("Total number of Pre Terminals: " + str (numPreTerminals))
+#            print ("PQueueTime " + str(pQueueStopTime))
+#            print ("Guesses:" + str(numGuesses))
+#            print ("GuessTime " + str(guessStopTime))
+#            print ("Average num of guesses per preterm: " + str(numGuesses // numPreTerminals))
+#            print ("Total Time " + str(time.perf_counter() - totalTimeStart))
+#            print ("Number of guesses a second: " + str(numGuesses // (time.perf_counter() - totalTimeStart)))
         for guess in pcfg.listTerminals(g_vars.qItem.parseTree):
             print(guess)
+        pQueueStartTime = time.perf_counter()  
         retValue = pQueue.nextFunction(g_vars,c_vars,pcfg)
+        pQueueStopTime = time.perf_counter() - pQueueStartTime
     #retValue = testQueue(g_vars,c_vars,pcfg)
     #retValue = testGrammar(g_vars,c_vars,pcfg)
    
