@@ -68,7 +68,7 @@ class globalVars:
     def __init__(self):
         self.maxDicWord = 32
         ##--I know, having detailed retvalues doesn't add a lot for a program like this, but it satisfies some sort of OCD itch of mine
-        self.RETValues = {'STATUS_OK':0,'File_IO_Error':1, 'QUEUE_EMPTY':2}
+        self.RETValues = {'STATUS_OK':0,'File_IO_Error':1, 'QUEUE_EMPTY':2, 'WEIRD_ERROR':3, 'QUEUE_FULL_ERROR':4}
         
         ##--The current queueItem we are working on
         self.qItem = queueItem()
@@ -125,13 +125,14 @@ def main():
     guessStopTime = 0
     totalTimeStart = time.perf_counter()
     while retValue == g_vars.RETValues['STATUS_OK']:
-        #print(str(g_vars.qItem.probability) + " : " + str(g_vars.qItem.parseTree))
+#       print(str(g_vars.qItem.probability) + " : " + str(g_vars.qItem.parseTree))
         numPreTerminals = numPreTerminals +1
         guessStartTime = time.perf_counter()
         numGuesses = numGuesses + len(pcfg.listTerminals(g_vars.qItem.parseTree))
+        
         guessStopTime = time.perf_counter() - guessStartTime
-        #if numPreTerminals % 10000 == 0:
-#            print ("PQueue:" + str(pQueue.pQueue.qsize()))
+        if numPreTerminals % 10000 == 0:
+            print ("PQueue:" + str(len(pQueue.pQueue)))
 #            print ("Total number of Pre Terminals: " + str (numPreTerminals))
 #            print ("PQueueTime " + str(pQueueStopTime))
 #            print ("Guesses:" + str(numGuesses))
@@ -139,8 +140,9 @@ def main():
 #            print ("Average num of guesses per preterm: " + str(numGuesses // numPreTerminals))
 #            print ("Total Time " + str(time.perf_counter() - totalTimeStart))
 #            print ("Number of guesses a second: " + str(numGuesses // (time.perf_counter() - totalTimeStart)))
-        for guess in pcfg.listTerminals(g_vars.qItem.parseTree):
-            print(guess)
+            print ("Current probability: " + str(pQueue.maxProbability))
+#        for guess in pcfg.listTerminals(g_vars.qItem.parseTree):
+#            print(guess)
         pQueueStartTime = time.perf_counter()  
         retValue = pQueue.nextFunction(g_vars,c_vars,pcfg)
         pQueueStopTime = time.perf_counter() - pQueueStartTime
