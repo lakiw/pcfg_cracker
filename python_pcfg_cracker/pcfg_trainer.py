@@ -22,8 +22,25 @@ class DataHolder:
         self.num=1
         self.prob=0.0
     
-    def __cmp__(self,input):
-        return cmp(self.value,input.value)
+    def __cmp__(self,other):
+        return cmp(self.value,other.value)
+    def __lt__(self, other):
+        return self.value > other.value
+    
+    def __le__(self, other):
+        return self.value >= other.value
+        
+    def __eq__(self, other):
+        return self.value == other.value
+        
+    def __ne__(self, other):
+        return self.value != other.value
+        
+    def __gt__(self, other):
+        return self.value < other.value
+        
+    def __ge__(self, other):
+        return self.value <= other.value
 
     def inc(self):
         self.num = self.num + 1
@@ -107,14 +124,16 @@ def parse_command_line(rule_name,training_file, x):
     parser = argparse.ArgumentParser(description='Generates PCFG Grammar From Password Training Set')
     parser.add_argument('--output','-o', help='Name of generated ruleset. Default is \"Default\"',metavar='RULESET_NAME',required=False,default="Default")
     parser.add_argument('--training','-t', help='The training set of passwords to train from',metavar='TRAINING_SET',required=True)
-
-    args=vars(parser.parse_args())
-    rule_name.append(args['output'])
-    training_file.append(args['training'])
-
+    try:
+        args=vars(parser.parse_args())
+        rule_name.append(args['output'])
+        training_file.append(args['training'])
+    except:
+        return False
+    
     x.command_line(0)
 
-    return 0
+    return True
 
 
 ###############################################################################
@@ -622,7 +641,7 @@ def build_grammar(training_file,x):
         if valid_pass(password):
             x.total_size=x.total_size+1
             parse_base(x,password)
-        if (x.total_size % 100000) == 0:
+        if (x.total_size % 100) == 0:
             print ("Processed " + str(x.total_size) + " passwords so far")
 
 
@@ -669,7 +688,8 @@ def main():
     training_file=[]
     x=TrainingData()
 
-    parse_command_line(rule_name,training_file,x)
+    if not parse_command_line(rule_name,training_file,x):
+        return False
 
     pot_type = is_jtr_pot(training_file)
     
