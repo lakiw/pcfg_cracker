@@ -38,53 +38,53 @@ class TrainingData:
     def __init__(self):
 
         ##Init Random Record Keeping Values
-        self.totalSize=0
+        self.total_size=0
 
         ##Init Base Structures
-        self.baseStructure=[]
-        self.baseSize=0
+        self.base_structure=[]
+        self.base_size=0
         
         ##Init Digits
-        self.digitStructure=[]
-        self.digitSize=[]
+        self.digit_structure=[]
+        self.digit_size=[]
         for i in range(MAXLENGTH+1):
-            self.digitSize.append(0)
-            self.digitStructure.append([])
+            self.digit_size.append(0)
+            self.digit_structure.append([])
 
         ##Init Special
-        self.specialStructure=[]
-        self.specialSize=[]
+        self.special_structure=[]
+        self.special_size=[]
         for i in range(MAXLENGTH+1):
-            self.specialSize.append(0)
-            self.specialStructure.append([])
+            self.special_size.append(0)
+            self.special_structure.append([])
 
         ##Init Capitalization
-        self.capStructure=[]
-        self.capSize=[]
+        self.cap_structure=[]
+        self.cap_size=[]
         for i in range(MAXLENGTH+1):
-            self.capSize.append(0)
-            self.capStructure.append([])
+            self.cap_size.append(0)
+            self.cap_structure.append([])
 
         ##Init Keyboard
-        self.keyboardStructure=[]
-        self.keyboardSize=0
+        self.keyboard_structure=[]
+        self.keyboard_size=0
 
         ##Init Replacement
-        self.replaceStructure=[]
-        self.replaceSize=0
+        self.replace_structure=[]
+        self.replace_size=0
 
         ##Init Context Sensitive Values
-        self.contextStructure=[]
-        self.contextSize=0
+        self.context_structure=[]
+        self.context_size=0
     
     ###########################################################################
     # Save command line values
     ###########################################################################
-    def commandLine(self,baseType):
+    def command_line(self,base_type):
         #Save the base structure storage type
         #0 is old style base structure storage of LLLLLDDDS
         #1 is new style base structure storage of L5D3S1
-        self.baseType=baseType
+        self.base_type=base_type
         
 
 
@@ -103,16 +103,16 @@ def find(a, x):
 ####################################################
 # Simply parses the command line
 ####################################################
-def parse_command_line(rule_name,trainingFile, x):
+def parse_command_line(rule_name,training_file, x):
     parser = argparse.ArgumentParser(description='Generates PCFG Grammar From Password Training Set')
     parser.add_argument('--output','-o', help='Name of generated ruleset. Default is \"Default\"',metavar='RULESET_NAME',required=False,default="Default")
     parser.add_argument('--training','-t', help='The training set of passwords to train from',metavar='TRAINING_SET',required=True)
 
     args=vars(parser.parse_args())
     rule_name.append(args['output'])
-    trainingFile.append(args['training'])
+    training_file.append(args['training'])
 
-    x.commandLine(0)
+    x.command_line(0)
 
     return 0
 
@@ -124,7 +124,7 @@ def parse_command_line(rule_name,trainingFile, x):
 #
 # TODO: Add more reject functions to the command line and pass them here
 ###############################################################################
-def validPass(password):
+def valid_pass(password):
 
     # Reject if too long
     if len(password) > (MAXLENGTH+1):
@@ -156,8 +156,8 @@ def validPass(password):
 #########################################################################################
 # Finds the row and pos of a value
 #########################################################################################
-def findRowValue(char):
-    #Yeah I'm leavinging off '`' but who really uses that in a keyboard combo, and it makes the code cleaner
+def find_row_value(char):
+    #Yeah I'm leaving off '`' but who really uses that in a keyboard combo, and it makes the code cleaner
     row1=['1','2','3','4','5','6','7','8','9','0','-','=']
     s_row1=['!','@','#','$','%','^','&','*','(',')','_','+']
     #leaving off '\|'
@@ -172,23 +172,27 @@ def findRowValue(char):
 
     if char in row1:
         return (1,row1.index(char))
+        
     if char in s_row1:
-                return (1,s_row1.index(char))
+        return (1,s_row1.index(char))
 
     if char in row2:
-                return (2,row2.index(char))
+        return (2,row2.index(char))
+        
     if char in s_row2:
-                return (2,s_row2.index(char))
+        return (2,s_row2.index(char))
 
     if char in row3:
-                return (3,row3.index(char))
+        return (3,row3.index(char))
+        
     if char in s_row3:
-                return (3,s_row3.index(char))
+        return (3,s_row3.index(char))
 
     if char in row4:
-                return (4,row4.index(char))
+        return (4,row4.index(char))
+                
     if char in s_row4:
-                return (4,s_row4.index(char))
+        return (4,s_row4.index(char))
 
     #Default value for keys we don't check + non-ASCII chars
     return (-2,-2)
@@ -196,13 +200,13 @@ def findRowValue(char):
 #########################################################################################
 # Finds if a new key is next to the previous key
 #########################################################################################
-def isNextOnKeyboard(past,current):
+def is_next_on_keyboard(past,current):
     if (current[0] == past[0]):
         if (current[1] == past[1]) or (current[1] == past[1]-1) or (current[1] == past[1]+1):
             return True
     elif (current[0] == past[0]+1):
         if (current[1] == past[1]) or (current[1] == past[1]-1):
-                        return True
+            return True
     elif (current[0] == past[0]-1):
         if (current[1] == past[1]) or (current[1] == past[1]+1):
             return True
@@ -214,7 +218,7 @@ def isNextOnKeyboard(past,current):
 # multiple types of characters, aka alpha + digit
 # Also added some sanity checks for common words that tend to look like keyboard combos
 ##########################################################################################
-def interestingKeyboard(combo):
+def interesting_keyboard(combo):
 
     #Remove "likely" partial words
     if (combo[0]== 'e') and (combo[1]== 'r'):
@@ -259,37 +263,37 @@ def interestingKeyboard(combo):
 # more classes of characters, since simple patterns like '123456' will be detected by the
 # respective class trainers
 ##########################################################################################
-def detectKeyboard(x,password,mask):
+def detect_keyboard(x,password,mask):
     i=0
-    curRun=0
+    current_run=0
     past = (-2,-2)
     while i < (len(password)-1):
-        pos = findRowValue(password[i])
-        if isNextOnKeyboard(past,pos):
-            curRun = curRun + 1
+        pos = find_row_value(password[i])
+        if is_next_on_keyboard(past,pos):
+            current_run = current_run + 1
         else:
-            if curRun >=4:
-                if interestingKeyboard(password[i-curRun:i]):
-                    x.keyboardSize = x.keyboardSize + 1
-                    insertList(x.keyboardStructure, password[i-curRun:i]) 
-                    for y in range(i-curRun,i):
+            if current_run >=4:
+                if interesting_keyboard(password[i-current_run:i]):
+                    x.keyboard_size = x.keyboard_size + 1
+                    insert_list(x.keyboard_structure, password[i-current_run:i]) 
+                    for y in range(i-current_run,i):
                         mask[y]='K'
-            curRun = 1
+            current_run = 1
         past = pos
         i = i + 1
 
-    if curRun >=4:
-        if interestingKeyboard(password[i-curRun:i]):
-            x.keyboardSize = x.keyboardSize + 1
-            insertList(x.keyboardStructure, password[i-curRun:i])
+    if current_run >=4:
+        if interesting_keyboard(password[i-current_run:i]):
+            x.keyboard_size = x.keyboard_size + 1
+            insert_list(x.keyboard_structure, password[i-current_run:i])
             #print (password + " " +str(mask) + " " + str(i))
-            for y in range(i-curRun,i):
+            for y in range(i-current_run,i):
                 mask[y]='K'
         
 ####################################################################################
 # Finds the range of alpha characters given a random position inside them
 ####################################################################################
-def findRange(password,i):
+def find_range(password,i):
     bottom=i
     top = i
     while (bottom > 0) and (password[bottom-1].isalpha()):
@@ -307,42 +311,42 @@ def findRange(password,i):
 # Currently assumes any replacement between two alpha chracters is valid
 # TODO: Add more advanced logic to detect keyboard replacements
 ####################################################################################
-def detectReplacement(x,password,mask):
+def detect_replacement(x,password,mask):
     i=0
     #Note a->4 had too high of a false positive rate, aka 'bob4jesus'
-    validReplacements = [('i','1'),('l','1'),('e','3'),('t','7'),('a','@'),('s','$'),('s','5'),('o','0')]
-    replaceSet = []
+    valid_replacements = [('i','1'),('l','1'),('e','3'),('t','7'),('a','@'),('s','$'),('s','5'),('o','0')]
+    replace_set = []
     while i < len(password):
         c = password[i]
-        for j in validReplacements:
+        for j in valid_replacements:
             if c == j[1]:
                 if (i>0) and password[i-1].isalpha():
                     if ((i+1)<len(password)) and password[i+1].isalpha():
-                        replaceSet.append((j,i))
+                        replace_set.append((j,i))
 
         i = i + 1
     
 
     #Save the replacements
-    insertedSet=[]
-    for r in replaceSet:
-        if not (r[0] in insertedSet):
-            insertedSet.append(r[0])
-            x.replaceSize = x.replaceSize + 1
-            insertList(x.replaceStructure,str(r[0][0])+","+str(r[0][1]))
+    inserted_set=[]
+    for r in replace_set:
+        if not (r[0] in inserted_set):
+            inserted_set.append(r[0])
+            x.replace_size = x.replace_size + 1
+            insert_list(x.replace_structure,str(r[0][0])+","+str(r[0][1]))
             
     
     #Now save the mask
-    if (len(replaceSet)!=0):
-        for r in replaceSet:
-            replaceRange = findRange(password,r[1])
-            hasUpper = False
-            for j in range(replaceRange[0],replaceRange[1]+1):
+    if (len(replace_set)!=0):
+        for r in replace_set:
+            replace_range = find_range(password,r[1])
+            has_upper = False
+            for j in range(replace_range[0],replace_range[1]+1):
                 if password[j].isupper():
-                    hasUpper = True
+                    has_upper = True
 
-            for j in range(replaceRange[0],replaceRange[1]+1):
-                if hasUpper:
+            for j in range(replace_range[0],replace_range[1]+1):
+                if has_upper:
                     mask[j]='R'
                 else:
                     mask[j]='r'
@@ -351,18 +355,18 @@ def detectReplacement(x,password,mask):
 ######################################################################################
 # Find context sensitive replacements
 # Note, we need to know what they are in the trainer
-# It is not smart enough to find them on it's own yet
+# It is not smart enough to find them on its own yet
 # TODO: Identify new context sensitive replacements based on the training data
 ######################################################################################
-def detectContext(x,password,mask):
+def detect_context(x,password,mask):
     searchValues=["<3",";p",":p","#1","*0*"]
     for i in searchValues:
         findValue = password.find(i)
         if findValue!=-1:
             for j in range(findValue,findValue+len(i)):
                 mask[j]='X'
-            x.contextSize = x.contextSize +1
-            insertList(x.contextStructure,i,)   
+            x.context_size = x.context_size +1
+            insert_list(x.context_structure,i,)   
 
 
 ######################################################################################
@@ -370,89 +374,89 @@ def detectContext(x,password,mask):
 #
 # TODO: Add logic for conditional replacements for digit/special/alpha combos
 ######################################################################################
-def normalizeBase(x,password):
+def normalize_base(x,password):
     
-    finalBase = []
-    workingBase = list(password.rstrip())
+    final_base = []
+    working_base = list(password.rstrip())
 
     ## Initialize the mask. This is applied after capitalization normalization occurs
     ## Fully aware this can cause some weirdness if a U is part of a K.
     ## For example 1qaZpassword would be KKKKUUUUUUUU when it really should be
     ## KKKKLLLLLLLL
     ## TODO: Find a better way to do this
-    overlayMask = []
+    overlay_mask = []
     for i in range(0,len(password)-1):
-        overlayMask.append('.')
+        overlay_mask.append('.')
 
     ## Detect letter replacements
-    detectReplacement(x,password,overlayMask)
+    detect_replacement(x,password,overlay_mask)
 
     ## Detect context sensitive replacements
-    detectContext(x,password,overlayMask)
+    detect_context(x,password,overlay_mask)
 
 
     ## Detect keyboard combinations
-    detectKeyboard(x,password,overlayMask)
+    detect_keyboard(x,password,overlay_mask)
 
 
     ## Normalize capitalization for alpha structures
     i=0
-    while i < len(workingBase):
-        if workingBase[i].isalpha():
-            containsCap=False
-            for y in range(i,len(workingBase)):
-                if not workingBase[y].isalpha():
+    while i < len(working_base):
+        if working_base[i].isalpha():
+            contains_cap=False
+            for y in range(i,len(working_base)):
+                if not working_base[y].isalpha():
                     break
-                if workingBase[y].isupper():
-                    containsCap=True
+                if working_base[y].isupper():
+                    contains_cap=True
                     break
-            workingMask=[]
-            for y in range(i,len(workingBase)):
-                if not workingBase[y].isalpha():
+            working_mask=[]
+            for y in range(i,len(working_base)):
+                if not working_base[y].isalpha():
                     break
-                if containsCap:
+                if contains_cap:
                     #WorkingMask is used to capture the exact "Capitalization Mask" that was used
                     #Aka Password would be ULLLLLLL
-                    if workingBase[y].isupper():
-                        workingMask.append("U")
+                    if working_base[y].isupper():
+                        working_mask.append("U")
                     else:
-                        workingMask.append("L")
-                    workingBase[y]='C'
+                        working_mask.append("L")
+                    working_base[y]='C'
                         
                 else:
-                    workingBase[y]='L'
+                    working_base[y]='L'
                 i = i + 1
 
             #Save the Capitalization Mask
-            if containsCap:
-                size = len(workingMask)
-                x.capSize[size] = x.capSize[size] + 1
-                insertList(x.capStructure[size], workingMask)
+            if contains_cap:
+                size = len(working_mask)
+                x.cap_size[size] = x.cap_size[size] + 1
+                insert_list(x.cap_structure[size], working_mask)
 
         i = i + 1
     
     #Apply mask from previous transforms
     pos = 0
-    for i in overlayMask:
+    for i in overlay_mask:
         if i != '.':
-            workingBase[pos]=i
+            working_base[pos]=i
         pos = pos + 1
     
-    finalBase = workingBase
-    return finalBase
+    final_base = working_base
+    return final_base
 
 #############################################################################
 # Inserts value into a sorted list if it does not exist
 # Otherwise increments the counter by one
 # Made this generic since I was doing it a lot
 #############################################################################
-def insertList (sortedList, insertValue):
-    valueHolder = DataHolder("".join(insertValue))
-    index = find(sortedList , valueHolder)
+def insert_list (sorted_list, insert_value):
+    value_holder = DataHolder("".join(insert_value))
+    index = find(sorted_list , value_holder)
     if index != -1:
-        sortedList[index].inc()
+        sorted_list[index].inc()
     else:
-        bisect.insort(sortedList,valueHolder)
+        bisect.insort(sorted_list,value_holder)
 
 
 ##############################################################################
@@ -460,55 +464,55 @@ def insertList (sortedList, insertValue):
 # Will call the other parsing functions. Doing it this way so I can add
 # more complex logic, like letter replacements later
 ##############################################################################
-def parseBase(x, password):
+def parse_base(x, password):
     
     # Check for complex transforms like letter replacements and keyboard combos
     # Also extract the "Case Mangling" masks since that's a good a time as any to do that
-    finalBase = normalizeBase(x,password)
+    final_base = normalize_base(x,password)
 
     # Next, extract the digit structures
     count = 0
-    while count < len(finalBase):
+    while count < len(final_base):
         #Start processing this particular digit
-        if finalBase[count].isdigit():
-            workingDigit=[]
-            while count < len(finalBase):
-                if not finalBase[count].isdigit():
+        if final_base[count].isdigit():
+            working_digit=[]
+            while count < len(final_base):
+                if not final_base[count].isdigit():
                     break
-                workingDigit.append(finalBase[count])
+                working_digit.append(final_base[count])
                 count = count + 1
             #Save that digit
-            size = len(workingDigit)
-            x.digitSize[size] = x.digitSize[size]+1
-            insertList(x.digitStructure[size],workingDigit)
+            size = len(working_digit)
+            x.digit_size[size] = x.digit_size[size]+1
+            insert_list(x.digit_structure[size],working_digit)
 
         count = count + 1
 
     # Next, extract the special structures
     count = 0
-    while count < len(finalBase):
+    while count < len(final_base):
         #Start processing this particular special string
-        if not finalBase[count].isalnum():
-            workingSpecial=[]
-            while count < len(finalBase):
-                if finalBase[count].isalnum():
+        if not final_base[count].isalnum():
+            working_special=[]
+            while count < len(final_base):
+                if final_base[count].isalnum():
                     break
-                workingSpecial.append(finalBase[count])
+                working_special.append(final_base[count])
                 count = count + 1
             #Save that special string
-            size = len(workingSpecial)
-            x.specialSize[size] = x.specialSize[size] + 1
-            insertList(x.specialStructure[size],workingSpecial)
+            size = len(working_special)
+            x.special_size[size] = x.special_size[size] + 1
+            insert_list(x.special_structure[size],working_special)
 
         count = count + 1
 
     # Now actually parese the base structure
-    if x.baseType == 0:
-        for i in range(0,len(finalBase)):
-            if finalBase[i].isdigit():
-                finalBase[i]='D'
-            elif not finalBase[i].isalnum():
-                finalBase[i]='S'
+    if x.base_type == 0:
+        for i in range(0,len(final_base)):
+            if final_base[i].isdigit():
+                final_base[i]='D'
+            elif not final_base[i].isalnum():
+                final_base[i]='S'
 
 
     else:
@@ -516,8 +520,8 @@ def parseBase(x, password):
         print ("Add this option")
 
     #Now insert the base structure into the main list
-    x.baseSize = x.baseSize + 1
-    insertList(x.baseStructure, finalBase)
+    x.base_size = x.base_size + 1
+    insert_list(x.base_structure, final_base)
 
     
 
@@ -525,13 +529,13 @@ def parseBase(x, password):
 # Calculate probabilities for a list
 # Also sorts the list
 ##############################################################################
-def calcProb(inputList, size):
+def calc_prob(input_list, size):
     # First calculate the probability for each item
-    for value in inputList:
+    for value in input_list:
         value.prob = (1.0 * value.num) / size
 
     # Now sort the list
-    inputList.sort(key=operator.attrgetter('num'), reverse=True)
+    input_list.sort(key=operator.attrgetter('num'), reverse=True)
 
 ##############################################################################
 # Create a directory if one does not already exist
@@ -548,7 +552,7 @@ def make_sure_path_exists(path):
 # Creates all the directories needed to save a file
 ##############################################################################
 def make_rule_dirs(rule_name):
-    make_sure_path_exists('./Rules/'+'/Grammar')
+    make_sure_path_exists('./Rules/'+rule_name+'/Grammar')
     make_sure_path_exists('./Rules/'+rule_name+'/Digits')
     make_sure_path_exists('./Rules/'+rule_name+'/Capitalization')
     make_sure_path_exists('./Rules/'+rule_name+'/Keyboard')
@@ -579,35 +583,35 @@ def save_results(rule_name,x):
     base_dir = "./Rules/"+rule_name
 
     #Save grammar
-    save_to_file(base_dir+"/Grammar/Grammar.txt", x.baseStructure)
+    save_to_file(base_dir+"/Grammar/Grammar.txt", x.base_structure)
 
     #Save capitalization
     for i in range(1,MAXLENGTH):
-        save_to_file(base_dir+"/Capitalization/"+str(i)+".txt", x.capStructure[i])
+        save_to_file(base_dir+"/Capitalization/"+str(i)+".txt", x.cap_structure[i])
 
     #Save digits
     for i in range(1,MAXLENGTH):
-        save_to_file(base_dir+"/Digits/"+str(i)+".txt", x.digitStructure[i])
+        save_to_file(base_dir+"/Digits/"+str(i)+".txt", x.digit_structure[i])
 
     #Save special
     for i in range(1,MAXLENGTH):
-        save_to_file(base_dir+"/Special/"+str(i)+".txt", x.specialStructure[i])
+        save_to_file(base_dir+"/Special/"+str(i)+".txt", x.special_structure[i])
 
     #Save keyboard
-    save_to_file(base_dir+"/Keyboard/1.txt", x.keyboardStructure)
+    save_to_file(base_dir+"/Keyboard/1.txt", x.keyboard_structure)
 
     #Save replacements
-    save_to_file(base_dir+"/Replace/1.txt", x.replaceStructure)
+    save_to_file(base_dir+"/Replace/1.txt", x.replace_structure)
 
     #Save context sentivite replacements
-    save_to_file(base_dir+"/Context/1.txt", x.contextStructure)
+    save_to_file(base_dir+"/Context/1.txt", x.context_structure)
 
 ###############################################################################
 # Build the grammar from the training file
 # Aka figures out all the Base Structures, D Structures, S Structures, etc.
 ###############################################################################
-def buildGrammar(trainingFile,x):
-    file = open(trainingFile[0], 'r')
+def build_grammar(training_file,x):
+    file = open(training_file[0], 'r')
     
     # Extract all the replacements from the training set
     print ("Starting to parse the training password file")
@@ -615,38 +619,38 @@ def buildGrammar(trainingFile,x):
         
         ## Added a reject function to remove "invalid" passwords nativly
         ## Invalid in this case means you don't want to train on them
-        if validPass(password):
-            x.totalSize=x.totalSize+1
-            parseBase(x,password)
-        if (x.totalSize % 100000) == 0:
-            print ("Processed " + str(x.totalSize) + " passwords so far")
+        if valid_pass(password):
+            x.total_size=x.total_size+1
+            parse_base(x,password)
+        if (x.total_size % 100000) == 0:
+            print ("Processed " + str(x.total_size) + " passwords so far")
 
 
     # Calculate probabilities
     print ("Done parsing the training file. Now calculating probabilities.")
     for i in range(1,MAXLENGTH+1):
-        calcProb(x.specialStructure[i],x.specialSize[i])
+        calc_prob(x.special_structure[i],x.special_size[i])
 
     for i in range(1,MAXLENGTH+1):
-        calcProb(x.digitStructure[i],x.digitSize[i])
+        calc_prob(x.digit_structure[i],x.digit_size[i])
 
     for i in range(1,MAXLENGTH+1):
-        calcProb(x.capStructure[i],x.capSize[i])
+        calc_prob(x.cap_structure[i],x.cap_size[i])
 
-    calcProb(x.baseStructure, x.baseSize)
+    calc_prob(x.base_structure, x.base_size)
     
-    calcProb(x.keyboardStructure, x.keyboardSize)
+    calc_prob(x.keyboard_structure, x.keyboard_size)
 
-    calcProb(x.replaceStructure, x.replaceSize)
+    calc_prob(x.replace_structure, x.replace_size)
 
-    calcProb(x.contextStructure, x.contextSize)
+    calc_prob(x.context_structure, x.context_size)
 
 
     #for i in range(0,MAXLENGTH):
     #   print ("LENGTH " + str(i))
-    #   for y in range(0,len(x.digitStructure[i])):
-    #       print (x.digitStructure[i][y].value + " " +str(x.digitStructure[i][y].num) + " " + str(x.digitStructure[i][y].prob))
-    #   print (x.digitSize[i])    
+    #   for y in range(0,len(x.digit_structure[i])):
+    #       print (x.digit_structure[i][y].value + " " +str(x.digit_structure[i][y].num) + " " + str(x.digit_structure[i][y].prob))
+    #   print (x.digit_size[i])    
     return 0
 
 
@@ -654,21 +658,22 @@ def buildGrammar(trainingFile,x):
 
 ###################################################################################
 # Read the first 1000 entries and determine if it is a JTR pot or a plain wordlist
+# TODO: Actually impliment this
 ###################################################################################
-def isJTRPot(trainingFile):
+def is_jtr_pot(training_file):
     return 0
 
 
 def main():
     rule_name=[]
-    trainingFile=[]
+    training_file=[]
     x=TrainingData()
 
-    parse_command_line(rule_name,trainingFile,x)
+    parse_command_line(rule_name,training_file,x)
 
-    potType = isJTRPot(trainingFile)
+    pot_type = is_jtr_pot(training_file)
     
-    buildGrammar(trainingFile,x)
+    build_grammar(training_file,x)
 
     # Save the results
     save_results(rule_name[0],x)

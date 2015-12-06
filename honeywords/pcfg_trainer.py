@@ -548,7 +548,7 @@ def make_sure_path_exists(path):
 # Creates all the directories needed to save a file
 ##############################################################################
 def make_rule_dirs(ruleName):
-	make_sure_path_exists('./Rules/'+'/Grammar')
+	make_sure_path_exists('./Rules/'+ruleName+'/Grammar')
 	make_sure_path_exists('./Rules/'+ruleName+'/Digits')
 	make_sure_path_exists('./Rules/'+ruleName+'/Capitalization')
 	make_sure_path_exists('./Rules/'+ruleName+'/Keyboard')
