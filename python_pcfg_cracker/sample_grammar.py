@@ -21,7 +21,7 @@ s_queueItem = {
     }
 
 
-s_preTerminal = [
+s_preterminal = [
     0,0,
         [
             [

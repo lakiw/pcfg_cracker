@@ -20,7 +20,7 @@ import queue
 import copy
 import heapq
 
-from sample_grammar import s_preTerminal
+from sample_grammar import s_preterminal
 
 ###################################################################################################
 # Used to hold the parseTree of a path through the PCFG that is then stored in the priority queue
@@ -64,27 +64,27 @@ class queueItem:
     # Overloading print operation to make debugging easier
     ################################################################################
     def __str__(self):
-        retString = "isTerminal = " + str(self.isTerminal) + "\n"
-        retString += "Probability = " + str(self.probability) + "\n"
-        retString += "ParseTree = " + str(self.parseTree) + "\n"
-        return retString
+        ret_string = "isTerminal = " + str(self.isTerminal) + "\n"
+        ret_string += "Probability = " + str(self.probability) + "\n"
+        ret_string += "ParseTree = " + str(self.parseTree) + "\n"
+        return ret_string
         
     #################################################################################
     # A more detailed print that is easier to read. Requires passing in the pcfg
     #################################################################################
     def detailedPrint(self,pcfg):
-        retString = "isTerminal = " + str(self.isTerminal) + "\n"
-        retString += "Probability = " + str(self.probability) + "\n"
-        retString += "ParseTree = "
-        retString += pcfg.printParseTree(self.parseTree)
-        return retString
+        ret_string = "isTerminal = " + str(self.isTerminal) + "\n"
+        ret_string += "Probability = " + str(self.probability) + "\n"
+        ret_string += "ParseTree = "
+        ret_string += pcfg.print_parse_tree(self.parseTree)
+        return ret_string
         
     
             
 #######################################################################################################
 # I may make changes to the underlying priority queue code in the future to better support
 # removing low probability items from it when it grows too large. Therefore I felt it would be best
-# to treat it as a class. Right now though it uses the standared python queue priorityQueue as its
+# to treat it as a class. Right now though it uses the standared python queue HeapQ as its
 # backend
 #######################################################################################################
 class pcfgQueue:
@@ -95,7 +95,8 @@ class pcfgQueue:
         self.pQueue = []  ##--The actual priority queue
         self.maxProbability = 1.0 #--The current highest priority item in the queue. Used for memory management and restoring sessions
         self.minProbability = 0.0 #--The lowest prioirty item is allowed to be in order to be pushed in the queue. Used for memory management
-        self.maxQueueSize = 5000 #--Used for memory management. The maximum number of items before triming the queue. (Note, the queue can temporarially be larger than this)
+        self.maxQueueSize = 50000 #--Used for memory management. The maximum number of items before triming the queue. (Note, the queue can temporarially be larger than this)
+        self.reductionSize = self.maxQueueSize // 4  #--Used to reduce the pQueue by this amount when managing memory
 
     #############################################################################
     # Push the first value into the priority queue
@@ -117,11 +118,11 @@ class pcfgQueue:
         
         ##---Pop the top 1/2 of the priority queue off and save it ---##
         #for index in range(0,(self.maxQueueSize//2)):
-        for index in range(0,self.maxQueueSize-100):
+        for index in range(0,self.maxQueueSize-self.reductionSize):
             item = heapq.heappop(self.pQueue)
             heapq.heappush(keepList,item)
             #if index == (self.maxQueueSize//2)-1:
-            if index == (self.maxQueueSize-100)-1:
+            if index == (self.maxQueueSize-self.reductionSize)-1:
                 ###--- Save the probability of the lowest priority item on the new Queue
                 self.minProbability = item.probability
                 print("min prob: " + str(self.minProbability))
@@ -153,17 +154,14 @@ class pcfgQueue:
         rebuildList.append(queueItem(isTerminal=False, probability = 1.0, parseTree = [0,0,[]]))
         while len(rebuildList) != 0:
             qItem = rebuildList.pop(0)
-            retList = self.rebuildFromMax(g_vars,c_vars,pcfg,qItem)
+            ret_list = self.rebuildFromMax(g_vars,c_vars,pcfg,qItem)
             if len(self.pQueue) > self.maxQueueSize:
                 print("trimming Queue")
                 self.trimQueue(g_vars,c_vars)
                 print("done")
-            for item in retList:
+            for item in ret_list:
                 rebuildList.append(item)
                 
-        
-        if len(self.pQueue) > self.maxQueueSize:
-            print("Going to have to trim: " + str(len(self.pQueue)))
         print("Done")
         return g_vars.RETValues['STATUS_OK']    
         
@@ -178,7 +176,7 @@ class pcfgQueue:
             parentList = pcfg.findMyParents(qItem.parseTree)
             for parent in parentList:
                 ##--The parent will be inserted in the queue so do not insert this child--##
-                if pcfg.findProbability(parent) <=self.maxProbability:
+                if pcfg.find_probability(parent) <=self.maxProbability:
                     return []
             ##--Insert this item in the pQueue----##
             if qItem.probability >= self.minProbability:
@@ -187,13 +185,26 @@ class pcfgQueue:
             
         ##--Else check to see if we need to push this items children into the queue--##
         else:
-            childrenList = pcfg.findChildren(qItem.parseTree)
-            myChildrenList = self.findMyChildren(c_vars,pcfg,qItem,childrenList)
-            retList = []
+            childrenList = pcfg.find_children(qItem.parseTree)
+            myChildrenList = self.lazyFindMyChildren(c_vars,pcfg,qItem,childrenList)
+            ret_list = []
             for child in myChildrenList:
-                retList.append(queueItem(isTerminal = pcfg.findIsTerminal(child), probability = pcfg.findProbability(child), parseTree = child))
-            return retList
-            
+                ret_list.append(queueItem(isTerminal = pcfg.find_is_terminal(child), probability = pcfg.find_probability(child), parseTree = child))
+            return ret_list
+     
+    #####################################################################
+    # Given a list of children, find all the children who this parent should
+    # insert into the list for rebuilding the queue
+    # Note, this is a lazy insert since the parent is determined by position in
+    # the child's parent list vs the lowest probability parent
+    #####################################################################
+    def lazyFindMyChildren(self,c_vars,pcfg,qItem,childrenList):
+        myChildren = []
+        for child in childrenList:
+            parentList = pcfg.findMyParents(child)
+            if parentList[0] == qItem.parseTree:
+                myChildren.append(child)
+        return myChildren    
         
     ###############################################################################
     # Pops the top value off the queue and then inserts any children of that node
@@ -252,14 +263,14 @@ class pcfgQueue:
     # TODO: There is a *TON* of optimization I can do in the current version of this "next" function
     def deadbeatDad(self,g_vars,c_vars,pcfg):
         ##--First find all the potential children
-        childrenList = pcfg.findChildren(g_vars.qItem.parseTree)
+        childrenList = pcfg.find_children(g_vars.qItem.parseTree)
 
         ##--Now find the children this node is responsible for
         myChildrenList = self.findMyChildren(c_vars,pcfg,g_vars.qItem,childrenList)
 
         ##--Create the actual queueItem for each child and insert it in the Priority Queue
         for child in myChildrenList:
-            childNode = queueItem(isTerminal = pcfg.findIsTerminal(child), probability = pcfg.findProbability(child), parseTree = child)
+            childNode = queueItem(isTerminal = pcfg.find_is_terminal(child), probability = pcfg.find_probability(child), parseTree = child)
             if childNode.probability <= g_vars.qItem.probability:
                 ##--Memory management chck---------
                 ##--If the probability of the child node is too low don't bother to insert it in the queue
@@ -282,12 +293,12 @@ class pcfgQueue:
                 ##--First check to make sure the other parent isn't this node
                 if parent != qItem.parseTree:
                     ##--If there is another parent that will take care of the child node
-                    if pcfg.findProbability(parent) < qItem.probability:
+                    if pcfg.find_probability(parent) < qItem.probability:
                         isMyChild = False
                         break
                     ##--Need to make sure only one parent pushes the child in if there are multiple parents of same probability
                     ##--Currently just cheating and using the python compare operator
-                    elif pcfg.findProbability(parent) == qItem.probability:
+                    elif pcfg.find_probability(parent) == qItem.probability:
                         if parent < qItem.parseTree:
                             isMyChild = False
                             break
@@ -301,7 +312,7 @@ class pcfgQueue:
 # Random Test Function
 ####################################################################                
 def testQueue(pcfg):
-    sQueueItem = queueItem(parseTree=s_preTerminal)
+    sQueueItem = queueItem(parseTree=s_pre_terminal)
     print(sQueueItem)
     print("--------------")
     print(sQueueItem.detailedPrint(pcfg))

@@ -19,7 +19,7 @@ import copy
 
 
 #Used for debugging and development
-from sample_grammar import s_preTerminal
+from sample_grammar import s_preterminal
 
 
 ##########################################################################################
@@ -58,7 +58,7 @@ from sample_grammar import s_preTerminal
 #    Considering how I'm still designing/writing this code, the above is almost certainly going to change
 #
 ##########################################################################################
-class pcfgClass:
+class PcfgClass:
     ########################################################
     # Initialize the class, not really doing anything here
     ########################################################
@@ -68,33 +68,33 @@ class pcfgClass:
     
     ##############################################################################
     # Top level function used to return all the terminals / password guesses
-    # associated with the preTerminal passed it
+    # associated with the pre_terminal passed it
     ##############################################################################
-    def listTerminals(self,preTerminal):
-        terminalList = []
-        #First grab a list of all the preterminals. It'll take the form of nested linked lists.
+    def list_terminals(self,pre_terminal):
+        terminal_list = []
+        #First grab a list of all the pre_terminals. It'll take the form of nested linked lists.
         #For example expantTerminals will return something like [['cat','hat','dog'],[1,2]].
-        guessCombos = self.expandTerminals(preTerminal,workingValue=[])
+        guess_combos = self.expand_terminals(pre_terminal,working_value=[])
         #Now take the combos and generate guesses. Following the above example, create the guesses cat1,hat1,dog1,cat2,hat2,dog2
-        terminalList = self.expandFinalString(guessCombos)
-        return terminalList
+        terminal_list = self.expand_final_string(guess_combos)
+        return terminal_list
     
     ##############################################################################
     # Used to expend a nested list of pre-terminals into actual password guesses
     # Input will be something like this: [['cat','hat','dog',Cat,Hat,Dog],[1,2]]
     # Output should be something like this: cat1,hat1,dog1,Cat1,Hat1,Dog1,cat2,hat2,dog2,Cat2,Hat2,Dog2
     ###############################################################################
-    def expandFinalString(self,guessCombos):
+    def expand_final_string(self,guess_combos):
         ##--Time to get all recursive!--
-        if len(guessCombos)==1:
-            return guessCombos[0]
+        if len(guess_combos)==1:
+            return guess_combos[0]
         else:
-            retStrings = []
-            recursiveStrings = self.expandFinalString(guessCombos[1:])
-            for frontString in guessCombos[0]:
-                for backString in recursiveStrings:
-                    retStrings.append(frontString + backString)
-            return retStrings
+            ret_strings = []
+            recursiveStrings = self.expand_final_string(guess_combos[1:])
+            for frontString in guess_combos[0]:
+                for back_string in recursiveStrings:
+                    ret_strings.append(frontString + back_string)
+            return ret_strings
         
             
             
@@ -103,63 +103,63 @@ class pcfgClass:
     # just be strings that can be combined together. All complex transforms need to be done
     # in this function. For example it needs to apply all capitalization mangling rules.
     ########################################################################################
-    def expandTerminals(self,curSection,workingValue=[]):
-        curCombo = workingValue
+    def expand_terminals(self,cur_section,working_value=[]):
+        cur_combo = working_value
         ##--Overly complicated to read, I know, but it just parses the grammar and grabs the parts we care about for this section, (replacements)
-        ##--Some of the craziness is I'm using the values in curSection[0,1] to represent pointers into the grammar
-        curDic = self.grammar[curSection[0]]['replacements'][curSection[1]]
+        ##--Some of the craziness is I'm using the values in cur_section[0,1] to represent pointers into the grammar
+        cur_dic = self.grammar[cur_section[0]]['replacements'][cur_section[1]]
         ##----Now deal with the different types of transition functions----------###
         
         ##----If you are copying the actual values over, aka D1->['1','2','3','4']. This is the simplest one
-        if curDic['function']=='copy':
-            curCombo = curDic['terminal']
+        if cur_dic['function']=='copy':
+            cur_combo = cur_dic['terminal']
             
         ##----If you are copying over values that aren't terminals. For example L3=>['cat','hat']. They are not terminals since you still need to apply capitalization rules to them
-        elif curDic['function']=='shadow':
+        elif cur_dic['function']=='shadow':
             ##--Pass the value to the next replacement to take care of
-            curCombo =  self.expandTerminals(curSection[2][0],curDic['pre_terminal'])
+            cur_combo =  self.expand_terminals(cur_section[2][0],cur_dic['pre_terminal'])
         ##----Capitalize the value passed in from the previous section----
-        elif curDic['function']=='capitalize':
-            tempCombo=[]
-            for rule in curDic['terminal']:
-                for word in curCombo:
-                    tempWord =''
+        elif cur_dic['function']=='capitalize':
+            temp_combo=[]
+            for rule in cur_dic['terminal']:
+                for word in cur_combo:
+                    temp_word =''
                     for letterPos in range(0,len(word)):
                         if rule[letterPos]=='U':
-                            tempWord += word[letterPos].upper()
+                            temp_word += word[letterPos].upper()
                         else:
-                            tempWord += word[letterPos]
-                    tempCombo.append(tempWord)
-            curCombo = tempCombo
+                            temp_word += word[letterPos]
+                    temp_combo.append(temp_word)
+            cur_combo = temp_combo
         ##---Potentially adding a new replacement. aka S->ABC. This is more of a traditional PCFG "non-terminal"
-        elif curDic['function']=='transparent':
-            for rule in curSection[2]:
-                curCombo.append(self.expandTerminals(rule))
-        return curCombo
+        elif cur_dic['function']=='transparent':
+            for rule in cur_section[2]:
+                cur_combo.append(self.expand_terminals(rule))
+        return cur_combo
         
     ##############################################################################################
     # Used to find the probability of a parse tree in the graph
     ##############################################################################################
-    def findProbability(self,pt):
+    def find_probability(self,pt):
         ##--Start at 100%
-        currentProb = self.grammar[pt[0]]['replacements'][pt[1]]['prob']
+        current_prob = self.grammar[pt[0]]['replacements'][pt[1]]['prob']
         if len(pt[2]) != 0:
             for x in range(0,len(pt[2])):
-                childProb = self.findProbability(pt[2][x])
-                currentProb =currentProb * childProb
-        return currentProb
+                child_prob = self.find_probability(pt[2][x])
+                current_prob =current_prob * child_prob
+        return current_prob
         
         
     ###############################################################################################
     # Used to find if a node is ready to be printed out or not
     ###############################################################################################
-    def findIsTerminal(self,pt):
+    def find_is_terminal(self,pt):
         if len(pt[2])==0:
             if self.grammar[pt[0]]['replacements'][pt[1]]['isTerminal'] == False:
                 return False
         else:
             for x in range(0,len(pt[2])):
-                if self.findIsTerminal(pt[2][x]) == False:
+                if self.find_is_terminal(pt[2][x]) == False:
                     return False
         return True
         
@@ -167,102 +167,102 @@ class pcfgClass:
     #################################################################
     # Finds all the children of the parse tree and returns them as a list
     #################################################################
-    def findChildren(self,pt):
+    def find_children(self,pt):
         #basically we want to increment one step if possible
         #First check for children of the current nodes
-        retList = []
+        ret_list = []
         ##--Only increment and expand if the transition options are blank, aka (x,y,[]) vs (x,y,[some values])
         if len(pt[2])==0:
             numReplacements = len(self.grammar[pt[0]]['replacements'])
             #Takes care of the incrementing if there are children
             if numReplacements > (pt[1]+1):
                 #Return the child
-                retList.append(copy.deepcopy(pt))
-                retList[0][1] = pt[1] + 1
+                ret_list.append(copy.deepcopy(pt))
+                ret_list[0][1] = pt[1] + 1
                 
             #Now take care of the expansion
             if self.grammar[pt[0]]['replacements'][0]['isTerminal'] != True:
-                newExpansion = []
+                new_expansion = []
                 for x in self.grammar[pt[0]]['replacements'][pt[1]]['pos']:
-                    newExpansion.append([x,0,[]])
-                retList.append(copy.deepcopy(pt))
-                retList[-1][2] = newExpansion
+                    new_expansion.append([x,0,[]])
+                ret_list.append(copy.deepcopy(pt))
+                ret_list[-1][2] = new_expansion
         ###-----Next check to see if there are any nodes to the right that need to be checked
         ###-----This happens if the node is a pre-terminal that has already been expanded
         else:    
             for x in range(0,len(pt[2])):
                 #Doing it recursively!
-                tempList = self.findChildren(pt[2][x])
+                temp_list = self.find_children(pt[2][x])
                 #If there were any children, append them to the main list
-                for y in tempList:
-                    retList.append(copy.deepcopy(pt))
-                    retList[-1][2][x] = y
+                for y in temp_list:
+                    ret_list.append(copy.deepcopy(pt))
+                    ret_list[-1][2][x] = y
         
-        return retList
+        return ret_list
 
     ######################################################################
     # Returns a list of all the parents for a child node / parse-tree
     ######################################################################    
     def findMyParents(self,pt):
-        retList = []
+        ret_list = []
         ##--Only expand up if the transition options are blank, aka (x,y,[]) vs (x,y,[some values])
         if len(pt[2])==0:
             #Check the curnode if is at least one other parent
             if pt[1] != 0:     
-                retList.append(copy.deepcopy(pt))
-                retList[0][1] = pt[1] - 1
+                ret_list.append(copy.deepcopy(pt))
+                ret_list[0][1] = pt[1] - 1
         else:
             ###---Used to tell if we need to include the non-expanded parse tree as a parent
-            parentSize = len(retList)
+            parent_size = len(ret_list)
             
             ##---Now go through the expanded parse tree and see if there are any parents from them
             for x in range(0,len(pt[2])):
                 #Doing it recursively!
-                tempList = self.findMyParents(pt[2][x])
+                temp_list = self.findMyParents(pt[2][x])
                 #If there were any parents, append them to the main list
-                if len(tempList) != 0:
-                    for y in tempList:
+                if len(temp_list) != 0:
+                    for y in temp_list:
                         tempValue = copy.deepcopy(pt)
                         tempValue[2][x] = y
-                        retList.append(tempValue)
+                        ret_list.append(tempValue)
             ###--If there were no parents from the expanded parse tree add the non-expanded version as a parent
-            if parentSize == len(retList):
-                retList.append(copy.deepcopy(pt))
-                retList[0][2] = []
+            if parent_size == len(ret_list):
+                ret_list.append(copy.deepcopy(pt))
+                ret_list[0][2] = []
                             
-        return retList
+        return ret_list
         
     
     ##################################################################################################
     # Prints out the parse tree in a human readable fashion
     # Used for debugging but may end up using this for status prints as well
     ##################################################################################################
-    def printParseTree(self,pt=[]):
-        retString = ''
+    def print_parse_tree(self,pt=[]):
+        ret_string = ''
         if len(pt[2])==0:
-            retString += self.grammar[pt[0]]['name']
-            retString += "[" + str(pt[1] + 1) + " of " + str(len(self.grammar[pt[0]]['replacements'])) + "]"
+            ret_string += self.grammar[pt[0]]['name']
+            ret_string += "[" + str(pt[1] + 1) + " of " + str(len(self.grammar[pt[0]]['replacements'])) + "]"
             if self.grammar[pt[0]]['replacements'][pt[1]]['isTerminal'] == True:
-                retString += "->terminal"
+                ret_string += "->terminal"
             else:
-                retString += "->incomplete"
+                ret_string += "->incomplete"
         else:
-            retString += self.grammar[pt[0]]['name'] 
-            retString += "[" + str(pt[1] + 1) + " of " + str(len(self.grammar[pt[0]]['replacements'])) + "]"
-            retString += "-> ("
+            ret_string += self.grammar[pt[0]]['name'] 
+            ret_string += "[" + str(pt[1] + 1) + " of " + str(len(self.grammar[pt[0]]['replacements'])) + "]"
+            ret_string += "-> ("
             for x in range(0,len(pt[2])):
-                retString += self.printParseTree(pt[2][x])
+                ret_string += self.print_parse_tree(pt[2][x])
                 if x != len(pt[2])-1:
-                    retString +=" , "
-            retString += ")"
+                    ret_string +=" , "
+            ret_string += ")"
         
-        return retString
+        return ret_string
                 
 ###################################################################
 # Function I'm using to test how the password guesses are being
 # generated from a pre-terminal structure and the PCFG grammar
 ####################################################################                
-def testGrammar(g_vars,c_vars,pcfg):
-    pcfg.listTerminals(s_preTerminal)
+def test_grammar(g_vars,c_vars,pcfg):
+    pcfg.list_terminals(s_pre_terminal)
     
         
