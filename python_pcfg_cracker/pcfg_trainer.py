@@ -1,4 +1,4 @@
-#!/usr/local/bin/python3
+#!/usr/bin/env python3
 
 import sys
 import time
@@ -103,13 +103,13 @@ def find(a, x):
 ####################################################
 # Simply parses the command line
 ####################################################
-def parseCommandLine(ruleName,trainingFile, x):
+def parse_command_line(rule_name,trainingFile, x):
     parser = argparse.ArgumentParser(description='Generates PCFG Grammar From Password Training Set')
     parser.add_argument('--output','-o', help='Name of generated ruleset. Default is \"Default\"',metavar='RULESET_NAME',required=False,default="Default")
     parser.add_argument('--training','-t', help='The training set of passwords to train from',metavar='TRAINING_SET',required=True)
 
     args=vars(parser.parse_args())
-    ruleName.append(args['output'])
+    rule_name.append(args['output'])
     trainingFile.append(args['training'])
 
     x.commandLine(0)
@@ -547,14 +547,14 @@ def make_sure_path_exists(path):
 ##############################################################################
 # Creates all the directories needed to save a file
 ##############################################################################
-def make_rule_dirs(ruleName):
+def make_rule_dirs(rule_name):
     make_sure_path_exists('./Rules/'+'/Grammar')
-    make_sure_path_exists('./Rules/'+ruleName+'/Digits')
-    make_sure_path_exists('./Rules/'+ruleName+'/Capitalization')
-    make_sure_path_exists('./Rules/'+ruleName+'/Keyboard')
-    make_sure_path_exists('./Rules/'+ruleName+'/Special')
-    make_sure_path_exists('./Rules/'+ruleName+'/Replace')
-    make_sure_path_exists('./Rules/'+ruleName+'/Context')
+    make_sure_path_exists('./Rules/'+rule_name+'/Digits')
+    make_sure_path_exists('./Rules/'+rule_name+'/Capitalization')
+    make_sure_path_exists('./Rules/'+rule_name+'/Keyboard')
+    make_sure_path_exists('./Rules/'+rule_name+'/Special')
+    make_sure_path_exists('./Rules/'+rule_name+'/Replace')
+    make_sure_path_exists('./Rules/'+rule_name+'/Context')
 
 
 #############################################################################
@@ -570,37 +570,37 @@ def save_to_file(filename,data):
 ##############################################################################
 # Saves the results
 ##############################################################################
-def save_results(ruleName,x):
+def save_results(rule_name,x):
     # First create the directory structure
     print ("Finished calculating probabilities. Saving results")
-    make_rule_dirs(ruleName)
+    make_rule_dirs(rule_name)
 
     #Now save the results
-    baseDir = "./Rules/"+ruleName
+    base_dir = "./Rules/"+rule_name
 
     #Save grammar
-    save_to_file(baseDir+"/Grammar/Grammar.txt", x.baseStructure)
+    save_to_file(base_dir+"/Grammar/Grammar.txt", x.baseStructure)
 
     #Save capitalization
     for i in range(1,MAXLENGTH):
-        save_to_file(baseDir+"/Capitalization/"+str(i)+".txt", x.capStructure[i])
+        save_to_file(base_dir+"/Capitalization/"+str(i)+".txt", x.capStructure[i])
 
     #Save digits
     for i in range(1,MAXLENGTH):
-        save_to_file(baseDir+"/Digits/"+str(i)+".txt", x.digitStructure[i])
+        save_to_file(base_dir+"/Digits/"+str(i)+".txt", x.digitStructure[i])
 
     #Save special
     for i in range(1,MAXLENGTH):
-        save_to_file(baseDir+"/Special/"+str(i)+".txt", x.specialStructure[i])
+        save_to_file(base_dir+"/Special/"+str(i)+".txt", x.specialStructure[i])
 
     #Save keyboard
-    save_to_file(baseDir+"/Keyboard/1.txt", x.keyboardStructure)
+    save_to_file(base_dir+"/Keyboard/1.txt", x.keyboardStructure)
 
     #Save replacements
-    save_to_file(baseDir+"/Replace/1.txt", x.replaceStructure)
+    save_to_file(base_dir+"/Replace/1.txt", x.replaceStructure)
 
     #Save context sentivite replacements
-    save_to_file(baseDir+"/Context/1.txt", x.contextStructure)
+    save_to_file(base_dir+"/Context/1.txt", x.contextStructure)
 
 ###############################################################################
 # Build the grammar from the training file
@@ -660,18 +660,18 @@ def isJTRPot(trainingFile):
 
 
 def main():
-    ruleName=[]
+    rule_name=[]
     trainingFile=[]
     x=TrainingData()
 
-    parseCommandLine(ruleName,trainingFile,x)
+    parse_command_line(rule_name,trainingFile,x)
 
     potType = isJTRPot(trainingFile)
     
     buildGrammar(trainingFile,x)
 
     # Save the results
-    save_results(ruleName[0],x)
+    save_results(rule_name[0],x)
 
 
 if __name__ == "__main__":

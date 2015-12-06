@@ -1,4 +1,4 @@
-#!/usr/local/bin/python3
+#!/usr/bin/env python3
 
 ########################################################################################
 #
@@ -35,54 +35,53 @@
 #
 #########################################################################################
 
-from __future__ import print_function
+
 import sys
 import argparse
 import time
 
 #Custom modules
-sys.path.append('./lib')
-from file_io import loadConfig, loadRules
-from core_grammar import PcfgClass, test_grammar
-from priority_queue import pcfgQueue, queueItem, testQueue
+from lib.file_io import load_config, load_rules
+from lib.core_grammar import PcfgClass, test_grammar
+from lib.priority_queue import PcfgQueue, QueueItem, test_queue
 
 
 #########################################################################################
 # Holds the command line values
 # Also holds the default values if you don't want to enter them every time you run this
 #########################################################################################
-class commandLineVars:
+class CommandLineVars:
     def __init__(self):
-        self.configFile = ""
-        self.ruleName = "Default"
-        self.ruleDirectory = "Rules"
+        self.config_file = ""
+        self.rule_name = "Default"
+        self.rule_directory = "Rules"
         #Debugging printouts
         self.verbose = True  
         ##--temporary value---
-        self.inputDictionary = "passwords.lst"
+        self.input_dictionary = "passwords.lst"
 
 ############################################################################################
 # Guess they aren't technically global...
 ############################################################################################
-class globalVars:               
+class GlobalVars:               
     def __init__(self):
-        self.maxDicWord = 32
+        self.max_dic_word = 32
         ##--I know, having detailed retvalues doesn't add a lot for a program like this, but it satisfies some sort of OCD itch of mine
-        self.RETValues = {'STATUS_OK':0,'File_IO_Error':1, 'QUEUE_EMPTY':2, 'WEIRD_ERROR':3, 'QUEUE_FULL_ERROR':4}
+        self.ret_values = {'STATUS_OK':0,'FILE_IO_ERROR':1, 'QUEUE_EMPTY':2, 'WEIRD_ERROR':3, 'QUEUE_FULL_ERROR':4}
         
-        ##--The current queueItem we are working on
-        self.qItem = queueItem()
+        ##--The current QueueItem we are working on
+        self.q_item = QueueItem()
 
 ####################################################
 # Simply parses the command line
 ####################################################
-def parseCommandLine(c_vars):
+def parse_command_line(c_vars):
     parser = argparse.ArgumentParser(description='PCFG_Cracker version 3.0. Used to generate password guesses for use in other cracking programs')
-    parser.add_argument('--config','-c', help='The configuration file to use',metavar='CONFIG_FILE',required=False, default=c_vars.configFile)
+    parser.add_argument('--config','-c', help='The configuration file to use',metavar='CONFIG_FILE',required=False, default=c_vars.config_file)
     parser.add_argument('--feature', dest='feature', action='store_true')
     parser.add_argument('--verbose','-v', help='Verbose prints. Only use for debugging otherwise it will generate junk guesses',dest='verbose', action='store_false')
     args=vars(parser.parse_args())
-    c_vars.configFile = args['config']
+    c_vars.config_file = args['config']
     c_vars.verbose = args['verbose']
     return 0 
 
@@ -91,66 +90,66 @@ def parseCommandLine(c_vars):
 # Main function, not that exciting
 ##################################################################
 def main():
-    c_vars = commandLineVars()
-    g_vars = globalVars()
+    c_vars = CommandLineVars()
+    g_vars = GlobalVars()
     pcfg = PcfgClass()
     
     ##--Initialize the priority queue--##
-    pQueue = pcfgQueue()
-    pQueue.initialize(pcfg)
+    p_queue = PcfgQueue()
+    p_queue.initialize(pcfg)
     ##--Parse the command line ---##
-    parseCommandLine(c_vars)
+    parse_command_line(c_vars)
     if c_vars.verbose == True:
         print ("PCFG_Cracker version 3.0")
         
     ##--Parse the main config file----#
-    retValue = loadConfig(g_vars,c_vars)
-    if retValue != g_vars.RETValues['STATUS_OK']:
+    ret_value = load_config(g_vars,c_vars)
+    if ret_value != g_vars.ret_values['STATUS_OK']:
         print ("Error reading config file, exiting")
-        return retValue
+        return ret_value
     
     ##--Load the rules file---##
-    retValue = loadRules(g_vars,c_vars,pcfg)
-    if retValue != g_vars.RETValues['STATUS_OK']:
+    ret_value = load_rules(g_vars,c_vars,pcfg)
+    if ret_value != g_vars.ret_values['STATUS_OK']:
         print ("Error reading Rules file, exiting")
-        return retValue
+        return ret_value
 
     ##--Going to break this up eventually into it's own function, but for now, process the queue--##
-    retValue = pQueue.nextFunction(g_vars,c_vars,pcfg)
-    numpre_terminals = 0
-    numGuesses = 0
-    pQueueStartTime = 0
-    pQueueStopTime = 0
-    guessStartTime = 0
-    guessStopTime = 0
-    totalTimeStart = time.perf_counter()
-    while retValue == g_vars.RETValues['STATUS_OK']:
-#       print(str(g_vars.qItem.probability) + " : " + str(g_vars.qItem.parseTree))
-        numpre_terminals = numpre_terminals +1
-        guessStartTime = time.perf_counter()
-        numGuesses = numGuesses + len(pcfg.list_terminals(g_vars.qItem.parseTree))
+    ret_value = p_queue.next_function(g_vars,c_vars,pcfg)
+    num_preterminals = 0
+    num_guesses = 0
+    p_queue_start_time = 0
+    p_queue_stop_time = 0
+    guess_start_time = 0
+    guess_stop_time = 0
+    total_time_start = time.perf_counter()
+    while ret_value == g_vars.ret_values['STATUS_OK']:
+#       print(str(g_vars.q_item.probability) + " : " + str(g_vars.q_item.parse_tree))
+        num_preterminals = num_preterminals +1
+        guess_start_time = time.perf_counter()
+        num_guesses = num_guesses + len(pcfg.list_terminals(g_vars.q_item.parse_tree))
         
-        guessStopTime = time.perf_counter() - guessStartTime
-        if numpre_terminals % 10000 == 0:
-            print ("PQueue:" + str(len(pQueue.pQueue)))
-#            print ("Total number of Pre Terminals: " + str (numpre_terminals))
-#            print ("PQueueTime " + str(pQueueStopTime))
-#            print ("Guesses:" + str(numGuesses))
-#            print ("GuessTime " + str(guessStopTime))
-#            print ("Average num of guesses per preterm: " + str(numGuesses // numpre_terminals))
-#            print ("Total Time " + str(time.perf_counter() - totalTimeStart))
-#            print ("Number of guesses a second: " + str(numGuesses // (time.perf_counter() - totalTimeStart)))
-            print ("Current probability: " + str(pQueue.maxProbability))
-        for guess in pcfg.list_terminals(g_vars.qItem.parseTree):
+        guess_stop_time = time.perf_counter() - guess_start_time
+        if num_preterminals % 10000 == 0:
+            print ("PQueue:" + str(len(p_queue.p_queue)))
+#            print ("Total number of Pre Terminals: " + str (num_preterminals))
+#            print ("PQueueTime " + str(p_queue_stop_time))
+#            print ("Guesses:" + str(num_guesses))
+#            print ("GuessTime " + str(guess_stop_time))
+#            print ("Average num of guesses per preterm: " + str(num_guesses // num_preterminals))
+#            print ("Total Time " + str(time.perf_counter() - total_time_start))
+#            print ("Number of guesses a second: " + str(num_guesses // (time.perf_counter() - total_time_start)))
+            print ("Current probability: " + str(p_queue.max_probability))
+        for guess in pcfg.list_terminals(g_vars.q_item.parse_tree):
             print(guess)
-        pQueueStartTime = time.perf_counter()  
-        retValue = pQueue.nextFunction(g_vars,c_vars,pcfg)
-        pQueueStopTime = time.perf_counter() - pQueueStartTime
-    #retValue = testQueue(g_vars,c_vars,pcfg)
-    #retValue = test_grammar(g_vars,c_vars,pcfg)
+        p_queue_start_time = time.perf_counter()  
+        ret_value = p_queue.next_function(g_vars,c_vars,pcfg)
+        p_queue_stop_time = time.perf_counter() - p_queue_start_time
+    #ret_value = test_queue(g_vars,c_vars,pcfg)
+    #ret_value = test_grammar(g_vars,c_vars,pcfg)
    
     
-    return g_vars.RETValues['STATUS_OK']
+    return g_vars.ret_values['STATUS_OK']
     
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-#!/usr/local/bin/python3
+#!/usr/bin/env python3
 
 ########################################################################################
 #
@@ -8,7 +8,6 @@
 #
 #########################################################################################
 
-from __future__ import print_function
 import sys
 import string
 import struct
@@ -37,7 +36,7 @@ from sample_grammar import s_preterminal
 # out certain replacements may require certain chaining. Aka as it is currently set up, a capitalization
 # replacement needs to occur after a dictionary word replacement
 # Here are some example fields for a replacement
-#   'isTerminal':False //Required. I guess I don't need to use this field if I structured some things differently but it says if there are any future transitions or not
+#   'is_terminal':False //Required. I guess I don't need to use this field if I structured some things differently but it says if there are any future transitions or not
 #   'pos':[5,3]  //Required for non-terminals. Acts like pointers into the grammar for what future replacements should be applied to this section.
 #                //You can have multiple replacements for example A->AB or A->BC
 #   'prob':0.00021 //Required for non-terminals. The probability this transition occurs at. Please note the probability is associated with the transition itself and not the terminals that it is pointed to
@@ -155,7 +154,7 @@ class PcfgClass:
     ###############################################################################################
     def find_is_terminal(self,pt):
         if len(pt[2])==0:
-            if self.grammar[pt[0]]['replacements'][pt[1]]['isTerminal'] == False:
+            if self.grammar[pt[0]]['replacements'][pt[1]]['is_terminal'] == False:
                 return False
         else:
             for x in range(0,len(pt[2])):
@@ -181,7 +180,7 @@ class PcfgClass:
                 ret_list[0][1] = pt[1] + 1
                 
             #Now take care of the expansion
-            if self.grammar[pt[0]]['replacements'][0]['isTerminal'] != True:
+            if self.grammar[pt[0]]['replacements'][0]['is_terminal'] != True:
                 new_expansion = []
                 for x in self.grammar[pt[0]]['replacements'][pt[1]]['pos']:
                     new_expansion.append([x,0,[]])
@@ -242,7 +241,7 @@ class PcfgClass:
         if len(pt[2])==0:
             ret_string += self.grammar[pt[0]]['name']
             ret_string += "[" + str(pt[1] + 1) + " of " + str(len(self.grammar[pt[0]]['replacements'])) + "]"
-            if self.grammar[pt[0]]['replacements'][pt[1]]['isTerminal'] == True:
+            if self.grammar[pt[0]]['replacements'][pt[1]]['is_terminal'] == True:
                 ret_string += "->terminal"
             else:
                 ret_string += "->incomplete"

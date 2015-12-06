@@ -1,9 +1,9 @@
-#!/usr/local/bin/python3
+#!/usr/bin/env python3
 
-s_queueItem = {
-    'isTerminal':True,
+s_queue_item = {
+    'is_terminal':True,
     'prob':0.001,
-    'parseTree':
+    'parse_tree':
         [
             0,0,
             [
@@ -45,19 +45,19 @@ s_grammar = [
         'name':'S',
         'replacements':[
             {
-                'isTerminal':False,
+                'is_terminal':False,
                 'pos':[1,3],
                 'prob':0.5,
                 'function':'transparent'
             },
             {
-                'isTerminal':False,
+                'is_terminal':False,
                 'pos':[2],
                 'prob':0.30,
                 'function':'transparent'
             },
             {
-                'isTerminal':False,
+                'is_terminal':False,
                 'pos':[2,3],
                 'prob':0.20,
                 'function':'transparent'
@@ -68,7 +68,7 @@ s_grammar = [
         'name':"L3",
         'replacements':[
             {
-                'isTerminal':False,
+                'is_terminal':False,
                 'pos':[4],
                 'prob':0.8,
                 'pre_terminal':[
@@ -80,7 +80,7 @@ s_grammar = [
                 'function':'shadow'
             },
             {
-                'isTerminal':False,
+                'is_terminal':False,
                 'pos':[4],
                 'prob':0.2,
                 'pre_terminal':[
@@ -95,7 +95,7 @@ s_grammar = [
         'name':"L5",
         'replacements':[
             {
-                'isTerminal':False,
+                'is_terminal':False,
                 'pos':[5],
                 'prob':0.7,
                 'pre_terminal':[
@@ -105,7 +105,7 @@ s_grammar = [
                 'function':'shadow'
             },
             {
-                'isTerminal':False,
+                'is_terminal':False,
                 'pos':[5],
                 'prob':0.3,
                 'pre_terminal':[
@@ -120,7 +120,7 @@ s_grammar = [
         'name':"D2",
         'replacements':[
             {
-                'isTerminal':True,
+                'is_terminal':True,
                 'prob':0.7,
                 'terminal':[
                     '1',
@@ -128,7 +128,7 @@ s_grammar = [
                 'function':'copy'
             },
             {
-                'isTerminal':True,
+                'is_terminal':True,
                 'prob':0.3,
                 'terminal':[
                     '2',
@@ -143,7 +143,7 @@ s_grammar = [
         'name':'C3',
         'replacements':[
             {
-                'isTerminal':True,
+                'is_terminal':True,
                 'prob':0.8,
                 'terminal':[
                     'LLL'
@@ -151,7 +151,7 @@ s_grammar = [
                 'function':'capitalize'
             },
             {
-                'isTerminal':True,
+                'is_terminal':True,
                 'prob':0.20,
                 'terminal':[
                     'ULL',
@@ -165,7 +165,7 @@ s_grammar = [
         'name':'C5',
         'replacements':[
             {
-                'isTerminal':True,
+                'is_terminal':True,
                 'prob':0.8,
                 'terminal':[
                     'LLLLL'
@@ -173,7 +173,7 @@ s_grammar = [
                 'function':'capitalize'
             },
             {
-                'isTerminal':True,
+                'is_terminal':True,
                 'prob':0.20,
                 'terminal':[
                     'ULLLL',
