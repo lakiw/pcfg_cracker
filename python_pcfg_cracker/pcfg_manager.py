@@ -41,9 +41,9 @@ import argparse
 import time
 
 #Custom modules
-from lib.file_io import load_config, load_rules
-from lib.core_grammar import PcfgClass, test_grammar
-from lib.priority_queue import PcfgQueue, QueueItem, test_queue
+from pcfg_manager.file_io import load_config, load_rules
+from pcfg_manager.core_grammar import PcfgClass, test_grammar
+from pcfg_manager.priority_queue import PcfgQueue, QueueItem, test_queue
 
 
 #########################################################################################

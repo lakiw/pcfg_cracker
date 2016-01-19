@@ -1,0 +1,23 @@
+##--Standard all letter passwords
+$MD5$d41d8cd98f00b204e9800998ecf8427e:password
+$MD5$d41d8cd98f00b204e9800998ecf8427e:boot
+$MD5$d41d8cd98f00b204e9800998ecf8427e:hiitisdog
+$MD5$d41d8cd98f00b204e9800998ecf8427e:modularhomeu
+
+##--keyboard only--##
+$MD5$d41d8cd98f00b204e9800998ecf8427e:1qaz
+
+##--Two keyboard combos--##
+$MD5$d41d8cd98f00b204e9800998ecf8427e:1qaz1qaz
+
+##--keyboard and text
+$MD5$d41d8cd98f00b204e9800998ecf8427e:1qaztest
+
+##--text and keyboard
+$MD5$d41d8cd98f00b204e9800998ecf8427e:test1qaz
+
+##--keyboard, text, keyboard
+$MD5$d41d8cd98f00b204e9800998ecf8427e:1qaztest1qaz
+
+##--keyboard, text, keyboard, text
+$MD5$d41d8cd98f00b204e9800998ecf8427e:1qaztest1qaztest
