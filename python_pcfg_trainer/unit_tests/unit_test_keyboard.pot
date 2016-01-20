@@ -1,8 +1,10 @@
-##--Standard all letter passwords
+##--Standard all letter passwords with no keyboard combos
 $MD5$d41d8cd98f00b204e9800998ecf8427e:password
 $MD5$d41d8cd98f00b204e9800998ecf8427e:boot
 $MD5$d41d8cd98f00b204e9800998ecf8427e:hiitisdog
-$MD5$d41d8cd98f00b204e9800998ecf8427e:modularhomeu
+
+##--Complex password with no keyboard combos
+$MD5$d41d8cd98f00b204e9800998ecf8427e:Test9
 
 ##--keyboard only--##
 $MD5$d41d8cd98f00b204e9800998ecf8427e:1qaz
@@ -21,3 +23,27 @@ $MD5$d41d8cd98f00b204e9800998ecf8427e:1qaztest1qaz
 
 ##--keyboard, text, keyboard, text
 $MD5$d41d8cd98f00b204e9800998ecf8427e:1qaztest1qaztest
+
+##--down forward keyboard test
+$MD5$d41d8cd98f00b204e9800998ecf8427e:4rfv
+
+##--down backward keyboard test
+$MD5$d41d8cd98f00b204e9800998ecf8427e:0okm
+
+##--edge case keyboard test
+$MD5$d41d8cd98f00b204e9800998ecf8427e:\][=-p
+
+##--multiple single hits
+$MD5$d41d8cd98f00b204e9800998ecf8427e:iiiiii8i
+
+##--complexity fail test
+$MD5$d41d8cd98f00b204e9800998ecf8427e:123456
+
+##--reject test
+$MD5$d41d8cd98f00b204e9800998ecf8427e:tester54
+
+##--reject test then regular text
+$MD5$d41d8cd98f00b204e9800998ecf8427e:tester54test
+
+##--capitalization test
+$MD5$d41d8cd98f00b204e9800998ecf8427e:qAsW2

@@ -1,0 +1,17 @@
+##--Standard all letter passwords with no context sensitive replacements
+$MD5$d41d8cd98f00b204e9800998ecf8427e:password
+$MD5$d41d8cd98f00b204e9800998ecf8427e:boot
+$MD5$d41d8cd98f00b204e9800998ecf8427e:hiitisdog
+
+##--Complex password with context replacement at end
+$MD5$d41d8cd98f00b204e9800998ecf8427e:Test;p
+$MD5$d41d8cd98f00b204e9800998ecf8427e:Test#1
+
+##--Complex password with multiple possible context replacements at end
+$MD5$d41d8cd98f00b204e9800998ecf8427e:Test#11
+
+##--Complex password with context replacment at start
+$MD5$d41d8cd98f00b204e9800998ecf8427e:#1Test
+
+##--Multiple replacemets in the same password
+$MD5$d41d8cd98f00b204e9800998ecf8427e:#1Test#11Test;p

@@ -39,66 +39,8 @@ class CommandLineVars:
         ##--Specifies if verbose output is enables
         self.verbose = False
         
-#########################################################
-# Basic find command for looking up value in ordered list
-##########################################################
-def find(a, x):
-    'Locate the leftmost value exactly equal to x'
-    i = bisect_left(a, x)
-    if i != len(a) and a[i] == x:
-        return i
-    return -1
 
-
-
-
-##########################################################################################
-# Identifies keyboard patterns
-# Note, will only classify something as a keyboard pattern if it contains two or
-# more classes of characters, since simple patterns like '123456' will be detected by the
-# respective class trainers
-##########################################################################################
-def detect_keyboard(x,password,mask):
-    i=0
-    current_run=0
-    past = (-2,-2)
-    while i < (len(password)-1):
-        pos = find_row_value(password[i])
-        if is_next_on_keyboard(past,pos):
-            current_run = current_run + 1
-        else:
-            if current_run >=4:
-                if interesting_keyboard(password[i-current_run:i]):
-                    x.keyboard_size = x.keyboard_size + 1
-                    insert_list(x.keyboard_structure, password[i-current_run:i]) 
-                    for y in range(i-current_run,i):
-                        mask[y]='K'
-            current_run = 1
-        past = pos
-        i = i + 1
-
-    if current_run >=4:
-        if interesting_keyboard(password[i-current_run:i]):
-            x.keyboard_size = x.keyboard_size + 1
-            insert_list(x.keyboard_structure, password[i-current_run:i])
-            #print (password + " " +str(mask) + " " + str(i))
-            for y in range(i-current_run,i):
-                mask[y]='K'
         
-####################################################################################
-# Finds the range of alpha characters given a random position inside them
-####################################################################################
-def find_range(password,i):
-    bottom=i
-    top = i
-    while (bottom > 0) and (password[bottom-1].isalpha()):
-        bottom = bottom - 1
-
-    while (top < len(password)) and (password[top+1].isalpha()):
-        top = top + 1
-
-    return (bottom,top)
-
 #####################################################################################
 # Identifies letter replacements
 # Note, faily simplistic check. Could do a lot more when comparing against a real
@@ -147,21 +89,6 @@ def detect_replacement(x,password,mask):
                     mask[j]='r'
 
 
-######################################################################################
-# Find context sensitive replacements
-# Note, we need to know what they are in the trainer
-# It is not smart enough to find them on its own yet
-# TODO: Identify new context sensitive replacements based on the training data
-######################################################################################
-def detect_context(x,password,mask):
-    searchValues=["<3",";p",":p","#1","*0*"]
-    for i in searchValues:
-        findValue = password.find(i)
-        if findValue!=-1:
-            for j in range(findValue,findValue+len(i)):
-                mask[j]='X'
-            x.context_size = x.context_size +1
-            insert_list(x.context_structure,i,)   
 
 
 ######################################################################################
@@ -239,19 +166,6 @@ def normalize_base(x,password):
     
     final_base = working_base
     return final_base
-
-#############################################################################
-# Inserts value into a sorted list if it does not exist
-# Otherwise increments the counter by one
-# Made this generic since I was doing it a lot
-#############################################################################
-def insert_list (sorted_list, insert_value):
-    value_holder = DataHolder("".join(insert_value))
-    index = find(sorted_list , value_holder)
-    if index != -1:
-        sorted_list[index].inc()
-    else:
-        bisect.insort(sorted_list,value_holder)
 
 
 ##############################################################################
@@ -365,18 +279,6 @@ def build_grammar(training_file,x):
     #   print (x.digit_size[i])    
     return 0    
 
-##############################################################################
-# Calculate probabilities for a list
-# Also sorts the list
-##############################################################################
-def calc_prob(input_list, size):
-    # First calculate the probability for each item
-    for value in input_list:
-        value.prob = (1.0 * value.num) / size
-
-    # Now sort the list
-    input_list.sort(key=operator.attrgetter('num'), reverse=True)
-
     
 ###################################################################################
 # ASCII art for when program fails
@@ -456,8 +358,10 @@ def main():
         print("Starting to analyzing the input passwords")
         print("Passwords left to parse : " + str(len(master_password_list)))
     
+    ##--Initialize the training results--## 
     training_results = TrainingData()
-    ret_value = RetType.STATUS_OK
+    
+    ##--Now parse every password in the training set --##
     for password in master_password_list:
         ##--It's a password to process--##
         if password[1] == "DATA":
@@ -466,14 +370,19 @@ def main():
         elif password[1] == "COMMENT":
             print()
             print(password[0])
+            ret_value = RetType.STATUS_OK
+        ##--Shouldn't ever get to the option below, so print an error and error out in case it does happen
         else:
             print("ERROR processign results from the training data")
             ret_value = RetType.ERROR_QUIT
-        
+        ##--An error occured parsing the password, print error and error out
         if ret_value != RetType.STATUS_OK:
             ascii_fail()
             print("Exiting...")
             return
+    
+    ##--Finalize the data and get it ready to save--##
+    ret_value = training_results.finalize_data(precision=7)
     
 if __name__ == "__main__":
     main()
