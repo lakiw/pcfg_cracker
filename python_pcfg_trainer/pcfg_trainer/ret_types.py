@@ -36,6 +36,9 @@ class RetType(enum.IntEnum):
     ## Not enough passwords in the training file
     NOT_ENOUGH_TRAINING_PASSWORDS       = 5
     
+    ## Bad input to the program
+    BAD_INPUT                           = 6
+    
     ## Program should shut down
     QUIT                                = 99
     

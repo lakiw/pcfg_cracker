@@ -41,244 +41,36 @@ class CommandLineVars:
         
 
         
-#####################################################################################
-# Identifies letter replacements
-# Note, faily simplistic check. Could do a lot more when comparing against a real
-# dictionary and using modified edit distance
-# Currently assumes any replacement between two alpha chracters is valid
-# TODO: Add more advanced logic to detect keyboard replacements
-####################################################################################
-def detect_replacement(x,password,mask):
-    i=0
-    #Note a->4 had too high of a false positive rate, aka 'bob4jesus'
-    valid_replacements = [('i','1'),('l','1'),('e','3'),('t','7'),('a','@'),('s','$'),('s','5'),('o','0')]
-    replace_set = []
-    while i < len(password):
-        c = password[i]
-        for j in valid_replacements:
-            if c == j[1]:
-                if (i>0) and password[i-1].isalpha():
-                    if ((i+1)<len(password)) and password[i+1].isalpha():
-                        replace_set.append((j,i))
-
-        i = i + 1
-    
-
-    #Save the replacements
-    inserted_set=[]
-    for r in replace_set:
-        if not (r[0] in inserted_set):
-            inserted_set.append(r[0])
-            x.replace_size = x.replace_size + 1
-            insert_list(x.replace_structure,str(r[0][0])+","+str(r[0][1]))
-            
-    
-    #Now save the mask
-    if (len(replace_set)!=0):
-        for r in replace_set:
-            replace_range = find_range(password,r[1])
-            has_upper = False
-            for j in range(replace_range[0],replace_range[1]+1):
-                if password[j].isupper():
-                    has_upper = True
-
-            for j in range(replace_range[0],replace_range[1]+1):
-                if has_upper:
-                    mask[j]='R'
-                else:
-                    mask[j]='r'
-
-
-
-
-######################################################################################
-# Responsible for finding complex patterns like keyboard combos and letter repacements
-#
-# TODO: Add logic for conditional replacements for digit/special/alpha combos
-######################################################################################
-def normalize_base(x,password):
-    
-    final_base = []
-    working_base = list(password.rstrip())
-
-    ## Initialize the mask. This is applied after capitalization normalization occurs
-    ## Fully aware this can cause some weirdness if a U is part of a K.
-    ## For example 1qaZpassword would be KKKKUUUUUUUU when it really should be
-    ## KKKKLLLLLLLL
-    ## TODO: Find a better way to do this
-    overlay_mask = []
-    for i in range(0,len(password)-1):
-        overlay_mask.append('.')
-
-    ## Detect letter replacements
-    detect_replacement(x,password,overlay_mask)
-
-    ## Detect context sensitive replacements
-    detect_context(x,password,overlay_mask)
-
-
-    ## Detect keyboard combinations
-    detect_keyboard(x,password,overlay_mask)
-
-
-    ## Normalize capitalization for alpha structures
-    i=0
-    while i < len(working_base):
-        if working_base[i].isalpha():
-            contains_cap=False
-            for y in range(i,len(working_base)):
-                if not working_base[y].isalpha():
-                    break
-                if working_base[y].isupper():
-                    contains_cap=True
-                    break
-            working_mask=[]
-            for y in range(i,len(working_base)):
-                if not working_base[y].isalpha():
-                    break
-                if contains_cap:
-                    #WorkingMask is used to capture the exact "Capitalization Mask" that was used
-                    #Aka Password would be ULLLLLLL
-                    if working_base[y].isupper():
-                        working_mask.append("U")
-                    else:
-                        working_mask.append("L")
-                    working_base[y]='C'
-                        
-                else:
-                    working_base[y]='L'
-                i = i + 1
-
-            #Save the Capitalization Mask
-            if contains_cap:
-                size = len(working_mask)
-                x.cap_size[size] = x.cap_size[size] + 1
-                insert_list(x.cap_structure[size], working_mask)
-
-        i = i + 1
-    
-    #Apply mask from previous transforms
-    pos = 0
-    for i in overlay_mask:
-        if i != '.':
-            working_base[pos]=i
-        pos = pos + 1
-    
-    final_base = working_base
-    return final_base
-
-
-##############################################################################
-# Responsible for parsing the base structures
-# Will call the other parsing functions. Doing it this way so I can add
-# more complex logic, like letter replacements later
-##############################################################################
-def parse_base(x, password):
-    
-    # Check for complex transforms like letter replacements and keyboard combos
-    # Also extract the "Case Mangling" masks since that's a good a time as any to do that
-    final_base = normalize_base(x,password)
-
-    # Next, extract the digit structures
-    count = 0
-    while count < len(final_base):
-        #Start processing this particular digit
-        if final_base[count].isdigit():
-            working_digit=[]
-            while count < len(final_base):
-                if not final_base[count].isdigit():
-                    break
-                working_digit.append(final_base[count])
-                count = count + 1
-            #Save that digit
-            size = len(working_digit)
-            x.digit_size[size] = x.digit_size[size]+1
-            insert_list(x.digit_structure[size],working_digit)
-
-        count = count + 1
-
-    # Next, extract the special structures
-    count = 0
-    while count < len(final_base):
-        #Start processing this particular special string
-        if not final_base[count].isalnum():
-            working_special=[]
-            while count < len(final_base):
-                if final_base[count].isalnum():
-                    break
-                working_special.append(final_base[count])
-                count = count + 1
-            #Save that special string
-            size = len(working_special)
-            x.special_size[size] = x.special_size[size] + 1
-            insert_list(x.special_structure[size],working_special)
-
-        count = count + 1
-
-    # Now actually parese the base structure
-    if x.base_type == 0:
-        for i in range(0,len(final_base)):
-            if final_base[i].isdigit():
-                final_base[i]='D'
-            elif not final_base[i].isalnum():
-                final_base[i]='S'
-
-
-    else:
-        #TODO: add new base structure type
-        print ("Add this option")
-
-    #Now insert the base structure into the main list
-    x.base_size = x.base_size + 1
-    insert_list(x.base_structure, final_base)
-
-###############################################################################
-# Build the grammar from the training file
-# Aka figures out all the Base Structures, D Structures, S Structures, etc.
-###############################################################################
-def build_grammar(training_file,x):
-    file = open(training_file[0], 'r')
-    
-    # Extract all the replacements from the training set
-    print ("Starting to parse the training password file")
-    for password in file:
-        
-        ## Added a reject function to remove "invalid" passwords nativly
-        ## Invalid in this case means you don't want to train on them
-        if valid_pass(password):
-            x.total_size=x.total_size+1
-            parse_base(x,password)
-        if (x.total_size % 100000) == 0:
-            print ("Processed " + str(x.total_size) + " passwords so far")
-
-
-    # Calculate probabilities
-    print ("Done parsing the training file. Now calculating probabilities.")
-    for i in range(1,MAXLENGTH+1):
-        calc_prob(x.special_structure[i],x.special_size[i])
-
-    for i in range(1,MAXLENGTH+1):
-        calc_prob(x.digit_structure[i],x.digit_size[i])
-
-    for i in range(1,MAXLENGTH+1):
-        calc_prob(x.cap_structure[i],x.cap_size[i])
-
-    calc_prob(x.base_structure, x.base_size)
-    
-    calc_prob(x.keyboard_structure, x.keyboard_size)
-
-    calc_prob(x.replace_structure, x.replace_size)
-
-    calc_prob(x.context_structure, x.context_size)
-
-
-    #for i in range(0,MAXLENGTH):
-    #   print ("LENGTH " + str(i))
-    #   for y in range(0,len(x.digit_structure[i])):
-    #       print (x.digit_structure[i][y].value + " " +str(x.digit_structure[i][y].num) + " " + str(x.digit_structure[i][y].prob))
-    #   print (x.digit_size[i])    
-    return 0    
-
+###################################################################################
+# ASCII art for the banner
+###################################################################################
+def print_banner():
+    print()
+    print('''                                      ____''')
+    print('''                                    .-~. /_"-._''')
+    print('''-.                                / /_ "~o\  :Y''')
+    print('''  \                               / : \~x.  ` ')''')
+    print('''   Y                             /  |  Y< ~-.__j''')
+    print('''   !                       _.--~T : l  l<  /.-~''')
+    print('''  /                ____.--~ .   ` l /~\ \<|Y   _____   _____ ______ _____ '''   )
+    print(''' /            .-~~"        /| .    ',-~\ \L|  |  __ \ / ____|  ____/ ____|'''  )
+    print('''/            /     .^   \ Y~Y \.^>/l_   "--'  | |__) | |    | |__ | |  __ ''' ) 
+    print('''          .-"(  .  l__  j_j l_/ /~_.-~    .   |  ___/| |    |  __|| | |_ |'''  )      
+    print('''         /    \  )    ~~~." / `/"~ / \.__/l_  | |    | |____| |   | |__| | ''' ) 
+    print('''\    _.-"      ~-{__     l  :  l._Z~-.___.--~ |_|_____\_____|_|    \_____| '''  )
+    print(''' ~--~           /   ~~"---\_  ' __[>          |__   __|      (_)            ''')
+    print('''             _.^   ___     _>-y~                 | |_ __ __ _ _ _ __   ___ _ _''') 
+    print('''   .      .-~   .-~   ~>--"  /                   | | '__/ _` | | '_ \ / _ \ '__|''')
+    print('''\  ~-"         /     ./  _.-'                    | | | | (_| | | | | |  __/ | ''' ) 
+    print(''' "-.,__.,  _.-~\     _.-~                        |_|_|  \__,_|_|_| |_|\___|_| ''')
+    print('''        ~~     (   _}       ''')
+    print('''               `. ~(''')
+    print('''                 )  \ ''')
+    print('''                /,`--'~\--'~\ ''')
+    print('''ASCII art credit to Row ~~~~~~~~~~~~~~~~~~~~~~~~Written by Matt Weir     ''')
+    print()
+    print()
+    return RetType.STATUS_OK
     
 ###################################################################################
 # ASCII art for when program fails
@@ -324,6 +116,7 @@ def parse_command_line(command_line_results):
 # Main function, starts everything off
 ############################################################    
 def main():
+    #print_banner()
     ##--First start by parsing the command line --##
     command_line_results = CommandLineVars()
     if parse_command_line(command_line_results) != RetType.STATUS_OK:

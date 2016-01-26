@@ -25,6 +25,9 @@ class TrainingData:
         ##Init Base Structures
         self.base_structure = DataList(type= ListType.FLAT)
         
+        ##Init Alpha structures
+        self.letter_structure = DataList(type= ListType.LENGTH)
+        
         ##Init Digits
         self.digit_structure = DataList(type= ListType.LENGTH)
 
@@ -137,7 +140,55 @@ class TrainingData:
         if ret_value != RetType.STATUS_OK:
             print("Error parsing context sensitive combos")
             return ret_value
-        
+            
+        ###################################################################
+        #--Parse the digit combinations
+        ###################################################################
+        items = []
+        ret_value = cur_pass.parse_digits(items)
+        if ret_value != RetType.STATUS_OK:
+            print("Error parsing digit combos")
+            return ret_value
+        ##--Now update the digit combo list
+        ret_value = self.digit_structure.insert_list(items)
+        if ret_value != RetType.STATUS_OK:
+            print("Error parsing digit combos")
+            return ret_value
+            
+        ###################################################################
+        #--Parse the alpha combinations
+        ###################################################################    
+        alpha_items = []
+        cap_items = []
+        ret_value = cur_pass.parse_letters(alpha_items, cap_items)
+        if ret_value != RetType.STATUS_OK:
+            print("Error parsing alpha combos")
+            return ret_value
+        ##--Now update the alpha combo list
+        ret_value = self.letter_structure.insert_list(alpha_items)
+        if ret_value != RetType.STATUS_OK:
+            print("Error parsing alpha combos")
+            return ret_value   
+        ##--Now update the capitalization mask list
+        ret_value = self.cap_structure.insert_list(cap_items)
+        if ret_value != RetType.STATUS_OK:
+            print("Error parsing capitalization masks")
+            return ret_value 
+            
+        #####################################################################
+        #--Parse the special character combinations
+        #####################################################################
+        items = []
+        ret_value = cur_pass.parse_special(items)
+        if ret_value != RetType.STATUS_OK:
+            print("Error parsing special character combos")
+            return ret_value
+        ##--Now update the special character combo list
+        ret_value = self.special_structure.insert_list(items)
+        if ret_value != RetType.STATUS_OK:
+            print("Error parsing special charcter combos")
+            return ret_value
+            
         return RetType.STATUS_OK
     
     ###########################################################################################
@@ -158,5 +209,28 @@ class TrainingData:
         if ret_value != RetType.STATUS_OK:
             print("Error finalizing the data")
             return ret_value
-        print(self.context_structure.main_dic)
+        ##--Calculate probabillities for digit combos--##
+        ret_value = self.digit_structure.update_probabilties(precision = precision)
+        if ret_value != RetType.STATUS_OK:
+            print("Error finalizing the data")
+            return ret_value
+        ##--Calculate probabillities for alpha combos--##
+        ret_value = self.letter_structure.update_probabilties(precision = precision)
+        if ret_value != RetType.STATUS_OK:
+            print("Error finalizing the data")
+            return ret_value    
+            
+        ##--Calculate probabillities for capitalization masks--##
+        ret_value = self.cap_structure.update_probabilties(precision = precision)
+        if ret_value != RetType.STATUS_OK:
+            print("Error finalizing the data")
+            return ret_value  
+            
+        ##--Calculate the probabilities for special charcer combos --##
+        ret_value = self.special_structure.update_probabilties(precision = precision)
+        if ret_value != RetType.STATUS_OK:
+            print("Error finalizing the data")
+            return ret_value          
+            
+        print(self.special_structure.main_dic)
         return RetType.STATUS_OK

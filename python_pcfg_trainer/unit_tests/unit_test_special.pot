@@ -1,0 +1,35 @@
+##--Standard all letter passwords with no context sensitive replacements
+$MD5$d41d8cd98f00b204e9800998ecf8427e:password
+$MD5$d41d8cd98f00b204e9800998ecf8427e:boot
+$MD5$d41d8cd98f00b204e9800998ecf8427e:hiitisdog
+
+##--all special
+$MD5$d41d8cd98f00b204e9800998ecf8427e:!@#$%^&
+
+##--letters ending with special
+$MD5$d41d8cd98f00b204e9800998ecf8427e:test!
+
+##--letters ending with two specials
+$MD5$d41d8cd98f00b204e9800998ecf8427e:Test!@
+
+##--Complex password with single digit and then special at the end
+$MD5$d41d8cd98f00b204e9800998ecf8427e:Test1!
+
+##--Starting with special character
+$MD5$d41d8cd98f00b204e9800998ecf8427e:`Test
+
+##--special string in the midle of a password
+$MD5$d41d8cd98f00b204e9800998ecf8427e:Test&Test
+
+
+##--multiple strings of special and characters
+$MD5$d41d8cd98f00b204e9800998ecf8427e:Test!Test@@Test###Test
+
+##--Non-ASCII special
+$MD5$d41d8cd98f00b204e9800998ecf8427e:¯\_(ツ)_/¯
+
+##--space special
+$MD5$d41d8cd98f00b204e9800998ecf8427e:Test Test
+
+##--Non-ASCII special with text
+$MD5$d41d8cd98f00b204e9800998ecf8427e:Test¯\_(ツ)_/¯Test

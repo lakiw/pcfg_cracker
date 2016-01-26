@@ -10,6 +10,7 @@
 
 import os
 import errno
+import codecs
 
 ##--User Defined Imports---##
 from pcfg_trainer.ret_types import RetType
@@ -346,10 +347,10 @@ def save_results(rule_name,x):
 # I wanted to pass my comments through to the main program to make displaying results of
 # unit tests easier
 #########################################################################################
-def read_input_passwords(training_file, is_pot, master_password_list):
+def read_input_passwords(training_file, is_pot, master_password_list, file_encoding = 'utf-8'):
     ##-- First try to open the file--##
     try:
-        with open(training_file, 'r') as file:
+        with codecs.open(training_file, 'r') as file:
             # Read though all the passwords
             for password in file:
                 ##--If it is a JtR POT file
@@ -377,11 +378,11 @@ def read_input_passwords(training_file, is_pot, master_password_list):
 # There's no sophisticated approach. I'm just looking to see if it is a combination
 # of user_id : password
 ###################################################################################
-def is_jtr_pot(training_file, num_to_test, verbose = False):
+def is_jtr_pot(training_file, num_to_test, verbose = False, file_encoding = 'utf-8'):
     
     ##-- First try to open the file--##
     try:
-        with open(training_file, 'r') as file:
+        with codecs.open(training_file, 'r') as file:
             if verbose == True:
                 print ("Starting to parse the training password file")   
             # Only check the first NUM_TO_TEST entries to verify if it is a POT file or not
@@ -406,6 +407,7 @@ def is_jtr_pot(training_file, num_to_test, verbose = False):
         return RetType.IS_TRUE
     except Exception as error:
         print ("Error opening file " + training_file)
+        print ("Error is " + str(error))
         return RetType.FILE_IO_ERROR
 
     

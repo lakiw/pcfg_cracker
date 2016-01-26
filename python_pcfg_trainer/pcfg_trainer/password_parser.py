@@ -6,6 +6,8 @@
 # it is up to the calling function to aggrigate any data from multiple passwords
 #############################################################################
 
+import sys
+
 ##--User Defined Imports---##
 from pcfg_trainer.ret_types import RetType
 
@@ -246,10 +248,15 @@ class PasswordParser:
         section_list = []
         ##--Loop through the different sections for the mask
         for section in self.processed_mask:
-            ret_type = self.parse_keyboard_section(items, section[0], section_list)
-            if ret_type != RetType.STATUS_OK:
-                print("Error parsing keyboard combos")
-                return ret_type
+            ##--If the section has not been processed already
+            if section[1] == None:
+                ret_type = self.parse_keyboard_section(items, section[0], section_list)
+                if ret_type != RetType.STATUS_OK:
+                    print("Error parsing keyboard combos")
+                    return ret_type
+            ##--No need to do further work on this section--##
+            else:
+                section_list.append(section)
         ##--Now copy the section list to the main processed_mask
         self.processed_mask = section_list.copy()
         return RetType.STATUS_OK
@@ -316,10 +323,250 @@ class PasswordParser:
         section_list = []
         ##--Loop through the different sections for the mask
         for section in self.processed_mask:
-            ret_type = self.parse_context_sensitive_section(items, section[0], section_list)
-            if ret_type != RetType.STATUS_OK:
-                print("Error parsing keyboard combos")
-                return ret_type
+            ##--If the section has not been processed already
+            if section[1] == None:
+                ret_type = self.parse_context_sensitive_section(items, section[0], section_list)
+                if ret_type != RetType.STATUS_OK:
+                    print("Error parsing context sensitive data")
+                    return ret_type
+            ##--This section has already been processed--
+            else:
+                section_list.append(section)
         ##--Now copy the section list to the main processed_mask
         self.processed_mask = section_list.copy()
+        return RetType.STATUS_OK
+        
+        
+    ############################################################################
+    # Function that looks for digit combinations in the training data for a section
+    # For example 123456 or 55
+    # items is a list of the different combinations parsed
+    # for example ['123','123','6789']
+    # Doing this recursive so input_section is the section to processed
+    # section list is a list of the sections to return
+    # For example, assume input_section is ('test123test',None)
+    # section_list should return [('test',None),('123','D3'),('test',None)]
+    ############################################################################
+    def parse_digits_section(self, items, input_section, section_list):
+
+        ##--The current digits combo--##
+        cur_combo = []
+        ##-Loop through each character to find the combos
+        for index, x in enumerate(input_section):
+            ##--If the current value is a digit, append it to the run
+            if x.isdigit() == True:
+                cur_combo.append(x)
+            ##--Not a digit--##
+            else:
+                ##--This is the end of a run--##
+                if len(cur_combo) != 0:
+                    #--update items to contain the combo
+                    items.append(''.join(cur_combo))
+                    ##--Update base structure mask--
+                    ##--Update any unprocessed sections before the current run
+                    if len(cur_combo) != index:
+                        section_list.append((input_section[0:index-len(cur_combo)],None))
+                    ##--Now update the mask for the current run
+                    section_list.append((''.join(cur_combo),"D"+str(len(cur_combo))))
+                    ##--If not the last section, go recursive and call it with what's remaining--##
+                    if index != (len(input_section) - 1):
+                        ret_value = self.parse_digits_section(items, input_section[index:], section_list)
+                        ##-- Sanity error return check --##
+                        if ret_value != RetType.STATUS_OK:
+                            return ret_value
+                                
+                    ##-- Ok, thanks the the recursive checking of the rest of it we are done processing this section so break
+                    return RetType.STATUS_OK                             
+        ##--Update the last run if needed
+        if len(cur_combo) != 0: 
+            #--update items to contain the combo
+            items.append(''.join(cur_combo))
+            ##--Update base structure mask--
+            ##--Update any unprocessed sections before the current run
+            if len(cur_combo) != len(input_section):
+                section_list.append((input_section[0:len(input_section)-len(cur_combo)],None))
+            ##--Now update the mask for the current run
+            section_list.append((''.join(cur_combo),"D"+str(len(cur_combo))))
+            
+        ##--No digit run found
+        else:
+            section_list.append((input_section,None))
+        return RetType.STATUS_OK    
+        
+        
+        
+    ##################################################################################
+    # The toplevel function that looks for digit combinations in the
+    # training data
+    # For example, ['123456', '1', '55']
+    # This function is mostly just a loop and sets up the recursive calling of parse_cdigits_section
+    ###################################################################################
+    def parse_digits(self,items):
+        ##--Used to hold the new mask--##
+        section_list = []
+        ##--Loop through the different sections for the mask
+        for section in self.processed_mask:
+            ##--If the section has not been processed already
+            if section[1] == None:
+                ret_type = self.parse_digits_section(items, section[0], section_list)
+                if ret_type != RetType.STATUS_OK:
+                    print("Error parsing digit combos")
+                    return ret_type
+            ##--This section has already been processed
+            else:
+                section_list.append(section)
+        ##--Now copy the section list to the main processed_mask
+        self.processed_mask = section_list.copy()      
+        return RetType.STATUS_OK
+    
+
+
+    #######################################################################################
+    # Creates a mask of the capitalization of alpha only strings
+    # For example: Test = ULLL, tESt = LUUL
+    # I considered saving them like the other structures as Test = U1L3, but it is easier
+    # to write the characters out and there's no need such as with alpha characters of
+    # having to represent two words directly next to each other.
+    ########################################################################################
+    def parse_capitalization_mask(self, alpha_items, input_string):
+        ##--The mask we are builidng
+        current_mask = []
+        ##--Loop through each character that we are parsing
+        for x in input_string:
+            ##--Sanity check---
+            if not x.isalpha:
+                print("Error, a non alpha character is being passed to the parse capitalization function")
+                return RetType.BAD_INPUT
+            ##--If it is a lower case character
+            if x.islower():
+                current_mask.append('L')
+            else:
+                current_mask.append('U')
+        ##--Another sanity check
+        if len(current_mask) == 0:
+            print("Error, passed an empty string to the parse capitalization function")
+            return RetType.BAD_INPUT
+        ##--Convert the list to a string and save it
+        alpha_items.append(''.join(current_mask))
+        return RetType.STATUS_OK
+
+    ############################################################################
+    # Function that looks for letter (alpha) combinations in the training data for a section
+    # For example test or HelloItIsDog
+    # items is a list of the different combinations parsed
+    # for example ['test','cat','DoG']
+    # Doing this recursive so input_section is the section to processed
+    # section list is a list of the sections to return
+    # For example, assume input_section is ('test123Test',None)
+    # section_list should return [('test','A4'),('123',None),('Test','A4')]
+    ############################################################################
+    def parse_letters_section(self, alpha_items, cap_items, input_section, section_list):
+
+        ##--The current alpha combo--##
+        cur_combo = []
+        ##-Loop through each character to find the combos
+        for index, x in enumerate(input_section):
+            ##--If the current value is a digit, append it to the run
+            if x.isalpha() == True:
+                cur_combo.append(x)
+            ##--Not a alpha character--##
+            else:
+                ##--This is the end of a run--##
+                if len(cur_combo) != 0:
+                    #--update items to contain the combo
+                    alpha_items.append(''.join(cur_combo))
+                    ##--Update base structure mask--
+                    ##--Update any unprocessed sections before the current run
+                    if len(cur_combo) != index:
+                        section_list.append((input_section[0:index-len(cur_combo)],None))
+                    ##--Now update the mask for the current run
+                    section_list.append((''.join(cur_combo),"A"+str(len(cur_combo))))
+                    ##--Update the capitalization mask as well
+                    self.parse_capitalization_mask(cap_items, cur_combo)
+                    ##--If not the last section, go recursive and call it with what's remaining--##
+                    if index != (len(input_section) - 1):
+                        ret_value = self.parse_letters_section(alpha_items, cap_items, input_section[index:], section_list)
+                        ##-- Sanity error return check --##
+                        if ret_value != RetType.STATUS_OK:
+                            return ret_value
+                                
+                    ##-- Ok, thanks the the recursive checking of the rest of it we are done processing this section so break
+                    return RetType.STATUS_OK                             
+        ##--Update the last run if needed
+        if len(cur_combo) != 0: 
+            #--update items to contain the combo
+            alpha_items.append(''.join(cur_combo))
+            ##--Update base structure mask--
+            ##--Update any unprocessed sections before the current run
+            if len(cur_combo) != len(input_section):
+                section_list.append((input_section[0:len(input_section)-len(cur_combo)],None))
+            ##--Now update the mask for the current run
+            section_list.append((''.join(cur_combo),"A"+str(len(cur_combo))))
+            ##--Update the capitalization mask as well
+            self.parse_capitalization_mask(cap_items, cur_combo)
+        ##--No alpha run found
+        else:
+            section_list.append((input_section,None))
+        return RetType.STATUS_OK    
+
+     
+    ##################################################################################
+    # The toplevel function that looks for letter (alpha) combinations in the
+    # training data
+    # For example, ['abcdef', 'F', 'CrackPasswords']
+    # For the initial parsing function is mostly just a loop and sets up the recursive 
+    # calling of parse_letter_section
+    # Unlike a lot of the other training processes though, there is some post-processing
+    # to do things like extract capitalization masks
+    ###################################################################################
+    def parse_letters(self,alpha_items, cap_items):
+        ##--Used to hold the new mask--##
+        section_list = []
+        ##--Loop through the different sections for the mask
+        for section in self.processed_mask:
+            ##--If the section has not been processed already
+            if section[1] == None:
+                ret_type = self.parse_letters_section(alpha_items, cap_items, section[0], section_list)
+                if ret_type != RetType.STATUS_OK:
+                    print("Error parsing letter combos")
+                    return ret_type
+            ##--Nothing else to do with this section--
+            else:
+                section_list.append(section)
+        ##--Now copy the section list to the main processed_mask
+        self.processed_mask = section_list.copy()
+        return RetType.STATUS_OK
+        
+    ##################################################################################
+    # The toplevel function that looks for special character combinations in the
+    # training data
+    # For example, ['!&*#', '!!!!!!!!', '$']
+    # Note, many of these aren't considered keyboard combos since keyboard combos require some
+    # non-special char to occur in the run
+    # 
+    # Special characters are a bit weird in the fact that it interprets anything not caught
+    # in a previous test to be categorized as a special charcter 
+    # This may cause some unwanted behavoir with non-English training data
+    ###################################################################################
+    def parse_special(self,items):
+        ##--Used to hold the new mask--##
+        section_list = []
+        ##--Loop through the different sections for the mask
+        for section in self.processed_mask:
+            ##--If the section has not been processed already
+            if section[1] == None:
+                ##--Since everything that is not categorized yet is considered a "Special char" run, this makes processing it easier
+                section_list.append((section[0],'S'+str(len(section[0]))))
+                ##--Now save the string---
+                items.append(section[0])
+                
+            ##--Nothing else to do with this section--
+            else:
+                section_list.append(section)
+                
+        ##--Now copy the section list to the main processed_mask
+        self.processed_mask = section_list.copy()
+        print(self.processed_mask)
+        #for x, y in self.processed_mask:
+        #    print (y)
         return RetType.STATUS_OK
