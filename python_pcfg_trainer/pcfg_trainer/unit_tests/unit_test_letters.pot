@@ -30,3 +30,6 @@ $MD5$d41d8cd98f00b204e9800998ecf8427e:Test1Test22Test333Test
 
 ##--Non capitalized multi cased string--##
 $MD5$d41d8cd98f00b204e9800998ecf8427e:tEsT
+
+##--Russian test------##
+$MD5$d41d8cd98f00b204e9800998ecf8427e:пароль

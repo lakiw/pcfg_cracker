@@ -41,7 +41,7 @@ class DataList:
     # Variables:
     #     type = [ListType.FLAT, ListType.LENGTH]  ##--Way to create multiple sub lists. FLAT = no sub lists, LENGTH = break it up by length
     ################################################
-    def __init__(self, type = ListType.FLAT ):        
+    def __init__(self, type = ListType.FLAT , config_name = 'DEFAULT', config_data = {'Name':'Default','Comments':'','Directory':'Default','Filename':'Default','Inject_type':'Wordlist','Function':'Copy','Is_terminal':'True'}):      
         ##--Used to break up the lists by type--##
         self.type = type
         
@@ -66,6 +66,21 @@ class DataList:
         ##-- the main key is the index key, (for example length of the words if type LENGTH)
         ##-- the sub key is the value we are storing in the list
         self.main_dic = {}
+        
+        ##--Configuration File Info--##
+        ##-- Holds information about the list to write to the config file
+        ##-- Breaking it out by list item since that should hopefully make it easier
+        ##-- to add / modify list items in one spot
+        self.config = {}
+        self.config[config_name] =  config_data
+        section_info = self.config[config_name]
+        ## Set the list type in the config file
+        if type == ListType.FLAT:
+            section_info['File_type'] = 'Flat'
+        elif type == ListType.LENGTH:
+            section_info['File_type'] = 'Length'
+            
+        
         
     ##################################################
     # inserts an item into the list

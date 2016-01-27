@@ -30,13 +30,19 @@ def make_sure_path_exists(path):
 # Creates all the directories needed to save a file
 ##############################################################################
 def make_rule_dirs(rule_name):
-    make_sure_path_exists('./Rules/'+rule_name+'/Grammar')
-    make_sure_path_exists('./Rules/'+rule_name+'/Digits')
-    make_sure_path_exists('./Rules/'+rule_name+'/Capitalization')
-    make_sure_path_exists('./Rules/'+rule_name+'/Keyboard')
-    make_sure_path_exists('./Rules/'+rule_name+'/Special')
-    make_sure_path_exists('./Rules/'+rule_name+'/Replace')
-    make_sure_path_exists('./Rules/'+rule_name+'/Context')
+    try:
+        make_sure_path_exists('./Rules/'+rule_name+'/Grammar')
+        make_sure_path_exists('./Rules/'+rule_name+'/Digits')
+        make_sure_path_exists('./Rules/'+rule_name+'/Capitalization')
+        make_sure_path_exists('./Rules/'+rule_name+'/Keyboard')
+        make_sure_path_exists('./Rules/'+rule_name+'/Special')
+        make_sure_path_exists('./Rules/'+rule_name+'/Replace')
+        make_sure_path_exists('./Rules/'+rule_name+'/Context')
+    except OSError:
+        print("Error creating the directories to save the results")
+        print(str(error))
+        return RetType.FILE_IO_ERROR
+    return RetType.STATUS_OK
 
 
 #############################################################################
@@ -80,14 +86,14 @@ def write_config(base_dir):
     
     ##--Comments about the transition--##
     section_info['Name'] = 'Base Structure'
-    section_info['Comments'] = 'Standard base strucuters as defined by the original PCFG Paper. Examples are L4D2 from the training word "pass12"'
+    section_info['Comments'] = 'Standard base structures as defined by the original PCFG Paper, with some renaming to prevent naming collisions. Examples are A4D2 from the training word "pass12"'
     
     ##--File info where it is saved--##
     section_info['Directory'] = 'Grammar'
     section_info['Filename'] = 'Grammar.txt'
     
     ##--Info on how to actually read in and apply the transition--##
-    section_info['File_type'] = 'Single'  ##Only one file vs 1.txt, 2.txt, 3.txt, etc.
+    section_info['File_type'] = 'Grammar.txt'  ##Only one file vs 1.txt, 2.txt, 3.txt, etc.
     section_info['Inject_type'] = 'Base_Structure'  ##How the PCFG program should read in the data. Eventually want to make this more generic
     section_info['Function'] = 'Transparent' ##How the PCFG should treat this transition when invoking it
     section_info['Is_terminal'] = 'False'  ##If this is a terminal replacement
@@ -100,19 +106,14 @@ def write_config(base_dir):
     ##--A good example is 'S' might represent 'Start' or "Special Character"
     
     ##--Key---
-    # L = All Lowercase Wordlist
-    # U = All Uppercase Wordlist
-    # C = Capitalized Wordlist Aka Cat, but not CAT or cAT or cAt
-    # M = Mixed case wordlist
-    # S = Special Character replacement
+    # A = Alpha string, (commonly referred to as letters). Used to be categorized as 'L'
+    # O = Other. Used to be refered to as Special character replacements, 'S'.
     # D = Digit replacement
     # K = Keyboard replacement
     # X = conteXt sensitive replacement (Grab-bag)
     replacements = [
-        {'Transition_id':'L','Config_id':'BASE_L'},
-        {'Transition_id':'U','Config_id':'BASE_U'},
-        {'Transition_id':'M','Config_id':'BASE_M'},
-        {'Transition_id':'S','Config_id':'BASE_S'},
+        {'Transition_id':'A','Config_id':'BASE_A'},
+        {'Transition_id':'O','Config_id':'BASE_O'},
         {'Transition_id':'D','Config_id':'BASE_D'},
         {'Transition_id':'K','Config_id':'BASE_K'},
         {'Transition_id':'X','Config_id':'BASE_X'},
@@ -350,23 +351,29 @@ def save_results(rule_name,x):
 def read_input_passwords(training_file, is_pot, master_password_list, file_encoding = 'utf-8'):
     ##-- First try to open the file--##
     try:
-        with codecs.open(training_file, 'r') as file:
+        with codecs.open(training_file, 'r', encoding=file_encoding) as file:
             # Read though all the passwords
-            for password in file:
-                ##--If it is a JtR POT file
-                if is_pot:
-                    #- I'm starting password values of # as comments for my unit tests, so ignore them
-                    if (len(password) > 0) and (password[0] != '#'):
-                        #-I'm going to assume that the first ':' is the deliminator. I know, it could fail if that
-                        #-value shows up in the username, but that should be rare enough not to throw off the
-                        #-statistical results of the final grammar
-                        master_password_list.append((password[password.find(':')+1:].rstrip(),"DATA"))
-                    elif len(password) > 0:
-                        master_password_list.append((password.rstrip(),"COMMENT"))
-                ##--Really simple, just append the password if it is a flat file
-                else:
-                    master_password_list.append((password.rstrip(),"DATA"))
-    except Exception as error:
+            try:
+                for password in file:
+                    ##--If it is a JtR POT file
+                    if is_pot:
+                        #- I'm starting password values of # as comments for my unit tests, so ignore them
+                        if (len(password) > 0) and (password[0] != '#'):
+                            #-I'm going to assume that the first ':' is the deliminator. I know, it could fail if that
+                            #-value shows up in the username, but that should be rare enough not to throw off the
+                            #-statistical results of the final grammar
+                            master_password_list.append((password[password.find(':')+1:].rstrip(),"DATA"))
+                        elif len(password) > 0:
+                            master_password_list.append((password.rstrip(),"COMMENT"))
+                    ##--Really simple, just append the password if it is a flat file
+                    else:
+                        master_password_list.append((password.rstrip(),"DATA"))
+            except UnicodeDecodeError as error:
+                print("Encountered invalid character while reading in training set, ignoring the problematic password")
+                print("You may want to manually set the file encoding to something else and re-try training on this dataset")
+                print(str(error))
+                print()
+    except IOError as error:
         print (error)
         print ("Error opening file " + training_file)
         return RetType.FILE_IO_ERROR
@@ -382,7 +389,7 @@ def is_jtr_pot(training_file, num_to_test, verbose = False, file_encoding = 'utf
     
     ##-- First try to open the file--##
     try:
-        with codecs.open(training_file, 'r') as file:
+        with codecs.open(training_file, 'r', encoding=file_encoding) as file:
             if verbose == True:
                 print ("Starting to parse the training password file")   
             # Only check the first NUM_TO_TEST entries to verify if it is a POT file or not
@@ -394,23 +401,78 @@ def is_jtr_pot(training_file, num_to_test, verbose = False, file_encoding = 'utf
                     print ("Sorry, the training file needs to have at least " + str(num_to_test) + " passwords")
                     print ("The training program was only able to parse " + str(x) + " passwords")
                     return RetType.NOT_ENOUGH_TRAINING_PASSWORDS
+                #Strips off newline characters
+                password = password.rstrip()
+                
                 #Checks for the characteristic ":" in POT files. If it's not there it's probably not a POT file
                 #Side note, the JtR term of "POT" file comes from the fact that JtR is based on the original
                 #"Cracker Jack" program. Therefore it was Jack POT ;p
                 #Ignorning blank lines and lines that start with # due to my unit test files containing them for comments
                 if (len(password)>1) and (password[0] != '#'):
                     if password.find(":") == -1:
+                        print()
                         print("Treating input file as a flat password file")
+                        print()
                         return RetType.IS_FALSE
         # It looks a lot like a POT file
+        print()
         print("Treating input file as a John the Ripper POT file")
+        print()
         return RetType.IS_TRUE
-    except Exception as error:
+    ##--An error occured trying ot open the file--##
+    except IOError as error:
         print ("Error opening file " + training_file)
         print ("Error is " + str(error))
         return RetType.FILE_IO_ERROR
-
-    
-    
+    ##--An error occured when trying to read the individual passwords (encoding error) --#
+    except UnicodeError as error:
+        print ("Error decoding file, unable to recover, aborting")
+        print ("It is recommended to try a different file encoding to train on this dataset")
+        return RetType.ENCODING_ERROR
+    ##--Almost always caused by the user entering an invalid encoding type in the command line
+    except LookupError as error:
+        print("Error, the file encoding specified on the command line was not valid, exiting")
+        print(str(error)) 
+        return RetType.ENCODING_ERROR
         
     return RetType.IS_TRUE
+    
+    
+#################################################################################################
+# Used for autodetecting file encoding of the training password set
+# Requires the python package chardet to be installed
+# pip install chardet
+# You can also get it from https://github.com/chardet/chardet
+# I'm keeping the declarations for the chardet package local to this file so people can run this
+# tool without installing it if they don't want to use this feature
+##################################################################################################
+def detect_file_encoding(training_file, file_encoding):
+    print()
+    print("Attempting to autodetect file encoding of the training passwords")
+    print("-----------------------------------------------------------------")
+    from chardet.universaldetector import UniversalDetector
+    detector = UniversalDetector()
+    try:
+        with open(training_file, 'rb') as file:
+            for line in file.readlines():
+                detector.feed(line)
+                if detector.done: 
+                    break
+            detector.close()
+    except IOError as error:
+        print ("Error opening file " + training_file)
+        print ("Error is " + str(error))
+        return RetType.FILE_IO_ERROR
+        
+    try:
+        file_encoding.append(detector.result['encoding'])
+        print("File Encoding Detected: " + str(detector.result['encoding']))
+        print("Confidence for file encoding: " + str(detector.result['confidence']))
+        print("If you think another file encoding might have been used please manually specify the file encoding and run the training program again")
+        print()
+    except KeyError as error:
+        print("Error encountered with file encoding autodetection")
+        print("Error : " + str(error))
+        return RetType.ENCODING_ERROR
+
+    return RetType.STATUS_OK

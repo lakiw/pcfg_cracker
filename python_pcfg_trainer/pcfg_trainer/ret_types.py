@@ -39,6 +39,9 @@ class RetType(enum.IntEnum):
     ## Bad input to the program
     BAD_INPUT                           = 6
     
+    ## File encoding error
+    ENCODING_ERROR                      = 7
+    
     ## Program should shut down
     QUIT                                = 99
     

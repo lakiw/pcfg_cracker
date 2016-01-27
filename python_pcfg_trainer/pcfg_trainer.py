@@ -14,7 +14,7 @@ import argparse
 
 ##--User Defined Imports---##
 from pcfg_trainer.ret_types import RetType
-from pcfg_trainer.trainer_file_io import is_jtr_pot, read_input_passwords
+from pcfg_trainer.trainer_file_io import is_jtr_pot, read_input_passwords, detect_file_encoding, make_rule_dirs
 from pcfg_trainer.training_data import TrainingData
 
 
@@ -38,6 +38,9 @@ class CommandLineVars:
         
         ##--Specifies if verbose output is enables
         self.verbose = False
+        
+        ##--The character encoding of the training set, (for example UTF-8)
+        self.encoding = None
         
 
         
@@ -99,11 +102,14 @@ def parse_command_line(command_line_results):
     parser = argparse.ArgumentParser(description='Generates PCFG Grammar From Password Training Set')
     parser.add_argument('--output','-o', help='Name of generated ruleset. Default is \"Default\"',metavar='RULESET_NAME',required=False,default=command_line_results.rule_name)
     parser.add_argument('--training','-t', help='The training set of passwords to train from',metavar='TRAINING_SET',required=True)
+    parser.add_argument('--encoding','-e', help='File encoding to read the input training set. If not specified autodetect is used', metavar='ENCODING', required=False)
     parser.add_argument('--verbose','-v', help='Turns on verbose output', required=False, action="store_true")
     try:
         args=parser.parse_args()
         command_line_results.rule_name = args.output
         command_line_results.training_file = args.training
+        command_line_results.encoding = args.encoding
+
         if args.verbose:
             command_line_results.verbose = True
     except:
@@ -122,9 +128,20 @@ def main():
     if parse_command_line(command_line_results) != RetType.STATUS_OK:
         return RetType.QUIT
 
+    ##--Set the file encoding for the training set
+    ##--If NOT specified on the command line by the user run an autodetect
+    if command_line_results.encoding == None:
+        possible_file_encodings = []
+        ret_value = detect_file_encoding(command_line_results.training_file, possible_file_encodings)
+        if ret_value != RetType.STATUS_OK:
+            ascii_fail()
+            print("Exiting...")
+            return
+        command_line_results.encoding = possible_file_encodings[0]
+        
     ##--Checks to see if the input file is a John the Ripper POT file or a flat file of only passwords
     ##--Also checks to see if there is the minimum number of passwords to train on
-    ret_value = is_jtr_pot(command_line_results.training_file,MIN_NUMBER_OF_PASSWORDS, command_line_results.verbose)
+    ret_value = is_jtr_pot(command_line_results.training_file,MIN_NUMBER_OF_PASSWORDS, command_line_results.verbose, file_encoding = command_line_results.encoding)
     if ret_value == RetType.IS_TRUE: 
         is_pot = True
     elif ret_value == RetType.IS_FALSE:
@@ -137,7 +154,7 @@ def main():
     
     ##--Now actually read in the raw passwords, (minus any POT formatting)
     master_password_list = [] # The list that contains all the iput passwords
-    ret_value = read_input_passwords(command_line_results.training_file, is_pot, master_password_list)    
+    ret_value = read_input_passwords(command_line_results.training_file, is_pot, master_password_list, file_encoding = command_line_results.encoding)    
     ##-- An error shouldn't occur here since we checked it earlier but stanger things have happened
     ##-- Exit gracefully if error occurs
     if ret_value != RetType.STATUS_OK:
@@ -176,6 +193,19 @@ def main():
     
     ##--Finalize the data and get it ready to save--##
     ret_value = training_results.finalize_data(precision=7)
+    if ret_value != RetType.STATUS_OK:
+        ascii_fail()
+        print("Exiting...")
+        return
+        
+    ##--Save the data to disk------------------###
+    ##--Create the directories if they do not already exist
+    ret_value = make_rule_dirs(command_line_results.rule_name)
+    if ret_value != RetType.STATUS_OK:
+        ascii_fail()
+        print("Exiting...")
+        return
+    
     
 if __name__ == "__main__":
     main()

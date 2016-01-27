@@ -21,21 +21,85 @@ from pcfg_trainer.data_list import ListType, DataList
 ############################################################################
 class TrainingData:
     def __init__(self):
-
+        ######################################################
         ##Init Base Structures
-        self.base_structure = DataList(type= ListType.FLAT)
+        ######################################################
+        config = {
+            'Name':'Base Structure',
+            'Comments':'Standard base structures as defined by the original PCFG Paper, with some renaming to prevent naming collisions. Examples are A4D2 from the training word "pass12"',
+            'Directory':'Grammar',
+            'Filename':'Grammar.txt',
+            'Inject_type':'Wordlist',
+            'Function':'Transparent',
+            'Is_terminal':'False',
+            'Replacements': str([
+                {'Transition_id':'A','Config_id':'BASE_A'},
+                {'Transition_id':'D','Config_id':'BASE_D'},
+                {'Transition_id':'O','Config_id':'BASE_O'},
+                {'Transition_id':'K','Config_id':'BASE_K'},
+                {'Transition_id':'X','Config_id':'BASE_X'},
+            ]),
+        }     
+        self.base_structure = DataList(type= ListType.FLAT, config_name= 'START', config_data = config)
         
+        ########################################################
         ##Init Alpha structures
-        self.letter_structure = DataList(type= ListType.LENGTH)
+        ########################################################
+        config = {
+            'Name':'A',
+            'Comments':'(A)lpha letter replacements for base structure. Aka "pass12" = A4D2, so this is the A4. Note, this is encoding specific so non-ASCII characters may be considered alpha. For example Cyrillic',
+            'Directory':'Alpha',
+            'Filename' : '*.txt',
+            'Inject_type':'Wordlist',
+            'Function':'Shadow',
+            'Is_terminal':'False',
+            'Replacements': str([
+                {'Transition_id':'Capitalization','Config_id':'CAPITALIZATION'},
+            ]),
+        }     
+        self.letter_structure = DataList(type= ListType.LENGTH, config_name= 'BASE_A', config_data = config)
         
+        #########################################################
         ##Init Digits
-        self.digit_structure = DataList(type= ListType.LENGTH)
+        #########################################################
+        config = {
+            'Name':'D',
+            'Comments':'(D)igit replacement for base structure. Aka "pass12" = L4D2, so this is the D2',
+            'Directory':'Digits',
+            'Filename' : '*.txt',
+            'Inject_type':'Standard_Copy',
+            'Function':'Copy',
+            'Is_terminal':'True', 
+        }
+        self.digit_structure = DataList(type= ListType.LENGTH, config_name = 'BASE_D', config_data = config)
 
+        #########################################################
         ##Init Special
-        self.special_structure = DataList(type= ListType.LENGTH)
-
+        #########################################################
+        config = {
+            'Name':'O',
+            'Comments':'(O)ther character replacement for base structure. Aka "pass$$" = L4S2, so this is the S2',
+            'Directory':'Other',
+            'Filename' : '*.txt',
+            'Inject_type':'Standard_Copy',
+            'Function':'Copy',
+            'Is_terminal':'True', 
+        }
+        self.special_structure = DataList(type= ListType.LENGTH, config_name = 'BASE_O', config_data = config)
+        
+        #########################################################
         ##Init Capitalization
-        self.cap_structure = DataList(type= ListType.LENGTH)
+        #########################################################
+        config = {
+            'Name':'Capitalization',
+            'Comments':'Capitalization Masks for words. Aka LLLLUUUU for passWORD',
+            'Directory':'Capitalization',
+            'Filename' : '*.txt',
+            'Inject_type':'Standard_Copy',
+            'Function':'Capitalize',
+            'Is_terminal':'True', 
+        }
+        self.cap_structure = DataList(type= ListType.LENGTH, config_name = 'CAPITALIZATION', config_data = config)
 
         ##Init Keyboard
         self.keyboard_structure = DataList(type= ListType.LENGTH)
@@ -232,5 +296,4 @@ class TrainingData:
             print("Error finalizing the data")
             return ret_value          
             
-        print(self.special_structure.main_dic)
         return RetType.STATUS_OK

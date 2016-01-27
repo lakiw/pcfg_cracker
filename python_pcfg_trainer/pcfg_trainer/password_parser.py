@@ -453,6 +453,9 @@ class PasswordParser:
     ############################################################################
     # Function that looks for letter (alpha) combinations in the training data for a section
     # For example test or HelloItIsDog
+    # NOTE: What constitutes a letter is encoding dependent
+    #       What this means is that for ¯\_(ツ)_/¯. the 'ツ' is considered an alpha character under UTF-8
+    #       Likewise the Russian 'пароль' is considered an alpha character string under UTF-8
     # items is a list of the different combinations parsed
     # for example ['test','cat','DoG']
     # Doing this recursive so input_section is the section to processed
@@ -556,7 +559,7 @@ class PasswordParser:
             ##--If the section has not been processed already
             if section[1] == None:
                 ##--Since everything that is not categorized yet is considered a "Special char" run, this makes processing it easier
-                section_list.append((section[0],'S'+str(len(section[0]))))
+                section_list.append((section[0],'O'+str(len(section[0]))))
                 ##--Now save the string---
                 items.append(section[0])
                 
@@ -566,7 +569,8 @@ class PasswordParser:
                 
         ##--Now copy the section list to the main processed_mask
         self.processed_mask = section_list.copy()
-        print(self.processed_mask)
+        print(str(self.processed_mask).encode('ascii',errors='replace'))
+        #print(self.processed_mask)
         #for x, y in self.processed_mask:
         #    print (y)
         return RetType.STATUS_OK
