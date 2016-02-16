@@ -29,316 +29,29 @@ def make_sure_path_exists(path):
 ##############################################################################
 # Creates all the directories needed to save a file
 ##############################################################################
-def make_rule_dirs(rule_name):
+def make_rule_dirs(directory_listing):
     try:
-        make_sure_path_exists('./Rules/'+rule_name+'/Grammar')
-        make_sure_path_exists('./Rules/'+rule_name+'/Digits')
-        make_sure_path_exists('./Rules/'+rule_name+'/Capitalization')
-        make_sure_path_exists('./Rules/'+rule_name+'/Keyboard')
-        make_sure_path_exists('./Rules/'+rule_name+'/Special')
-        make_sure_path_exists('./Rules/'+rule_name+'/Replace')
-        make_sure_path_exists('./Rules/'+rule_name+'/Context')
+        for path in directory_listing:
+            make_sure_path_exists(path)
     except OSError:
         print("Error creating the directories to save the results")
         print(str(error))
         return RetType.FILE_IO_ERROR
     return RetType.STATUS_OK
-
-
-#############################################################################
-# Saves the results that go into a single file
-#############################################################################
-def save_to_file(filename,data):
-    if len(data)>0:
-        file = open(filename, "w")
-        for x in data:
-            file.write(str(x.prob) + "\t" + x.value + "\n")
-        file.close()
-
-        
+    
         
 ##############################################################################
-# Generates and writes the config file for the ruleset
+# Writes the config file for the ruleset
 ##############################################################################        
-def write_config(base_dir):
-    ##--Using configparser since I'm lazy-------##
-    config = configparser.ConfigParser()
-    ##--First write info about the training program used---###
-    ##--This is me being optimistic that other people may eventaully write their own training programs---###
-    config['TRAINING_PROGRAM_DETAILS'] = {'Program':'pcfg_trainer.py','Version': '1.0','Author':'Matt Weir','Contact':'cweir@vt.edu'}
-    
-    ##--Now write info about the training dataset---###
-    ##--Yup, this will totally leak info about training sets people are using but since this tool is meant for academic uses
-    ##--it is important for repeated tests and documentation to keep track of where these rule sets came from
-    ##--TODO: Actually use the real data here vs some placeholders
-    config['TRAINING_DATASET_DETAILS'] = {'Filename':'TestPasswords.pot', 'Number_of_passwords_in_set':1000,'Number_of_valid_passwords':1000,'Capital_letters_present':True,'Digits_present':True,'Special_chars_present':True,'Comments':'None'}
-    
-    ##--Finally write info about the actual grammar---###
-    ##--This info is used by the pcfg_manager program to read in the grammar---###
-    ##--This data will be changing a lot as I go through a couple of revisions and get a better handle how to read in arbitrary PCFG grammars---##
-    
-    #######################################################################################################
-    ##--The first step is to read in the (S)tart transition
-    ##--Currently useing the base structure
-    #######################################################################################################
-    config['START'] =  {}
-    section_info = config['START']
-    
-    ##--Comments about the transition--##
-    section_info['Name'] = 'Base Structure'
-    section_info['Comments'] = 'Standard base structures as defined by the original PCFG Paper, with some renaming to prevent naming collisions. Examples are A4D2 from the training word "pass12"'
-    
-    ##--File info where it is saved--##
-    section_info['Directory'] = 'Grammar'
-    section_info['Filename'] = 'Grammar.txt'
-    
-    ##--Info on how to actually read in and apply the transition--##
-    section_info['File_type'] = 'Grammar.txt'  ##Only one file vs 1.txt, 2.txt, 3.txt, etc.
-    section_info['Inject_type'] = 'Base_Structure'  ##How the PCFG program should read in the data. Eventually want to make this more generic
-    section_info['Function'] = 'Transparent' ##How the PCFG should treat this transition when invoking it
-    section_info['Is_terminal'] = 'False'  ##If this is a terminal replacement
-    
-    ##--Info about the replacements---##
-    ##--Format is an array of replacements, {Transition_id,Config_id}
-    ##--Transition_id is the id from the transition file
-    ##--Config_id is the id associated in THIS config file
-    ##--There is a difference to avoid conflicts if two transition types have a name confict.
-    ##--A good example is 'S' might represent 'Start' or "Special Character"
-    
-    ##--Key---
-    # A = Alpha string, (commonly referred to as letters). Used to be categorized as 'L'
-    # O = Other. Used to be refered to as Special character replacements, 'S'.
-    # D = Digit replacement
-    # K = Keyboard replacement
-    # X = conteXt sensitive replacement (Grab-bag)
-    replacements = [
-        {'Transition_id':'A','Config_id':'BASE_A'},
-        {'Transition_id':'O','Config_id':'BASE_O'},
-        {'Transition_id':'D','Config_id':'BASE_D'},
-        {'Transition_id':'K','Config_id':'BASE_K'},
-        {'Transition_id':'X','Config_id':'BASE_X'},
-        
-    ]
-    section_info['Replacements'] = str(replacements)
-    
-    #####################################################################################################
-    ##---Now deal with the "Base_L" transition where L represents all lower case letter replacements of a base structure
-    ######################################################################################################
-    config['BASE_L'] =  {}
-    section_info = config['BASE_L']
-    
-    ##--Comments about the transition--##
-    section_info['Name'] = 'L'
-    section_info['Comments'] = '(L)ower case letter replacement for base structure. Aka "pass12" = L4D2, so this is the L4'
-    
-    ##--File info where it is saved--##
-    ##--Input dictionaries are currently used for this
-    
-    ##--Info on how to actually read in and apply the transition--##
-    section_info['File_type'] = 'Length'  ##Replacements are broken up by length. Aka L1 = a, L2= aa, L3=aaa
-    section_info['Inject_type'] = 'Wordlist'  ##How the PCFG program should read in the data. Eventually want to make this more generic
-    section_info['Function'] = 'Copy' ##How the PCFG should treat this transition when invoking it
-    section_info['Is_terminal'] = 'True'  ##If this is a terminal replacement
-    
-    
-    #####################################################################################################
-    ##---Now deal with the "Base_U" transition where U represents all UPPERCASE letter replacements of a base structure
-    ######################################################################################################
-    config['BASE_U'] =  {}
-    section_info = config['BASE_U']
-    
-    ##--Comments about the transition--##
-    section_info['Name'] = 'U'
-    section_info['Comments'] = '(U)pper case letter replacement for base structure. Aka "PASS12" = U4D2, so this is the U4'
-    
-    ##--File info where it is saved--##
-    ##--Input dictionaries are currently used for this
-    
-    ##--Info on how to actually read in and apply the transition--##
-    section_info['File_type'] = 'Length'  ##Replacements are broken up by length. Aka L1 = a, L2= aa, L3=aaa
-    section_info['Inject_type'] = 'Wordlist'  ##How the PCFG program should read in the data. Eventually want to make this more generic
-    section_info['Function'] = 'Uppercase' ##How the PCFG should treat this transition when invoking it
-    section_info['Is_terminal'] = 'True'  ##If this is a terminal replacement
-            
-    
-    #####################################################################################################
-    ##---Now deal with the "Base_M" transition where M represents all MiXeDCase letter replacements of a base structure
-    ######################################################################################################
-    config['BASE_M'] =  {}
-    section_info = config['BASE_M']
-    
-    ##--Comments about the transition--##
-    section_info['Name'] = 'M'
-    section_info['Comments'] = '(M)ixedCase letter replacement for base structure. Aka "PaSs12" = M4D2, so this is the M4'
-    
-    ##--File info where it is saved--##
-    ##--Input dictionaries are currently used for this
-    
-    ##--Info on how to actually read in and apply the transition--##
-    section_info['File_type'] = 'Length'  ##Replacements are broken up by length. Aka L1 = a, L2= aa, L3=aaa
-    section_info['Inject_type'] = 'Wordlist'  ##How the PCFG program should read in the data. Eventually want to make this more generic
-    section_info['Function'] = 'Shadow' ##How the PCFG should treat this transition when invoking it
-    section_info['Is_terminal'] = 'False'  ##If this is a terminal replacement
-    
-    ##--Info about the replacements---##
-    ##--Format is an array of replacements, {Transition_id,Config_id}
-    ##--Transition_id is the id from the transition file
-    ##--Config_id is the id associated in THIS config file
-    ##--There is a difference to avoid conflicts if two transition types have a name confict.
-    ##--A good example is 'S' might represent 'Start' or "Special Character"
-    replacements = [
-        {'Transition_id':'Capitilization','Config_id':'CAPITILIZATION'},
-    ]
-    section_info['Replacements'] = str(replacements)    
-    
-    
-    #####################################################################################################################
-    ##---Now deal with the "Base_S" transition where S represents Special Character replacements of a base structure
-    ######################################################################################################################
-    config['BASE_S'] =  {}
-    section_info = config['BASE_S']
-    
-    ##--Comments about the transition--##
-    section_info['Name'] = 'S'
-    section_info['Comments'] = '(S)pecial character replacement for base structure. Aka "pass$$" = L4S2, so this is the S2'
-    
-    ##--File info where it is saved--##
-    section_info['Directory'] = 'Special'
-    section_info['Filename'] = '*.txt'
-    
-    ##--Info on how to actually read in and apply the transition--##
-    section_info['File_type'] = 'Length'  ##Replacements are broken up by length. Aka L1 = a, L2= aa, L3=aaa
-    section_info['Inject_type'] = 'Standard_Copy'  ##How the PCFG program should read in the data. Eventually want to make this more generic
-    section_info['Function'] = 'Copy' ##How the PCFG should treat this transition when invoking it
-    section_info['Is_terminal'] = 'True'  ##If this is a terminal replacement
-    
-    #####################################################################################################
-    ##---Now deal with the "Base_D" transition where D represents digit replacements of a base structure
-    ######################################################################################################
-    config['BASE_D'] =  {}
-    section_info = config['BASE_D']
-    
-    ##--Comments about the transition--##
-    section_info['Name'] = 'D'
-    section_info['Comments'] = '(D)igit replacement for base structure. Aka "pass12" = L4D2, so this is the D2'
-    
-    ##--File info where it is saved--##
-    section_info['Directory'] = 'Digits'
-    section_info['Filename'] = '*.txt'
-    
-    ##--Info on how to actually read in and apply the transition--##
-    section_info['File_type'] = 'Length'  ##Replacements are broken up by length. Aka L1 = a, L2= aa, L3=aaa
-    section_info['Inject_type'] = 'Standard_Copy'  ##How the PCFG program should read in the data. Eventually want to make this more generic
-    section_info['Function'] = 'Copy' ##How the PCFG should treat this transition when invoking it
-    section_info['Is_terminal'] = 'True'  ##If this is a terminal replacement
-    
-    
-    #####################################################################################################################
-    ##---Now deal with the "K" transition where S represents Keyboard-Combinations replacements of a base structure
-    ######################################################################################################################
-    config['BASE_K'] =  {}
-    section_info = config['BASE_K']
-    
-    ##--Comments about the transition--##
-    section_info['Name'] = 'K'
-    section_info['Comments'] = '(K)eyboard replacement for base structure. Aka "test1qaz2wsx" = L4K4K4, so this is the K4s'
-    
-    ##--File info where it is saved--##
-    section_info['Directory'] = 'Keyboard'
-    section_info['Filename'] = '*.txt'
-    
-    ##--Info on how to actually read in and apply the transition--##
-    section_info['File_type'] = 'Length'  ##Replacements are broken up by length. Aka L1 = a, L2= aa, L3=aaa
-    section_info['Inject_type'] = 'Standard_Copy'  ##How the PCFG program should read in the data. Eventually want to make this more generic
-    section_info['Function'] = 'Copy' ##How the PCFG should treat this transition when invoking it
-    section_info['Is_terminal'] = 'True'  ##If this is a terminal replacement
-       
-        
-    #####################################################################################################################
-    ##---Now deal with the "X" transition where X represents random conteXt sensitive replacements of a base structure such as #1 or :p
-    ######################################################################################################################
-    config['BASE_X'] =  {}
-    section_info = config['BASE_X']
-    
-    ##--Comments about the transition--##
-    section_info['Name'] = 'X'
-    section_info['Comments'] = 'conte(X)t sensitive replacements to the base structure. This is mostly a grab bag of things like #1 or ;p'
-    
-    ##--File info where it is saved--##
-    section_info['Directory'] = 'Context'
-    section_info['Filename'] = '*.txt'
-    
-    ##--Info on how to actually read in and apply the transition--##
-    section_info['File_type'] = 'Length'  ##Replacements are broken up by length. Aka L1 = a, L2= aa, L3=aaa
-    section_info['Inject_type'] = 'Standard_Copy'  ##How the PCFG program should read in the data. Eventually want to make this more generic
-    section_info['Function'] = 'Copy' ##How the PCFG should treat this transition when invoking it
-    section_info['Is_terminal'] = 'True'  ##If this is a terminal replacement
-    
-    #####################################################################################################################
-    ##---Now deal with the "X" transition where X represents random conteXt sensitive replacements of a base structure such as #1 or :p
-    ######################################################################################################################
-    config['CAPITILIZATION'] =  {}
-    section_info = config['CAPITILIZATION']
-    
-    ##--Comments about the transition--##
-    section_info['Name'] = 'Capitlization'
-    section_info['Comments'] = 'Capitalization Masks for words. Aka LLLLUUUU for passWORD'
-    
-    ##--File info where it is saved--##
-    section_info['Directory'] = 'Capitalization'
-    section_info['Filename'] = '*.txt'
-    
-    ##--Info on how to actually read in and apply the transition--##
-    section_info['File_type'] = 'Length'  ##Replacements are broken up by length. Aka L1 = a, L2= aa, L3=aaa
-    section_info['Inject_type'] = 'Standard_Copy'  ##How the PCFG program should read in the data. Eventually want to make this more generic
-    section_info['Function'] = 'Capitalize' ##How the PCFG should treat this transition when invoking it
-    section_info['Is_terminal'] = 'True'  ##If this is a terminal replacement
-    
-    
-    with open(base_dir + "/config.ini", 'w') as configfile:
-        config.write(configfile)
-
-    return True
-
-
-    
-##############################################################################
-# Saves the results
-##############################################################################
-def save_results(rule_name,x):
-    # First create the directory structure
-    print ("Finished calculating probabilities. Saving results")
-    make_rule_dirs(rule_name)
-
-    #Now save the results
-    base_dir = "./Rules/"+rule_name
-
-    #Save the config file
-    write_config(base_dir)
-    
-    #Save grammar
-    save_to_file(base_dir+"/Grammar/Grammar.txt", x.base_structure)
-
-    #Save capitalization
-    for i in range(1,MAXLENGTH):
-        save_to_file(base_dir+"/Capitalization/"+str(i)+".txt", x.cap_structure[i])
-
-    #Save digits
-    for i in range(1,MAXLENGTH):
-        save_to_file(base_dir+"/Digits/"+str(i)+".txt", x.digit_structure[i])
-
-    #Save special
-    for i in range(1,MAXLENGTH):
-        save_to_file(base_dir+"/Special/"+str(i)+".txt", x.special_structure[i])
-
-    #Save keyboard
-    save_to_file(base_dir+"/Keyboard/1.txt", x.keyboard_structure)
-
-    #Save replacements
-    save_to_file(base_dir+"/Replace/1.txt", x.replace_structure)
-
-    #Save context sentivite replacements
-    save_to_file(base_dir+"/Context/1.txt", x.context_structure)
+def write_config(directory_name, config):
+    try:
+        with open(os.path.join(directory_name,"config.ini"), 'w') as configfile:
+            config.write(configfile)
+    except IOError as error:
+        print (error)
+        print ("Error opening file " + os.path.join(directory_name,"config.ini"))
+        return RetType.FILE_IO_ERROR
+    return RetType.STATUS_OK
 
 
 #########################################################################################
@@ -351,7 +64,7 @@ def save_results(rule_name,x):
 def read_input_passwords(training_file, is_pot, master_password_list, file_encoding = 'utf-8'):
     ##-- First try to open the file--##
     try:
-        with codecs.open(training_file, 'r', encoding=file_encoding) as file:
+        with codecs.open(training_file, 'r', encoding=file_encoding, errors = 'ignore') as file:
             # Read though all the passwords
             try:
                 for password in file:
@@ -446,17 +159,21 @@ def is_jtr_pot(training_file, num_to_test, verbose = False, file_encoding = 'utf
 # I'm keeping the declarations for the chardet package local to this file so people can run this
 # tool without installing it if they don't want to use this feature
 ##################################################################################################
-def detect_file_encoding(training_file, file_encoding):
+def detect_file_encoding(training_file, file_encoding, max_passwords = 100000):
     print()
     print("Attempting to autodetect file encoding of the training passwords")
     print("-----------------------------------------------------------------")
     from chardet.universaldetector import UniversalDetector
     detector = UniversalDetector()
     try:
+        cur_count = 0
         with open(training_file, 'rb') as file:
             for line in file.readlines():
                 detector.feed(line)
                 if detector.done: 
+                    break
+                cur_count = cur_count + 1
+                if cur_count >= max_passwords:
                     break
             detector.close()
     except IOError as error:

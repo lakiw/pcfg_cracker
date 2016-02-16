@@ -1,0 +1,11 @@
+2/16/2016 - Matt
+Currently when saving files to disk the parsing program will not delete any old grammar files that don't belong in the new grammar. An example of that would be if the previous grammar file contained D2s such as '99', '12', '58', but the new grammar file did not have any D2s. In that case the old D2s would be present in the new grammar file. This *shouldn't* be an issue right now since there won't be any D2s in the base structure to call the outdated data, but it is something to keep in mind. I could fix this, but I'm hesitant to write any code that deletes files or directories from someone's computer....
+
+2/16/2016 - Matt
+Need to revisit my logic for handling encoding errors when reading in data. Originally the way I was catching the error stopped the program from parsing any more passwords. That was not ideal. Currently have it ignoring encoding errors but I really want to print out a warning which means I need to significantly change the function to read in passwords.
+
+2/16/2016 - Matt
+Need to check to make sure the encoding autodetection fails gracefully if the required package hasn't been installed yet. Also need to fine tune the ability to specify how many values to parse since it takes a long time to run on larger datasets
+
+2/16/2016 - Matt
+Need to provide a better status output while the training program is running

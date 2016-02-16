@@ -9,6 +9,14 @@ $MD5$d41d8cd98f00b204e9800998ecf8427e:Test1
 ##--Complex password with multiple digits at the end
 $MD5$d41d8cd98f00b204e9800998ecf8427e:Test12
 
+##--Passwords with numbers to test sorting--##
+$MD5$d41d8cd98f00b204e9800998ecf8427e:test1
+$MD5$d41d8cd98f00b204e9800998ecf8427e:test1
+$MD5$d41d8cd98f00b204e9800998ecf8427e:test1
+$MD5$d41d8cd98f00b204e9800998ecf8427e:test1
+$MD5$d41d8cd98f00b204e9800998ecf8427e:test2
+$MD5$d41d8cd98f00b204e9800998ecf8427e:test2
+$MD5$d41d8cd98f00b204e9800998ecf8427e:test3
 
 ##--Complex password with single digit  at start
 $MD5$d41d8cd98f00b204e9800998ecf8427e:1Test

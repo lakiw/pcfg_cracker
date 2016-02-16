@@ -42,6 +42,9 @@ class RetType(enum.IntEnum):
     ## File encoding error
     ENCODING_ERROR                      = 7
     
+    ## Generic error
+    GENERIC_ERROR                       = 98
+    
     ## Program should shut down
     QUIT                                = 99
     

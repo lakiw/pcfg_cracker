@@ -71,16 +71,24 @@ class DataList:
         ##-- Holds information about the list to write to the config file
         ##-- Breaking it out by list item since that should hopefully make it easier
         ##-- to add / modify list items in one spot
-        self.config = {}
-        self.config[config_name] =  config_data
-        section_info = self.config[config_name]
+        self.config_name = config_name
+        self.config_data = config_data
+
         ## Set the list type in the config file
         if type == ListType.FLAT:
-            section_info['File_type'] = 'Flat'
+            self.config_data['File_type'] = 'Flat'
         elif type == ListType.LENGTH:
-            section_info['File_type'] = 'Length'
-            
+            self.config_data['File_type'] = 'Length'
+         
         
+        
+    ##################################################
+    # Updates a config file instance
+    ##################################################
+    def update_config(self, config_file):
+        config_file[self.config_name] =  self.config_data
+        
+        return RetType.STATUS_OK
         
     ##################################################
     # inserts an item into the list
@@ -156,4 +164,66 @@ class DataList:
                     ##--Calculate the probability
                     list_item['probability'] = Decimal(list_item['num']) / Decimal(main_item['total_size'])
         
+        return RetType.STATUS_OK
+        
+        
+    #########################################################################
+    # Creates a dictionary of sorted lists of all the main_dic (name,probability) tuples
+    ## Dictionary for saving the sorted output of the values
+    ##-- The dicrionary takes the format of
+    ##      {0:[sorted list of index lists into the main_dic]
+    ##
+    ##-- For example consider the following main_dic
+    ##      {3:{
+    ##          'lists:{
+    ##              'edf': num:1,
+    ##              'probability':Decimal(0.1)
+    ##          },              
+    ##          'lists:{
+    ##              'abc': num:5,
+    ##              'probability':Decimal(0.5)
+    ##          },
+    ##          'lists:{
+    ##              'xyz': num:4,
+    ##              'probability':Decimal(0.4)
+    ##          },
+    ##          'total_size':10
+    ##      }
+    ##
+    ##-- It will create the sorted_index
+    ##      {3:[('abc',Decimal(0.5)),('xyz',Decimal(0.4)),('edf',Decimal(0.1))]}
+    ##
+    #########################################################################
+    def get_sorted_results(self, sorted_results):
+        try:
+            ##Loop through the main indexes and sort the results of each sub dictionary
+            for index in self.main_dic:
+                ##--Set the key for the results to be the filename
+                if self.type == ListType.FLAT:
+                    if index != 0:
+                        print("Wow that should not happen. Error sorting the results")
+                        return RetType.GENERIC_ERROR
+                    try:
+                        key = self.config_data['Filename']
+                    except KeyError as error:
+                        print("Error reading config data for structure. The config needs to specify the filename to save results for. This is a programing problem, not a user error")
+                        return RetType.GENERIC_ERROR
+                else:
+                    try:
+                        ##--Right now the 'Filename' should just be '.txt'.
+                        key = str(index) + self.config_data['Filename']
+                    except KeyError as error:
+                        print("Error reading config data for structure. The config needs to specify the filename to save results for. This is a programing problem, not a user error")
+                        return RetType.GENERIC_ERROR
+                sorted_results[key] = []
+                
+                ##--Note, if you want values with the same probability to be sorted in dictionary order then add a sort above this to sort by name, then do the sort below--##
+                ##--Not doing that now since A) It's just a cosmetic feature, and B) I still need to see what the running time is
+                # Sort based on the probability index
+                for sorted_item in sorted(self.main_dic[index]['lists'], key = lambda x: (self.main_dic[index]['lists'][x]['probability']), reverse = True):
+                    ##--Now save the data in the sorted_results list
+                    sorted_results[key].append((sorted_item,self.main_dic[index]['lists'][sorted_item]['probability']))
+        except KeyError as error:
+            print("Error: " + str(error))
+            return RetType.GENERIC_ERROR
         return RetType.STATUS_OK

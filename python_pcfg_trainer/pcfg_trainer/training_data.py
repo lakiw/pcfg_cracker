@@ -10,6 +10,9 @@
 # the PasswordParser class
 #############################################################################
 
+import os
+import codecs
+
 ##--User Defined Imports---##
 from pcfg_trainer.ret_types import RetType
 from pcfg_trainer.password_parser import PasswordParser
@@ -21,6 +24,10 @@ from pcfg_trainer.data_list import ListType, DataList
 ############################################################################
 class TrainingData:
     def __init__(self):
+        
+        ##--Holds all of the individual DataList objects for iterating though them when it comes time to save the data
+        self.master_data_list = []
+        
         ######################################################
         ##Init Base Structures
         ######################################################
@@ -41,6 +48,7 @@ class TrainingData:
             ]),
         }     
         self.base_structure = DataList(type= ListType.FLAT, config_name= 'START', config_data = config)
+        self.master_data_list.append(self.base_structure)
         
         ########################################################
         ##Init Alpha structures
@@ -49,7 +57,7 @@ class TrainingData:
             'Name':'A',
             'Comments':'(A)lpha letter replacements for base structure. Aka "pass12" = A4D2, so this is the A4. Note, this is encoding specific so non-ASCII characters may be considered alpha. For example Cyrillic',
             'Directory':'Alpha',
-            'Filename' : '*.txt',
+            'Filename' : '.txt',
             'Inject_type':'Wordlist',
             'Function':'Shadow',
             'Is_terminal':'False',
@@ -58,6 +66,7 @@ class TrainingData:
             ]),
         }     
         self.letter_structure = DataList(type= ListType.LENGTH, config_name= 'BASE_A', config_data = config)
+        self.master_data_list.append(self.letter_structure)
         
         #########################################################
         ##Init Digits
@@ -66,13 +75,14 @@ class TrainingData:
             'Name':'D',
             'Comments':'(D)igit replacement for base structure. Aka "pass12" = L4D2, so this is the D2',
             'Directory':'Digits',
-            'Filename' : '*.txt',
+            'Filename' : '.txt',
             'Inject_type':'Standard_Copy',
             'Function':'Copy',
             'Is_terminal':'True', 
         }
         self.digit_structure = DataList(type= ListType.LENGTH, config_name = 'BASE_D', config_data = config)
-
+        self.master_data_list.append(self.digit_structure)
+        
         #########################################################
         ##Init Special
         #########################################################
@@ -80,12 +90,13 @@ class TrainingData:
             'Name':'O',
             'Comments':'(O)ther character replacement for base structure. Aka "pass$$" = L4S2, so this is the S2',
             'Directory':'Other',
-            'Filename' : '*.txt',
+            'Filename' : '.txt',
             'Inject_type':'Standard_Copy',
             'Function':'Copy',
             'Is_terminal':'True', 
         }
         self.special_structure = DataList(type= ListType.LENGTH, config_name = 'BASE_O', config_data = config)
+        self.master_data_list.append(self.special_structure)
         
         #########################################################
         ##Init Capitalization
@@ -94,21 +105,44 @@ class TrainingData:
             'Name':'Capitalization',
             'Comments':'Capitalization Masks for words. Aka LLLLUUUU for passWORD',
             'Directory':'Capitalization',
-            'Filename' : '*.txt',
+            'Filename' : '.txt',
             'Inject_type':'Standard_Copy',
             'Function':'Capitalize',
             'Is_terminal':'True', 
         }
         self.cap_structure = DataList(type= ListType.LENGTH, config_name = 'CAPITALIZATION', config_data = config)
-
+        self.master_data_list.append(self.cap_structure)
+        
+        ###########################################################
         ##Init Keyboard
-        self.keyboard_structure = DataList(type= ListType.LENGTH)
-
-        ##Init Replacement
-        self.replace_structure = DataList(type= ListType.FLAT)
-
+        ###########################################################
+        config = {
+            'Name':'K',
+            'Comments':'(K)eyboard replacement for base structure. Aka "test1qaz2wsx" = L4K4K4, so this is the K4s',
+            'Directory':'Keyboard',
+            'Filename' : '.txt',
+            'Inject_type':'Standard_Copy',
+            'Function':'Copy',
+            'Is_terminal':'True', 
+        }
+        self.keyboard_structure = DataList(type= ListType.LENGTH, config_name = 'BASE_K', config_data = config)
+        self.master_data_list.append(self.keyboard_structure)
+        
+        ############################################################
         ##Init Context Sensitive Values
-        self.context_structure = DataList(type= ListType.LENGTH)
+        ############################################################
+        config = {
+            'Name':'X',
+            'Comments':'conte(X)t sensitive replacements to the base structure. This is mostly a grab bag of things like #1 or ;p',
+            'Directory':'Context',
+            'Filename' : '.txt',
+            'Inject_type':'Standard_Copy',
+            'Function':'Copy',
+            'Is_terminal':'True', 
+        }
+        self.context_structure = DataList(type= ListType.LENGTH, config_name = 'BASE_X', config_data = config)
+        self.master_data_list.append(self.context_structure)
+        
         
         ##Number of passwords that were rejected
         ##Used for record keeping and debugging
@@ -117,6 +151,35 @@ class TrainingData:
         ##Number of valid passwords trained on
         ##Used for record keeping and debugging
         self.valid_passwords = 0
+    
+    ###################################################################################
+    # Returns a list of all the directories that need to be created to save the data
+    ###################################################################################
+    def update_directory_list(self, rule_directory, directory_listing):  
+        #--Loop through all of the data structures and get their direcory listings
+        for data in self.master_data_list:
+            try:
+                directory_listing.append(os.path.join(rule_directory,data.config_data['Directory']))
+            except KeyError as error:
+                print("Error with the config for " + data.config_name)
+                return RetType.GENERIC_ERROR 
+        return RetType.STATUS_OK
+    
+    ####################################################################################
+    # Updates the config of the saved grammar with all of the various DataList structures
+    ####################################################################################
+    def update_config(self, config):
+        #--Update the global training info
+        if 'TRAINING_DATASET_DETAILS' not in config:
+            config['TRAINING_DATASET_DETAILS'] = {}
+        config['TRAINING_DATASET_DETAILS']['Number_of_passwords_in_set'] = str(self.valid_passwords + self.num_rejected_passwords)
+        config['TRAINING_DATASET_DETAILS']['Number_of_valid_passwords'] = str(self.valid_passwords)
+        
+        #--Loop through all of the data structures and get their config sections
+        for data in self.master_data_list:
+            config[data.config_name] = data.config_data
+            
+        return RetType.STATUS_OK
     
     ###################################################################################
     # Checks to see if the input password is valid for this training program
@@ -252,6 +315,23 @@ class TrainingData:
         if ret_value != RetType.STATUS_OK:
             print("Error parsing special charcter combos")
             return ret_value
+        
+        ###########################################################################
+        #--Finally save the base structure data as everything should be parsed now
+        ###########################################################################
+        
+        # Doing this a bit overboard to match it with all the other parsing
+        # Also this provides a nice sanity check to make sure no errors creaped in somewhere
+        items = []
+        ret_value = cur_pass.parse_base(items)
+        if ret_value != RetType.STATUS_OK:
+            print("Error parsing special character combos")
+            return ret_value
+        ##--Now update the special character combo list
+        ret_value = self.base_structure.insert_list(items)
+        if ret_value != RetType.STATUS_OK:
+            print("Error parsing special charcter combos")
+            return ret_value
             
         return RetType.STATUS_OK
     
@@ -259,41 +339,54 @@ class TrainingData:
     # Finalizes the grammar and gets it ready to saved
     # The precision value is the precision to store the values
     # For example, a precision of 4 could save 0.0001 while a
-    # precision of 5 could save 0.00012
+    # precision of 5 could save 0.00012.
+    # Note, this currently can create final values with a precision 1 more than the current setting
     # Setting default to 7, (will measure 1 in a million)
     ############################################################################################
     def finalize_data(self, precision=7):
-        ##--Calculate probabilities for keyboard combos--##
-        ret_value = self.keyboard_structure.update_probabilties(precision = precision)
+        for current_structure in self.master_data_list:
+            ##--Calculate probabilities --##
+            ret_value = current_structure.update_probabilties(precision = precision)
+            if ret_value != RetType.STATUS_OK:
+                print("Error finalizing the data")
+                return ret_value
+               
+        return RetType.STATUS_OK
+    
+    #############################################################################################
+    # Actually writes the data to disk
+    #############################################################################################
+    def write_data_to_disk(self, base_directory, section_directory, filename, file_encoding, items):
+        try:
+            with codecs.open(os.path.join(base_directory,section_directory,filename), 'w', encoding=file_encoding) as datafile:
+                for x in items:
+                    datafile.write(str(x[0]) + '\t' + str(x[1])+'\n')
+        except IOError as error:
+            print (error)
+            print ("Error opening file " + str(os.path.join(base_directory,section_directory,filename)))
+            return RetType.FILE_IO_ERROR
+        return RetType.STATUS_OK
+    
+    ########################################################################################
+    # Saves the data to file
+    # The precision value is the precision to store the values
+    # The encoding is what encoding to use to save the files
+    # The directory is the base directory to save the data
+    #########################################################################################
+    def save_results(self, directory='.', encoding='ASCII', precision=7):
+
+        ##--First finalize the probabilities so we can sort the data
+        ret_value = self.finalize_data(precision)
         if ret_value != RetType.STATUS_OK:
-            print("Error finalizing the data")
             return ret_value
-        ##--Calculate probabillities for context sensitive combos--##
-        ret_value = self.context_structure.update_probabilties(precision = precision)
-        if ret_value != RetType.STATUS_OK:
-            print("Error finalizing the data")
-            return ret_value
-        ##--Calculate probabillities for digit combos--##
-        ret_value = self.digit_structure.update_probabilties(precision = precision)
-        if ret_value != RetType.STATUS_OK:
-            print("Error finalizing the data")
-            return ret_value
-        ##--Calculate probabillities for alpha combos--##
-        ret_value = self.letter_structure.update_probabilties(precision = precision)
-        if ret_value != RetType.STATUS_OK:
-            print("Error finalizing the data")
-            return ret_value    
-            
-        ##--Calculate probabillities for capitalization masks--##
-        ret_value = self.cap_structure.update_probabilties(precision = precision)
-        if ret_value != RetType.STATUS_OK:
-            print("Error finalizing the data")
-            return ret_value  
-            
-        ##--Calculate the probabilities for special charcer combos --##
-        ret_value = self.special_structure.update_probabilties(precision = precision)
-        if ret_value != RetType.STATUS_OK:
-            print("Error finalizing the data")
-            return ret_value          
-            
+        
+        ##--now save results to disk
+        for current_structure in self.master_data_list:
+            sorted_results = {}    
+            ret_value = current_structure.get_sorted_results(sorted_results)
+            for filename, items in sorted_results.items():
+                ret_value = self.write_data_to_disk(directory, current_structure.config_data['Directory'] ,filename, encoding, items)
+            if ret_value != RetType.STATUS_OK:
+                return ret_value
+        
         return RetType.STATUS_OK

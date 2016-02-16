@@ -477,7 +477,7 @@ class PasswordParser:
                 ##--This is the end of a run--##
                 if len(cur_combo) != 0:
                     #--update items to contain the combo
-                    alpha_items.append(''.join(cur_combo))
+                    alpha_items.append(''.join(cur_combo).lower())
                     ##--Update base structure mask--
                     ##--Update any unprocessed sections before the current run
                     if len(cur_combo) != index:
@@ -498,7 +498,7 @@ class PasswordParser:
         ##--Update the last run if needed
         if len(cur_combo) != 0: 
             #--update items to contain the combo
-            alpha_items.append(''.join(cur_combo))
+            alpha_items.append(''.join(cur_combo).lower())
             ##--Update base structure mask--
             ##--Update any unprocessed sections before the current run
             if len(cur_combo) != len(input_section):
@@ -569,8 +569,30 @@ class PasswordParser:
                 
         ##--Now copy the section list to the main processed_mask
         self.processed_mask = section_list.copy()
-        print(str(self.processed_mask).encode('ascii',errors='replace'))
+        #print(str(self.processed_mask).encode('ascii',errors='replace'))
         #print(self.processed_mask)
         #for x, y in self.processed_mask:
         #    print (y)
+        return RetType.STATUS_OK
+        
+    ##################################################################################
+    # Simply checks to make sure the base structure has been fully parsed
+    # and then return it
+    #
+    # This is mostly a sanity check to make sure no base struture replacements were left
+    # unparsed by the previous checks
+    #
+    # This should be run after all of the other parsing
+    ###################################################################################    
+    def parse_base(self,items):
+        # Used to save the "string" representation of the base structure
+        final_value = ""
+        ##--Loop through the different sections for the mask
+        for section in self.processed_mask:
+            ##--If this happens a mistake occured
+            if section[1] == None:
+                print("There is a code error in how the password was parsed")
+                RetType.GENERIC_ERROR
+            final_value+= section[1]
+        items.append(final_value)
         return RetType.STATUS_OK

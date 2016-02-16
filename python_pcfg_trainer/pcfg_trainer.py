@@ -1,20 +1,12 @@
 #!/usr/bin/env python3
 
-#import sys
-#import time
-#import string
-#import bisect
-#from bisect import bisect_left
-#import operator
-#import os
-#import errno
-#import configparser
-
 import argparse
+import configparser
+import os
 
 ##--User Defined Imports---##
 from pcfg_trainer.ret_types import RetType
-from pcfg_trainer.trainer_file_io import is_jtr_pot, read_input_passwords, detect_file_encoding, make_rule_dirs
+from pcfg_trainer.trainer_file_io import is_jtr_pot, read_input_passwords, detect_file_encoding, make_rule_dirs, write_config
 from pcfg_trainer.training_data import TrainingData
 
 
@@ -122,6 +114,14 @@ def parse_command_line(command_line_results):
 # Main function, starts everything off
 ############################################################    
 def main():
+    ##--Information about this program--##
+    program_details = {
+        'Program':'pcfg_trainer.py',
+        'Version': '3.1',
+        'Author':'Matt Weir',
+        'Contact':'cweir@vt.edu'
+    }
+    
     #print_banner()
     ##--First start by parsing the command line --##
     command_line_results = CommandLineVars()
@@ -190,17 +190,62 @@ def main():
             ascii_fail()
             print("Exiting...")
             return
+        if training_results.valid_passwords % 10000 == 0:
+            print("Passwords processed: " +  str(training_results.valid_passwords))
+        
+    ##--Save the data to disk------------------###
+    ##--Get the base directory to save all the data to
+    ##  Don't want to use the relative path since who knows where someone is invoking this script from
+    ##  Also aiming to make this OS independent
+    ##  Will create all files in absolute_path_of_pcfg_trainer.py/Rules/RULE_NAME/
+    absolute_base_directory = os.path.join(os.path.dirname(os.path.realpath(__file__)),'Rules',command_line_results.rule_name)
     
-    ##--Finalize the data and get it ready to save--##
-    ret_value = training_results.finalize_data(precision=7)
+    ##--Find the directories we need to create
+    ##--Initailize with the base directory just in case there are no additioanl directories to create, (hey it could happen down the line)
+    directory_listing = [absolute_base_directory]
+    ret_value = training_results.update_directory_list(absolute_base_directory, directory_listing)
+    if ret_value != RetType.STATUS_OK:
+        ascii_fail()
+        print("Exiting...")
+        return
+   
+    ##--Create the directories if they do not already exist 
+    ret_value = make_rule_dirs(directory_listing)
     if ret_value != RetType.STATUS_OK:
         ascii_fail()
         print("Exiting...")
         return
         
-    ##--Save the data to disk------------------###
-    ##--Create the directories if they do not already exist
-    ret_value = make_rule_dirs(command_line_results.rule_name)
+    ##--Gather the config data to save--##
+    config = configparser.ConfigParser()
+    ##--First write info about the training program used---###
+    ##--This is me being optimistic that other people may eventaully write their own training programs---###
+    config['TRAINING_PROGRAM_DETAILS'] = program_details
+   
+    ##--Now write info about the training dataset---###
+    ##--Yup, this will leak info about training sets people are using but since this tool is meant for academic uses
+    ##--it is important for repeated tests and documentation to keep track of where these rule sets came from
+    config['TRAINING_DATASET_DETAILS'] = {
+        'Filename':command_line_results.training_file,
+        'Comments':'None'
+    }
+    ##--Gather info from the training set
+    ret_value = training_results.update_config(config)
+    if ret_value != RetType.STATUS_OK:
+        ascii_fail()
+        print("Exiting...")
+        return
+   
+    ##--Save the config file--##
+    ret_value = write_config(absolute_base_directory, config)
+    if ret_value != RetType.STATUS_OK:
+        ascii_fail()
+        print("Exiting...")
+        return 
+     
+    ##--Now finalize the data and save it to disk--##
+        ##--Finalize the data and get it ready to save--##
+    ret_value = training_results.save_results(directory = absolute_base_directory, encoding = command_line_results.encoding, precision = 7)
     if ret_value != RetType.STATUS_OK:
         ascii_fail()
         print("Exiting...")
