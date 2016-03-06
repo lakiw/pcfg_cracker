@@ -3,6 +3,8 @@
 import argparse
 import configparser
 import os
+import math #Used for the MeasurementStatus bar
+import sys #Used to clear out the print buffer for the status bar
 
 ##--User Defined Imports---##
 from pcfg_trainer.ret_types import RetType
@@ -34,7 +36,40 @@ class CommandLineVars:
         ##--The character encoding of the training set, (for example UTF-8)
         self.encoding = None
         
-
+#############################################################################
+# Used to print out the status of a current measurement
+# I know, yet another class that could have been taken care of with a couple
+# of variables, but this will hopefully make it easier to make changes later
+#############################################################################
+class MeasurementStatus:
+    def __init__(self, input_size, display_status = True):
+        ##--The total number of passwords
+        self.input_size = input_size
+        ##--The number of passwords currently parsed
+        self.parsed_passwords = 0
+        ##--The size between each bar
+        self.step_size = self.input_size // 100
+        ##--If there are less than 100 passwords....
+        if self.step_size == 0:
+            self.step_size = 1
+        ##--If true, show a periodic status update. Will be false if debugging is going on
+        self.display_status = display_status
+    
+    ##########################################################################
+    # Increments the number of parsed passwords by one and prints out any
+    # status updates
+    ##########################################################################
+    def update_status(self):
+        self.parsed_passwords = self.parsed_passwords + 1
+        if self.parsed_passwords == self.input_size:
+            print("100%")
+        elif (self.parsed_passwords % self.step_size == 0):
+            print(str(math.floor((self.parsed_passwords / self.input_size) * 100)) +"%, ",end="")
+            sys.stdout.flush()
+        return RetType.STATUS_OK
+        
+        
+        
         
 ###################################################################################
 # ASCII art for the banner
@@ -122,7 +157,8 @@ def main():
         'Contact':'cweir@vt.edu'
     }
     
-    #print_banner()
+    print_banner()
+    
     ##--First start by parsing the command line --##
     command_line_results = CommandLineVars()
     if parse_command_line(command_line_results) != RetType.STATUS_OK:
@@ -151,22 +187,32 @@ def main():
         ascii_fail()
         print("Exiting...")
         return
-    
+     
     ##--Now actually read in the raw passwords, (minus any POT formatting)
+    print("Reading in the training passwords")
     master_password_list = [] # The list that contains all the iput passwords
-    ret_value = read_input_passwords(command_line_results.training_file, is_pot, master_password_list, file_encoding = command_line_results.encoding)    
-    ##-- An error shouldn't occur here since we checked it earlier but stanger things have happened
+    ret_value = read_input_passwords(command_line_results.training_file, is_pot, master_password_list, file_encoding = command_line_results.encoding)
+    ##--Set up the progress bar based on if it should print out a periodic status update or not    
+    if ret_value == RetType.DEBUG:
+        progress_bar = MeasurementStatus(len(master_password_list),display_status = False)
+    elif ret_value == RetType.STATUS_OK:
+        progress_bar = MeasurementStatus(len(master_password_list),display_status = True)
     ##-- Exit gracefully if error occurs
-    if ret_value != RetType.STATUS_OK:
+    else:
         ascii_fail()
         print("Exiting...")
         return
         
     ##--Now the real work starts--
-    if command_line_results.verbose == True:
-        print("Done processing the input training file")
-        print("Starting to analyzing the input passwords")
-        print("Passwords left to parse : " + str(len(master_password_list)))
+    print()
+    print("Done processing the input training file")
+    print("Starting to analyzing the input passwords")
+    print("Passwords left to parse : " + str(len(master_password_list)))
+    if len(master_password_list) > 1000000:
+        print("PRO TIP: Past experiments have shown the value of training on a dataset larger than a million passwords is negligable. If this training program takes too long to run you may want to consider training on a smaller set of passwords")
+    print()
+    print("Current Status:")
+    
     
     ##--Initialize the training results--## 
     training_results = TrainingData()
@@ -183,16 +229,14 @@ def main():
             ret_value = RetType.STATUS_OK
         ##--Shouldn't ever get to the option below, so print an error and error out in case it does happen
         else:
-            print("ERROR processign results from the training data")
+            print("ERROR processing results from the training data")
             ret_value = RetType.ERROR_QUIT
         ##--An error occured parsing the password, print error and error out
         if ret_value != RetType.STATUS_OK:
             ascii_fail()
             print("Exiting...")
             return
-        if training_results.valid_passwords % 10000 == 0:
-            print("Passwords processed: " +  str(training_results.valid_passwords))
-        
+        progress_bar.update_status()
     ##--Save the data to disk------------------###
     ##--Get the base directory to save all the data to
     ##  Don't want to use the relative path since who knows where someone is invoking this script from

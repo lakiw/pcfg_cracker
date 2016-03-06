@@ -62,6 +62,8 @@ def write_config(directory_name, config):
 # unit tests easier
 #########################################################################################
 def read_input_passwords(training_file, is_pot, master_password_list, file_encoding = 'utf-8'):
+    ##--keep track of the return value. If there are any Commnents return RetType.DEBUG vs RetType.STATUS_OK
+    ret_value = RetType.STATUS_OK
     ##-- First try to open the file--##
     try:
         with codecs.open(training_file, 'r', encoding=file_encoding, errors = 'ignore') as file:
@@ -73,10 +75,11 @@ def read_input_passwords(training_file, is_pot, master_password_list, file_encod
                         #- I'm starting password values of # as comments for my unit tests, so ignore them
                         if (len(password) > 0) and (password[0] != '#'):
                             #-I'm going to assume that the first ':' is the deliminator. I know, it could fail if that
-                            #-value shows up in the username, but that should be rare enough not to throw off the
+                            #-value shows up in the hash, but that should be rare enough not to throw off the
                             #-statistical results of the final grammar
                             master_password_list.append((password[password.find(':')+1:].rstrip(),"DATA"))
                         elif len(password) > 0:
+                            ret_value = RetType.DEBUG
                             master_password_list.append((password.rstrip(),"COMMENT"))
                     ##--Really simple, just append the password if it is a flat file
                     else:
@@ -91,7 +94,7 @@ def read_input_passwords(training_file, is_pot, master_password_list, file_encod
         print ("Error opening file " + training_file)
         return RetType.FILE_IO_ERROR
     
-    return RetType.STATUS_OK
+    return ret_value
 
 ###################################################################################
 # Read the first 100 entries and determine if it is a JTR pot or a plain wordlist
@@ -123,12 +126,10 @@ def is_jtr_pot(training_file, num_to_test, verbose = False, file_encoding = 'utf
                 #Ignorning blank lines and lines that start with # due to my unit test files containing them for comments
                 if (len(password)>1) and (password[0] != '#'):
                     if password.find(":") == -1:
-                        print()
                         print("Treating input file as a flat password file")
                         print()
                         return RetType.IS_FALSE
         # It looks a lot like a POT file
-        print()
         print("Treating input file as a John the Ripper POT file")
         print()
         return RetType.IS_TRUE

@@ -7,5 +7,5 @@ Need to revisit my logic for handling encoding errors when reading in data. Orig
 2/16/2016 - Matt
 Need to check to make sure the encoding autodetection fails gracefully if the required package hasn't been installed yet. Also need to fine tune the ability to specify how many values to parse since it takes a long time to run on larger datasets
 
-2/16/2016 - Matt
-Need to provide a better status output while the training program is running
+3/3/2016 - Matt
+The automatic POT detection ability will fail if ':' is not used as the divider between the hash and the plaintext password
