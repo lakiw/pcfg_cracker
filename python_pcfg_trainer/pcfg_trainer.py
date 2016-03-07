@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 
+
+import sys #used to clear out the print buffer for the status bar
 import argparse
 import configparser
 import os
 import math #Used for the MeasurementStatus bar
-import sys #Used to clear out the print buffer for the status bar
 
 ##--User Defined Imports---##
 from pcfg_trainer.ret_types import RetType
@@ -288,13 +289,11 @@ def main():
         return 
      
     ##--Now finalize the data and save it to disk--##
-        ##--Finalize the data and get it ready to save--##
     ret_value = training_results.save_results(directory = absolute_base_directory, encoding = command_line_results.encoding, precision = 7)
     if ret_value != RetType.STATUS_OK:
         ascii_fail()
         print("Exiting...")
         return
-    
     
 if __name__ == "__main__":
     main()

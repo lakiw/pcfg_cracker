@@ -164,8 +164,19 @@ def detect_file_encoding(training_file, file_encoding, max_passwords = 100000):
     print()
     print("Attempting to autodetect file encoding of the training passwords")
     print("-----------------------------------------------------------------")
-    from chardet.universaldetector import UniversalDetector
-    detector = UniversalDetector()
+
+    ##--Try to import chardet. If that package is not installed print out a warning and use the default ascii--##
+    try:
+        from chardet.universaldetector import UniversalDetector
+        detector = UniversalDetector()
+    except ImportError as error:
+        print("FAILED: chardet not insalled")
+        print("IT IS HIGHLY RECOMMENDED THAT YOU INSTALL THE chardet PACKAGE")
+        print("or manually specify the file encoding of the training set via the command line")
+        print("You can download chardet from https://pypi.python.org/pypi/chardet")
+        print("Defaulting as ascii")
+        file_encoding.append('ascii')
+        return RetType.STATUS_OK
     try:
         cur_count = 0
         with open(training_file, 'rb') as file:
