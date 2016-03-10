@@ -62,11 +62,12 @@ class MeasurementStatus:
     ##########################################################################
     def update_status(self):
         self.parsed_passwords = self.parsed_passwords + 1
-        if self.parsed_passwords == self.input_size:
-            print("100%")
-        elif (self.parsed_passwords % self.step_size == 0):
-            print(str(math.floor((self.parsed_passwords / self.input_size) * 100)) +"%, ",end="")
-            sys.stdout.flush()
+        if self.display_status == True:
+            if self.parsed_passwords == self.input_size:
+                print("100%")
+            elif (self.parsed_passwords % self.step_size == 0):
+                print(str(math.floor((self.parsed_passwords / self.input_size) * 100)) +"%, ",end="")
+                sys.stdout.flush()
         return RetType.STATUS_OK
         
         

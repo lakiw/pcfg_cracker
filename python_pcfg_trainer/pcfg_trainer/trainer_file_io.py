@@ -66,29 +66,48 @@ def read_input_passwords(training_file, is_pot, master_password_list, file_encod
     ret_value = RetType.STATUS_OK
     ##-- First try to open the file--##
     try:
-        with codecs.open(training_file, 'r', encoding=file_encoding, errors = 'ignore') as file:
+        with codecs.open(training_file, 'r', encoding=file_encoding, errors= 'surrogateescape') as file:
+            
+            num_encoding_errors = 0  ##The number of encoding errors encountered when parsing the input file
+            
             # Read though all the passwords
-            try:
-                for password in file:
-                    ##--If it is a JtR POT file
-                    if is_pot:
-                        #- I'm starting password values of # as comments for my unit tests, so ignore them
-                        if (len(password) > 0) and (password[0] != '#'):
-                            #-I'm going to assume that the first ':' is the deliminator. I know, it could fail if that
-                            #-value shows up in the hash, but that should be rare enough not to throw off the
-                            #-statistical results of the final grammar
-                            master_password_list.append((password[password.find(':')+1:].rstrip(),"DATA"))
-                        elif len(password) > 0:
-                            ret_value = RetType.DEBUG
-                            master_password_list.append((password.rstrip(),"COMMENT"))
-                    ##--Really simple, just append the password if it is a flat file
+            for password in file:
+                ##--Note, there is a large potential for encoding errors to slip in
+                ##--   I don't want to silently ignore these errors, but instead warn the user they are
+                ##--   occuring so they can look at what file encoding they are using again
+                try:
+                    password.encode(file_encoding)
+                except UnicodeEncodeError as e:
+                    if e.reason == 'surrogates not allowed':
+                        num_encoding_errors = num_encoding_errors + 1
                     else:
-                        master_password_list.append((password.rstrip(),"DATA"))
-            except UnicodeDecodeError as error:
-                print("Encountered invalid character while reading in training set, ignoring the problematic password")
-                print("You may want to manually set the file encoding to something else and re-try training on this dataset")
-                print(str(error))
+                        print("Hmm, there was a weird problem reading in a line from the training file")
+                        print()
+                    continue
+      
+                ##--If it is a JtR POT file
+                if is_pot:
+                    #- I'm starting password values of # as comments for my unit tests, so ignore them
+                    if (len(password) > 0) and (password[0] != '#'):
+                        #-I'm going to assume that the first ':' is the deliminator. I know, it could fail if that
+                        #-value shows up in the hash, but that should be rare enough not to throw off the
+                        #-statistical results of the final grammar
+                        master_password_list.append((password[password.find(':')+1:].rstrip(),"DATA"))
+                    elif len(password) > 0:
+                        ret_value = RetType.DEBUG
+                        master_password_list.append((password.rstrip(),"COMMENT"))
+                ##--Really simple, just append the password if it is a flat file
+                else:
+                    master_password_list.append((password.rstrip(),"DATA"))
+
+            if num_encoding_errors != 0:
                 print()
+                print("WARNING: One or more passwords in the training set did not decode properly")
+                print("         Number of encoding errors encountered: " + str(num_encoding_errors))
+                print("         Ignoring passwords that contained encoding errors so it does not skew the grammar")
+                print("         If you see a lot of these errors then you may want to re-run the training")
+                print("         with a different file encoding")
+                    
     except IOError as error:
         print (error)
         print ("Error opening file " + training_file)
@@ -105,7 +124,7 @@ def is_jtr_pot(training_file, num_to_test, verbose = False, file_encoding = 'utf
     
     ##-- First try to open the file--##
     try:
-        with codecs.open(training_file, 'r', encoding=file_encoding) as file:
+        with codecs.open(training_file, 'r', encoding=file_encoding, errors = 'replace') as file:
             if verbose == True:
                 print ("Starting to parse the training password file")   
             # Only check the first NUM_TO_TEST entries to verify if it is a POT file or not
@@ -160,7 +179,7 @@ def is_jtr_pot(training_file, num_to_test, verbose = False, file_encoding = 'utf
 # I'm keeping the declarations for the chardet package local to this file so people can run this
 # tool without installing it if they don't want to use this feature
 ##################################################################################################
-def detect_file_encoding(training_file, file_encoding, max_passwords = 100000):
+def detect_file_encoding(training_file, file_encoding, max_passwords = 10000):
     print()
     print("Attempting to autodetect file encoding of the training passwords")
     print("-----------------------------------------------------------------")

@@ -1,11 +1,12 @@
 2/16/2016 - Matt
 Currently when saving files to disk the parsing program will not delete any old grammar files that don't belong in the new grammar. An example of that would be if the previous grammar file contained D2s such as '99', '12', '58', but the new grammar file did not have any D2s. In that case the old D2s would be present in the new grammar file. This *shouldn't* be an issue right now since there won't be any D2s in the base structure to call the outdated data, but it is something to keep in mind. I could fix this, but I'm hesitant to write any code that deletes files or directories from someone's computer....
 
-2/16/2016 - Matt
-Need to revisit my logic for handling encoding errors when reading in data. Originally the way I was catching the error stopped the program from parsing any more passwords. That was not ideal. Currently have it ignoring encoding errors but I really want to print out a warning which means I need to significantly change the function to read in passwords.
-
 3/3/2016 - Matt
 The automatic POT detection ability will fail if ':' is not used as the divider between the hash and the plaintext password
 
 3/6/2016 - Matt
-Testing on both Windows and MacOSX, (though MacOSX needs python3 installed)
+Testing on both Windows and MacOSX. Both Windows and MacOSX need to have Python3 installed
+
+3/9/2016 - Matt
+Is there a way to print out a descriptive error message if someone trys to run this tool under Python2? Currently it'll print out a code error, I'd like it to instead print a message saying something like "Ptyhon3 is required"
+

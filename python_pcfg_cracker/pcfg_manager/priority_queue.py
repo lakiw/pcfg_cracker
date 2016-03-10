@@ -9,7 +9,7 @@
 #########################################################################################
 
 
-import sys
+import sys   #--Used for printing to stderr
 import string
 import struct
 import os
@@ -20,6 +20,7 @@ import copy
 import heapq
 
 from sample_grammar import s_preterminal
+from pcfg_manager.ret_types import RetType
 
 ###################################################################################################
 # Used to hold the parse_tree of a path through the PCFG that is then stored in the priority queue
@@ -111,7 +112,7 @@ class PcfgQueue:
     # This is *hugely* wasteful right now. On my todo list is to modify the
     # p_queue code to allow easier deletion of low priority items
     ###############################################################################
-    def trim_queue(self,g_vars,c_vars):
+    def trim_queue(self):
         keep_list = []
         orig_size = len(self.p_queue)
         
@@ -124,7 +125,7 @@ class PcfgQueue:
             if index == (self.max_queue_size-self.reduction_size)-1:
                 ###--- Save the probability of the lowest priority item on the new Queue
                 self.min_probability = item.probability
-                print("min prob: " + str(self.min_probability))
+                print("min prob: " + str(self.min_probability), file=sys.stderr)
                 ###--- Copy all items of similar probabilities over so everything dropped is lower probability
                 item = heapq.heappop(self.p_queue)
                 while item.probability == self.min_probability:
@@ -137,15 +138,15 @@ class PcfgQueue:
         ##--The grammar would have to be pretty weird for this sanity check to fail, but it's better to check
         ##--since weirdness happens
         if orig_size == len(keep_list):
-            return g_vars.ret_values['QUEUE_FULL_ERROR']
-        return g_vars.ret_values['STATUS_OK']
+            return RetType.QUEUE_FULL_ERROR
+        return RetType.STATUS_OK
         
      
     ###############################################################################
     # Used to restore the priority queue from a previous state
     # Allows resuming paused, (or crashed), sessions and is used in the memory management
     ###############################################################################
-    def rebuild_queue(self,g_vars,c_vars,pcfg):
+    def rebuild_queue(self,pcfg):
         print("Rebuilding p_queue")
         self.p_queue = []
         rebuild_list = []
@@ -153,22 +154,22 @@ class PcfgQueue:
         rebuild_list.append(QueueItem(is_terminal=False, probability = 1.0, parse_tree = [0,0,[]]))
         while len(rebuild_list) != 0:
             q_item = rebuild_list.pop(0)
-            ret_list = self.rebuild_from_max(g_vars,c_vars,pcfg,q_item)
+            ret_list = self.rebuild_from_max(pcfg,q_item)
             if len(self.p_queue) > self.max_queue_size:
-                print("trimming Queue")
-                self.trim_queue(g_vars,c_vars)
-                print("done")
+                print("trimming Queue", file=sys.stderr)
+                self.trim_queue()
+                print("done", file=sys.stderr)
             for item in ret_list:
                 rebuild_list.append(item)
                 
-        print("Done")
-        return g_vars.ret_values['STATUS_OK']    
+        print("Done", file=sys.stderr)
+        return RetType.STATUS_OK    
         
     ##############################################################################################
     # Used for memory management. I probably should rename it. What this function does is
     # determine whether to insert the item into the p_queue if it is lower probability than max_probability
     # or returns the item's children if it is higher probability than max_probability    
-    def rebuild_from_max(self,g_vars,c_vars,pcfg,q_item):
+    def rebuild_from_max(self,pcfg,q_item):
         ##--If we potentially want to push this into the p_queue
         if q_item.probability <= self.max_probability:
             ##--Check to see if any of it's parents should go into the p_queue--##
@@ -185,7 +186,7 @@ class PcfgQueue:
         ##--Else check to see if we need to push this items children into the queue--##
         else:
             children_list = pcfg.find_children(q_item.parse_tree)
-            my_children_list = self.lazy_find_my_children(c_vars,pcfg,q_item,children_list)
+            my_children_list = self.lazy_find_my_children(pcfg,q_item,children_list)
             ret_list = []
             for child in my_children_list:
                 ret_list.append(QueueItem(is_terminal = pcfg.find_is_terminal(child), probability = pcfg.find_probability(child), parse_tree = child))
@@ -197,7 +198,7 @@ class PcfgQueue:
     # Note, this is a lazy insert since the parent is determined by position in
     # the child's parent list vs the lowest probability parent
     #####################################################################
-    def lazy_find_my_children(self,c_vars,pcfg,q_item,children_list):
+    def lazy_find_my_children(self,pcfg,q_item,children_list):
         my_children = []
         for child in children_list:
             parent_list = pcfg.findMyParents(child)
@@ -209,7 +210,7 @@ class PcfgQueue:
     # Pops the top value off the queue and then inserts any children of that node
     # back in the queue
     ###############################################################################
-    def next_function(self,g_vars,c_vars,pcfg):
+    def next_function(self,pcfg, queue_item_list = []):
         
         ##--Only return terminal structures. Don't need to return parse trees that don't actually generate guesses 
         while True:
@@ -217,32 +218,33 @@ class PcfgQueue:
             while len(self.p_queue) == 0:
                 ##--There was some memory management going on so try to rebuild the queue
                 if self.min_probability != 0.0:
-                    self.rebuild_queue(g_vars,c_vars,pcfg)
+                    self.rebuild_queue(pcfg)
                 ##--The grammar has been exhaused, exit---##
                 else:
-                    return g_vars.ret_values['QUEUE_EMPTY']
+                    return RetType.QUEUE_EMPTY
                 
             ##--Pop the top value off the stack
-            g_vars.q_item = heapq.heappop(self.p_queue)
-            self.max_probability = g_vars.q_item.probability
+            queue_item = heapq.heappop(self.p_queue)
+            self.max_probability = queue_item.probability
             
             ##--Push the children back on the stack
             ##--Currently using the deadbeat dad algorithm as described in my dissertation
             ##--http://diginole.lib.fsu.edu/cgi/viewcontent.cgi?article=5135
-            self.deadbeat_dad(g_vars,c_vars,pcfg)
+            self.deadbeat_dad(pcfg, queue_item)
             
             ##--Memory management
             if len(self.p_queue) > self.max_queue_size:
-                print("trimming Queue")
-                self.trim_queue(g_vars,c_vars)
-                print("done")
+                print("trimming Queue", file=sys.stderr)
+                self.trim_queue()
+                print("done", file=sys.stderr)
             ##--If it is a terminal strucutre break and return it
-            if g_vars.q_item.is_terminal == True:
+            if queue_item.is_terminal == True:
+                queue_item_list.append(queue_item)
                 break
 
         #print("--Returning this value")
-        #print(g_vars.q_item.detailed_print(pcfg))
-        return g_vars.ret_values['STATUS_OK']
+        #print(queue_item_list[0].detailed_print(pcfg), file=sys.stderr)
+        return RetType.STATUS_OK
 
     ################################################################################
     # The deadbead dad "next" algorithm as described in http://diginole.lib.fsu.edu/cgi/viewcontent.cgi?article=5135
@@ -260,30 +262,30 @@ class PcfgQueue:
     # Basically we're trading computation time for memory. Keeping the queue small though saves computation time too though so
     # in longer runs this approach should be a clear winner compared to the original next function
     # TODO: There is a *TON* of optimization I can do in the current version of this "next" function
-    def deadbeat_dad(self,g_vars,c_vars,pcfg):
+    def deadbeat_dad(self,pcfg, queue_item):
         ##--First find all the potential children
-        children_list = pcfg.find_children(g_vars.q_item.parse_tree)
+        children_list = pcfg.find_children(queue_item.parse_tree)
 
         ##--Now find the children this node is responsible for
-        my_children_list = self.find_my_children(c_vars,pcfg,g_vars.q_item,children_list)
+        my_children_list = self.find_my_children(pcfg,queue_item,children_list)
 
         ##--Create the actual QueueItem for each child and insert it in the Priority Queue
         for child in my_children_list:
             child_node = QueueItem(is_terminal = pcfg.find_is_terminal(child), probability = pcfg.find_probability(child), parse_tree = child)
-            if child_node.probability <= g_vars.q_item.probability:
+            if child_node.probability <= queue_item.probability:
                 ##--Memory management chck---------
                 ##--If the probability of the child node is too low don't bother to insert it in the queue
                 if child_node.probability >= self.min_probability:
                     heapq.heappush(self.p_queue,child_node)
             else:
-                print("Hmmm, trying to push a parent and not a child on the list")
+                print("Hmmm, trying to push a parent and not a child on the list", file=sys.stderr)
         
     #####################################################################
     # Given a list of children, find all the children who do not have
     # parents of a lower priority than the current node
     # Returns the children as a list
     #####################################################################
-    def find_my_children(self,c_vars,pcfg,q_item,children_list):
+    def find_my_children(self,pcfg,q_item,children_list):
         my_children = []
         for child in children_list:
             parent_list = pcfg.findMyParents(child)
@@ -312,8 +314,8 @@ class PcfgQueue:
 ####################################################################                
 def test_queue(pcfg):
     s_queue_item = QueueItem(parse_tree=s_pre_terminal)
-    print(s_queue_item)
-    print("--------------")
-    print(s_queue_item.detailed_print(pcfg))
+    print(s_queue_item, file=sys.stderr)
+    print("--------------", file=sys.stderr)
+    print(s_queue_item.detailed_print(pcfg), file=sys.stderr)
             
         

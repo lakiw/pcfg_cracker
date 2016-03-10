@@ -48,19 +48,19 @@ s_grammar = [
                 'is_terminal':False,
                 'pos':[1,3],
                 'prob':0.5,
-                'function':'transparent'
+                'function':'Transparent'
             },
             {
                 'is_terminal':False,
                 'pos':[2],
                 'prob':0.30,
-                'function':'transparent'
+                'function':'Transparent'
             },
             {
                 'is_terminal':False,
                 'pos':[2,3],
                 'prob':0.20,
-                'function':'transparent'
+                'function':'Transparent'
             }
         ]
     },
@@ -77,7 +77,7 @@ s_grammar = [
                     "dog",
                     "hat"
                 ],
-                'function':'shadow'
+                'function':'Shadow'
             },
             {
                 'is_terminal':False,
@@ -87,7 +87,7 @@ s_grammar = [
                     "mat",
                     "bat"
                 ],
-                'function':'shadow'
+                'function':'Shadow'
             }
         ]
     },
@@ -102,7 +102,7 @@ s_grammar = [
                     "passw",
                     "secur"
                 ],
-                'function':'shadow'
+                'function':'Shadow'
             },
             {
                 'is_terminal':False,
@@ -112,7 +112,7 @@ s_grammar = [
                     "chair",
                     "hairs"
                 ],
-                'function':'shadow'
+                'function':'Shadow'
             }
         ]
     },
@@ -125,7 +125,7 @@ s_grammar = [
                 'terminal':[
                     '1',
                 ],
-                'function':'copy'
+                'function':'Standard_Copy'
             },
             {
                 'is_terminal':True,
@@ -135,7 +135,7 @@ s_grammar = [
                     '3',
                     '4'
                 ],
-                'function':'copy'
+                'function':'Standard_Copy'
             }
         ]
     },
@@ -148,7 +148,7 @@ s_grammar = [
                 'terminal':[
                     'LLL'
                 ],
-                'function':'capitalize'
+                'function':'Capitalization'
             },
             {
                 'is_terminal':True,
@@ -157,7 +157,7 @@ s_grammar = [
                     'ULL',
                     'UUU'
                 ],
-                'function':'capitalize'
+                'function':'Capitalization'
             }
         ]
     },
@@ -170,7 +170,7 @@ s_grammar = [
                 'terminal':[
                     'LLLLL'
                 ],
-                'function':'capitalize'
+                'function':'Capitalization'
             },
             {
                 'is_terminal':True,
@@ -179,7 +179,7 @@ s_grammar = [
                     'ULLLL',
                     'UUUUU'
                 ],
-                'function':'capitalize'
+                'function':'Capitalization'
             }
         ]
     },

@@ -16,6 +16,7 @@ import configparser
 
 #Used for debugging and development
 from sample_grammar import s_grammar
+from pcfg_manager.ret_types import RetType
 
 
 ##############################################################
@@ -23,8 +24,8 @@ from sample_grammar import s_grammar
 # This contains a lot of information about the basic configuration
 # that you may want to keep outside of the Rule files
 ##############################################################
-def load_config(g_vars,c_vars):
-    return g_vars.ret_values['STATUS_OK']
+def load_config(c_vars):
+    return RetType.STATUS_OK
     
 
 
@@ -32,14 +33,14 @@ def load_config(g_vars,c_vars):
 # This code is hackish as hell. I just want to get something working as a proof of concept so I can
 # see the performance of this tool with a non-trivial grammar
 #####################################################################################################
-def load_base_structures(g_vars,c_vars,pcfg):
+def load_base_structures(c_vars,pcfg):
     base_dir = os.path.join(sys.path[0],c_vars.rule_directory, c_vars.rule_name, "Grammar")
     try:
         input_file = open(os.path.join(base_dir,"Grammar.txt"),'r')
     except:
         print ("Could not open config file: " + "Grammar.txt")
         print( os.path.join(base_dir,"Grammar.txt"))
-        return g_vars.ret_values['FILE_IO_ERROR']
+        return RetType.FILE_IO_ERROR
     
     cheat_sheet = []
     ##--parse line and insert it into the pcfg
@@ -66,7 +67,7 @@ def load_base_structures(g_vars,c_vars,pcfg):
             structure.append([last_char,runLen])
         
             ##---Now insert into the grammar
-            pcfg.grammar[0]['replacements'].append({'is_terminal':False,'pos':[],'prob':probability,'function':'transparent'})
+            pcfg.grammar[0]['replacements'].append({'is_terminal':False,'pos':[],'prob':probability,'function':'Transparent'})
             ##---Update the 'pos' links for the base structure
             ##---valuePos references the position in the grammar, cheetsheet has one lesss item since it doesn't have 'S'
             for value in structure:
@@ -90,17 +91,17 @@ def load_base_structures(g_vars,c_vars,pcfg):
     except Exception as e:
         print ("Could not open dictionary file: " + c_vars.input_dictionary)
         print (e)
-        return g_vars.ret_values['FILE_IO_ERROR']
+        return RetType.FILE_IO_ERROR
 
     ##---Now fill in the values for the terminal structures--------------##
     for index, value in enumerate(cheat_sheet):
         if value[0]=='L':
             if len(input_dictionary)<=value[1] or len(input_dictionary[value[1]])==0:
                 probability = 1
-                pcfg.grammar.append({'name':"L"+str(value[1]),'replacements':[{'is_terminal':True,'prob':probability,'terminal':[],'function':'copy'}]})
+                pcfg.grammar.append({'name':"L"+str(value[1]),'replacements':[{'is_terminal':True,'prob':probability,'terminal':[],'function':'Standard_Copy'}]})
             else:
                 probability = 1 / len(input_dictionary[value[1]])
-                pcfg.grammar.append({'name':"L"+str(value[1]),'replacements':[{'is_terminal':True,'prob':probability,'terminal':list(input_dictionary[value[1]]),'function':'copy'}]})
+                pcfg.grammar.append({'name':"L"+str(value[1]),'replacements':[{'is_terminal':True,'prob':probability,'terminal':list(input_dictionary[value[1]]),'function':'Standard_Copy'}]})
         else:
             input_dir="Holder"
             if value[0] == 'D':
@@ -121,46 +122,46 @@ def load_base_structures(g_vars,c_vars,pcfg):
                         pcfg.grammar[-1]['replacements'][-1]['terminal'].append(curValue)
                     else:
                         prev_prob=probability
-                        pcfg.grammar[-1]['replacements'].append({'is_terminal':True,'function':'copy','prob':probability,'terminal':[]})
+                        pcfg.grammar[-1]['replacements'].append({'is_terminal':True,'function':'Standard_Copy','prob':probability,'terminal':[]})
                         pcfg.grammar[-1]['replacements'][-1]['terminal'].append(curValue)
                 input_file.close()  
             except Exception as e:
                 print ("Could not open grammar file: " + os.path.join(base_dir,str(value[1])+".txt"))
                 print(e)
-                return g_vars.ret_values['FILE_IO_ERROR']
+                return RetType.FILE_IO_ERROR
                  
     #print(str(pcfg.grammar).encode(sys.stdout.encoding, errors='replace') )        
-    return g_vars.ret_values['STATUS_OK']
+    return RetType.STATUS_OK
         
 ##############################################################
 # Top level function to read the rules for the grammar
 ##############################################################
-def load_rules(g_vars,c_vars,pcfg):
+def load_rules(c_vars,pcfg):
     ##--Read the top level rules config file --#
     config = configparser.ConfigParser()
     base_dir = os.path.join(sys.path[0],c_vars.rule_directory, c_vars.rule_name)
-    parse_config(g_vars,c_vars,base_dir,config)
+    parse_config(c_vars,base_dir,config)
     
     ##---initialize 'S' for the grammar-----#
     pcfg.grammar.append({'name':'S','replacements':[]})
     
     ##--Quick and dirty rule input until I have the time to do it right--##
-    ret_value = load_base_structures(g_vars,c_vars,pcfg)
-    if ret_value != g_vars.ret_values['STATUS_OK']:
+    ret_value = load_base_structures(c_vars,pcfg)
+    if ret_value != RetType.STATUS_OK:
         return ret_value
-    #processInput(g_vars,c_vars,pcfg,input)
-    return g_vars.ret_values['STATUS_OK']
+    #processInput(c_vars,pcfg,input)
+    return RetType.STATUS_OK
     
     
 ##############################################################
 # Parses a config file
 ##############################################################
-def parse_config(g_vars,c_vars,base_dir,config):
+def parse_config(c_vars,base_dir,config):
     ##--still working on this...
     filename = os.path.join(base_dir, "grammar.cfg")
     dataset = config.read(filename)
     if (len(dataset)==0):
         print ("Could not open config file: " + filename)
-        return g_vars.ret_values['FILE_IO_ERROR']
+        return RetType.FILE_IO_ERROR
     print (config.sections())
-    return g_vars.ret_values['STATUS_OK']
+    return RetType.STATUS_OK

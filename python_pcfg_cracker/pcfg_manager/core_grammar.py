@@ -47,11 +47,11 @@ from sample_grammar import s_preterminal
 #
 #   Note, there are also functions that deal with the nitty gritty about how to actually perform the transitions. Eventually I'd like to move them to a plug-in archetecture, but currently
 #   they are hardcoded
-#   'function':'shadow'  //Used for pre-terminals like dictionary words where you want to send the current list of words to the next transition so it can do things like apply capitalization rules
-#   'function':'copy'    //Used for terminals to do a straight swap of the contents. like have a D->'1'
-#   'function':'capitalize'  //Used to capitalize words passed in by the previous 'shadow' function
-#   'function':'transparent'  //There is no list of words associated with this transition. Instead you are just pushing new transitions into the stack. Aka S->AB
-#   'function':'digit_bruteforce'  //Used to bruteforce digits. Much like shadow but instead of having a 'terminal' list it generates it via brute force
+#   'function':'Shadow'  //Used for pre-terminals like dictionary words where you want to send the current list of words to the next transition so it can do things like apply capitalization rules
+#   'function':'Standard_Copy'    //Used for terminals to do a straight swap of the contents. like have a D->'1'
+#   'function':'Capitalization'  //Used to capitalize words passed in by the previous 'shadow' function
+#   'function':'Transparent'  //There is no list of words associated with this transition. Instead you are just pushing new transitions into the stack. Aka S->AB
+#   'function':'Digit_Bruteforce'  //Used to bruteforce digits. Much like shadow but instead of having a 'terminal' list it generates it via brute force
 #     ----'input':{'length':1}  ///Has additional variables influencing how it is applied. In this case, brute force all 1 digit values
 #
 #    Considering how I'm still designing/writing this code, the above is almost certainly going to change
@@ -110,7 +110,7 @@ class PcfgClass:
         ##----Now deal with the different types of transition functions----------###
         
         ##----If you are copying the actual values over, aka D1->['1','2','3','4']. This is the simplest one
-        if cur_dic['function']=='copy':
+        if cur_dic['function']=='Standard_Copy':
             cur_combo = cur_dic['terminal']
             
         ##----If you are copying over values that aren't terminals. For example L3=>['cat','hat']. They are not terminals since you still need to apply capitalization rules to them
@@ -118,7 +118,7 @@ class PcfgClass:
             ##--Pass the value to the next replacement to take care of
             cur_combo =  self.expand_terminals(cur_section[2][0],cur_dic['pre_terminal'])
         ##----Capitalize the value passed in from the previous section----
-        elif cur_dic['function']=='capitalize':
+        elif cur_dic['function']=='Capitalization':
             temp_combo=[]
             for rule in cur_dic['terminal']:
                 for word in cur_combo:
@@ -131,9 +131,13 @@ class PcfgClass:
                     temp_combo.append(temp_word)
             cur_combo = temp_combo
         ##---Potentially adding a new replacement. aka S->ABC. This is more of a traditional PCFG "non-terminal"
-        elif cur_dic['function']=='transparent':
+        elif cur_dic['function']=='Transparent':
             for rule in cur_section[2]:
                 cur_combo.append(self.expand_terminals(rule))
+        ##---Error parsing the grammar. No rule corresponds to the current transition function        
+        else:
+            print("Error parsing the grammar. No rule corresponds to the transition function " + str(cur_dic['function']))
+            raise Exception
         return cur_combo
         
     ##############################################################################################
