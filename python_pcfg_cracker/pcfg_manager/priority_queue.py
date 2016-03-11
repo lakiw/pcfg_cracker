@@ -165,10 +165,11 @@ class PcfgQueue:
         print("Done", file=sys.stderr)
         return RetType.STATUS_OK    
         
-    ##############################################################################################
+    #########################################################################################################
     # Used for memory management. I probably should rename it. What this function does is
     # determine whether to insert the item into the p_queue if it is lower probability than max_probability
     # or returns the item's children if it is higher probability than max_probability    
+    #########################################################################################################
     def rebuild_from_max(self,pcfg,q_item):
         ##--If we potentially want to push this into the p_queue
         if q_item.probability <= self.max_probability:
@@ -246,7 +247,7 @@ class PcfgQueue:
         #print(queue_item_list[0].detailed_print(pcfg), file=sys.stderr)
         return RetType.STATUS_OK
 
-    ################################################################################
+    #################################################################################################################################################
     # The deadbead dad "next" algorithm as described in http://diginole.lib.fsu.edu/cgi/viewcontent.cgi?article=5135
     # In a nutshell, imagine the parse tree as a graph with the 'S' node at top
     # The original "next" function inserted every child parse through it by incrementing the counter by one to the left
@@ -262,6 +263,7 @@ class PcfgQueue:
     # Basically we're trading computation time for memory. Keeping the queue small though saves computation time too though so
     # in longer runs this approach should be a clear winner compared to the original next function
     # TODO: There is a *TON* of optimization I can do in the current version of this "next" function
+    ##################################################################################################################################################
     def deadbeat_dad(self,pcfg, queue_item):
         ##--First find all the potential children
         children_list = pcfg.find_children(queue_item.parse_tree)

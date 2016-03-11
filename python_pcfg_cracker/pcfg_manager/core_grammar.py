@@ -24,7 +24,7 @@ from sample_grammar import s_preterminal
 ##########################################################################################
 # Main class of this program as it represents the central grammar of the pcfg cracker
 # I'm trying to keep the actual grammar as generic as possible.
-# You can see a sample grammar in sample_grammar.python, but I'm really trying to keep this
+# You can see a sample grammar in sample_grammar.py, but I'm really trying to keep this
 # generic enough to support things like recursion.
 #
 # Each transition is represented by a python dictionary of the form:
@@ -39,9 +39,11 @@ from sample_grammar import s_preterminal
 #   'is_terminal':False //Required. I guess I don't need to use this field if I structured some things differently but it says if there are any future transitions or not
 #   'pos':[5,3]  //Required for non-terminals. Acts like pointers into the grammar for what future replacements should be applied to this section.
 #                //You can have multiple replacements for example A->AB or A->BC
-#   'prob':0.00021 //Required for non-terminals. The probability this transition occurs at. Please note the probability is associated with the transition itself and not the terminals that it is pointed to
-#                  //Aka if you are pointing to a dictionary of 10,000 words, and the probabilty associated with it is .1, then the combined probability of all the created terminals would be 100.0 or 10000%.
-#                  //In that case the probability probably should have been 0.001 instead
+#   'prob':0.00021 //Required for non-terminals. The probability this transition occurs at. Please note the probability is associated with the transition itself AND the number of terminals
+#                  //For example, to save space multiple terminals that have the same probability can be lumped together, but if they each have the same probability the probability here reflects that
+#                  //---EXAMPLE, let's say the training found that D2-> 11, 15, 83, all with a probability of 0.2. Then the probability here will be 0.2
+#                  //---EXAMPLE#2, let's say that there is a L3 transition that was discovered in training at 0.8 probability. At runtime it is pointed into an input dictionary containing 10 words.
+#                  //---------     that probabilty then should be 0.8/10 = 0.08.
 #   'pre_terminal':["pas","cat","dog","hat"]  //dictionary of pre-terminals that should be applied for this transition. Note it's just a nameing convention to differentiate pre-terminals and terminals
 #   'terminal':['2','3','4']  //A listing of terminals to apply. Since they are terminals there are no futher transitions
 #

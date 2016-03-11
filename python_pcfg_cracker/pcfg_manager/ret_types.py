@@ -33,6 +33,9 @@ class RetType(enum.IntEnum):
     ## Error parsing the command line. Can be caused by invalid inputs or lack of required inputs
     COMMAND_LINE_ERROR                  = 5
     
+    ## Error parsing the config file
+    CONFIG_ERROR                        = 6
+    
     ## Debug results
     DEBUG                               = 97
     

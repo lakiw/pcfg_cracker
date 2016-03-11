@@ -38,9 +38,10 @@
 import sys
 import argparse
 import time
+import os  ##--Used for file path information
 
 #Custom modules
-from pcfg_manager.file_io import load_config, load_rules
+from pcfg_manager.file_io import load_grammar, load_rules
 from pcfg_manager.core_grammar import PcfgClass, test_grammar
 from pcfg_manager.priority_queue import PcfgQueue, QueueItem, test_queue
 from pcfg_manager.ret_types import RetType
@@ -52,8 +53,7 @@ from pcfg_manager.ret_types import RetType
 #########################################################################################
 class CommandLineVars:
     def __init__(self):
-        self.rule_name = "Default"
-        self.rule_directory = "Rules"
+        self.rule_name = "Test"
         #Debugging printouts
         self.verbose = True  
         ##--temporary value---
@@ -86,7 +86,23 @@ def print_banner(program_details):
     print ("Written by " + program_details['Author'], file=sys.stderr)
     print ("Sourcecode available at " + program_details['Source'], file=sys.stderr)
     print('',file=sys.stderr)
-    return RetType.STATUS_OK    
+    return RetType.STATUS_OK  
+
+
+####################################################################################
+# ASCII art for displaying an error state before quitting
+####################################################################################
+def print_error():
+    print('',file=sys.stderr)
+    print('An error occured, shutting down',file=sys.stderr)
+    print('',file=sys.stderr)
+    print(r' \__/      \__/      \__/      \__/      \__/      \__/          \__/',file=sys.stderr)
+    print(r' (oo)      (o-)      (@@)      (xx)      (--)      (  )          (OO)',file=sys.stderr)
+    print(r'//||\\    //||\\    //||\\    //||\\    //||\\    //||\\        //||\\',file=sys.stderr)
+    print(r'  bug      bug       bug/w     dead      bug       blind      bug after',file=sys.stderr)
+    print(r'         winking   hangover    bug     sleeping    bug     whatever you did',file=sys.stderr)
+    print('',file=sys.stderr)
+    return RetType.STATUS_OK
 
 ##################################################################
 # Main function, not that exciting
@@ -104,33 +120,35 @@ def main():
     
      ##--Print out banner
     print_banner(program_details)
-        
-    
     
     ##--Parse the command line ---##
     command_line_results = CommandLineVars()
     if parse_command_line(command_line_results) != RetType.STATUS_OK:
         return RetType.QUIT
-    
+   
+    ##--Specify where the rule file is located
+    rule_directory = os.path.join(os.path.dirname(os.path.realpath(__file__)),'Rules', command_line_results.rule_name)   
    
     ##--Initialize the grammar--##
     pcfg = PcfgClass()
-    
-    ##-- Read in the config file for the current ruleset -- ##
-    
+    ret_value = load_grammar(rule_directory, pcfg)
+    if ret_value != RetType.STATUS_OK:
+        print ("Error loading the PCFG grammar, exiting")
+        print_error()
+        return ret_value
+
+    ##--Debugging return since I'm currently working on reading in the grammar --##
+    print("Debug, exiting")
+    return
     
     ##--Initialize the priority queue--##
     p_queue = PcfgQueue()
     p_queue.initialize(pcfg)
     
     
-        
-    ##--Parse the main config file----#
-    ret_value = load_config(command_line_results)
+       
     
-    if ret_value != RetType.STATUS_OK:
-        print ("Error reading config file, exiting")
-        return ret_value
+    
     
     ##--Load the rules file---##
     ret_value = load_rules(command_line_results,pcfg)
@@ -138,8 +156,6 @@ def main():
         print ("Error reading Rules file, exiting")
         return ret_value
 
-    ##--Debugging return since I'm currently working on reading in the grammar --##
-    return
     
     ##--Going to break this up eventually into it's own function, but for now, process the queue--##
     queue_item_list = []

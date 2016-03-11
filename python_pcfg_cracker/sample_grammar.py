@@ -39,10 +39,12 @@ s_preterminal = [
     ]
 
     
-    
+##--Please don't pay attention to the probabilities associated with this grammar's transitions because they don't make sense for a real grammar
+##--That is because while they *appear* to add up to 100%, in reality each transition multiplies the probability so most of these then add up
+##--to much, much more than 100%. This was just a quick way to test the grammar vs an actual grammar you would want to use.    
 s_grammar = [
     {
-        'name':'S',
+        'name':'START',
         'replacements':[
             {
                 'is_terminal':False,

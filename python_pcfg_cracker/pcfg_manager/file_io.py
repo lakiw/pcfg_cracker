@@ -19,12 +19,39 @@ from sample_grammar import s_grammar
 from pcfg_manager.ret_types import RetType
 
 
+########################################################################
+# Recursivly builds a grammar from a config file and a loaded ruleset
+########################################################################
+def build_grammar(config, pcfg, section):
+    try:
+        ##--Grab the function type for this section from the config file--##
+        function = config.get(section,'function')
+        print(function)
+    except configparser.Error as msg:
+        print("Error occured parsing the configuration file: " + str(msg))
+        return RetType.CONFIG_ERROR
+    return RetType.STATUS_OK
+
 ##############################################################
-# Loads the basic config file
-# This contains a lot of information about the basic configuration
-# that you may want to keep outside of the Rule files
+# Loads the grammar from a ruleset
 ##############################################################
-def load_config(c_vars):
+def load_grammar(rule_directory, pcfg):
+    
+    ##--First start by setting up, reading, and parsing the config file for the ruleset--
+    config = configparser.ConfigParser()
+    
+    ##--Attempt to read the config from disk
+    try:
+        config.readfp(open(os.path.join(rule_directory,"config.ini")))
+    except IOError as msg:
+        print("Could not open the config file for the ruleset specified. The rule directory may not exist")
+        return RetType.FILE_IO_ERROR
+    except configparser.Error as msg:
+        print("Error occured parsing the configuration file: " + str(msg))
+        return RetType.GENERIC_ERROR
+        
+    ##--Now build the grammar starting with the start transition--##
+    ret_value = build_grammar(config,pcfg,"START")
     return RetType.STATUS_OK
     
 
