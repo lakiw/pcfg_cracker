@@ -13,6 +13,7 @@ import string
 import struct
 import os
 import configparser
+import json
 
 #Used for debugging and development
 from sample_grammar import s_grammar
@@ -22,11 +23,26 @@ from pcfg_manager.ret_types import RetType
 ########################################################################
 # Recursivly builds a grammar from a config file and a loaded ruleset
 ########################################################################
-def build_grammar(config, pcfg, section):
+def build_grammar(config, pcfg, section_name):
+    
+    ##--What we'll eventually push into the pcfg
+    working_section = {'name':section_name,'replacements':[]}
+    
     try:
         ##--Grab the function type for this section from the config file--##
-        function = config.get(section,'function')
-        print(function)
+        ##--Note, yes the grammar is set up for individual replacements to have their own function
+        ##--but the training program is set up for one overarching function
+        ##--What I'm trying to say is in the future this may need to be changed if you want multiple functions for different replacements
+        function = config.get(section_name,'function')
+       
+        #############################################################################
+        ##--How the rest of the section is parsed will depend on the function chosen
+        ###############################################################################
+        
+        ##--If the function doesn't add anything itself but calls other replacements. Example would be base structures like A4D2 -> Test12
+        if function == 'Transparent':
+            replacements = json.loads(config.get(section_name,'replacements'))
+            print(replacements)
     except configparser.Error as msg:
         print("Error occured parsing the configuration file: " + str(msg))
         return RetType.CONFIG_ERROR

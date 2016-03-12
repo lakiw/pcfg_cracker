@@ -8,6 +8,7 @@
 #############################################################################
 
 import enum
+import json
 from decimal import *
 
 ##--User Defined Imports---##
@@ -86,7 +87,7 @@ class DataList:
     # Updates a config file instance
     ##################################################
     def update_config(self, config_file):
-        config_file[self.config_name] =  self.config_data
+        config_file[self.config_name] =  json.dumps(self.config_data)
         
         return RetType.STATUS_OK
         

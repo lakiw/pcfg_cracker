@@ -12,6 +12,7 @@
 
 import os
 import codecs
+import json
 
 ##--User Defined Imports---##
 from pcfg_trainer.ret_types import RetType
@@ -39,7 +40,7 @@ class TrainingData:
             'Inject_type':'Wordlist',
             'Function':'Transparent',
             'Is_terminal':'False',
-            'Replacements': str([
+            'Replacements': json.dumps([
                 {'Transition_id':'A','Config_id':'BASE_A'},
                 {'Transition_id':'D','Config_id':'BASE_D'},
                 {'Transition_id':'O','Config_id':'BASE_O'},
@@ -61,7 +62,7 @@ class TrainingData:
             'Inject_type':'Wordlist',
             'Function':'Shadow',
             'Is_terminal':'False',
-            'Replacements': str([
+            'Replacements': json.dumps([
                 {'Transition_id':'Capitalization','Config_id':'CAPITALIZATION'},
             ]),
         }     
