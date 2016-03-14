@@ -10,6 +10,7 @@
 import enum
 import json
 from decimal import *
+import copy
 
 ##--User Defined Imports---##
 from pcfg_trainer.ret_types import RetType
@@ -42,7 +43,7 @@ class DataList:
     # Variables:
     #     type = [ListType.FLAT, ListType.LENGTH]  ##--Way to create multiple sub lists. FLAT = no sub lists, LENGTH = break it up by length
     ################################################
-    def __init__(self, type = ListType.FLAT , config_name = 'DEFAULT', config_data = {'Name':'Default','Comments':'','Directory':'Default','Filename':'Default','Inject_type':'Wordlist','Function':'Copy','Is_terminal':'True'}):      
+    def __init__(self, type = ListType.FLAT , config_name = 'DEFAULT', config_data = {'Name':'Default','Comments':'','Directory':'Default','Filenames':'Default','Inject_type':'Wordlist','Function':'Copy','Is_terminal':'True'}):      
         ##--Used to break up the lists by type--##
         self.type = type
         
@@ -76,19 +77,34 @@ class DataList:
         self.config_data = config_data
 
         ## Set the list type in the config file
-        if type == ListType.FLAT:
+        if self.type == ListType.FLAT:
             self.config_data['File_type'] = 'Flat'
-        elif type == ListType.LENGTH:
+        elif self.type == ListType.LENGTH:
             self.config_data['File_type'] = 'Length'
          
         
         
     ##################################################
-    # Updates a config file instance
+    # Returns a config file for saving to disk
+    # Note, this may have some differences in how the data_list item
+    # was initialized
     ##################################################
-    def update_config(self, config_file):
-        config_file[self.config_name] =  json.dumps(self.config_data)
-        
+    def update_config(self, section_config={}):
+        ##--Copy the config file over to the output
+        for key in self.config_data.keys():
+            section_config[key] = copy.deepcopy(self.config_data[key])
+        ##--Update the filenames for the json output--##
+        if self.type == ListType.LENGTH:
+            file_list = []
+            for item in self.main_dic.keys():
+                file_list.append(str(item) + ".txt")
+            section_config['Filenames'] = json.dumps(file_list)
+        elif self.type == ListType.FLAT:
+            section_config['Filenames'] = json.dumps([self.config_data['Filenames']])
+        else:
+            print("Error, unsupported list type")
+            return RetType.ERROR_QUIT
+            
         return RetType.STATUS_OK
         
     ##################################################
@@ -205,14 +221,14 @@ class DataList:
                         print("Wow that should not happen. Error sorting the results")
                         return RetType.GENERIC_ERROR
                     try:
-                        key = self.config_data['Filename']
+                        key = self.config_data['Filenames']
                     except KeyError as error:
                         print("Error reading config data for structure. The config needs to specify the filename to save results for. This is a programing problem, not a user error")
                         return RetType.GENERIC_ERROR
                 else:
                     try:
                         ##--Right now the 'Filename' should just be '.txt'.
-                        key = str(index) + self.config_data['Filename']
+                        key = str(index) + self.config_data['Filenames']
                     except KeyError as error:
                         print("Error reading config data for structure. The config needs to specify the filename to save results for. This is a programing problem, not a user error")
                         return RetType.GENERIC_ERROR

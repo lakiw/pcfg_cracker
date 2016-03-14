@@ -36,7 +36,7 @@ class TrainingData:
             'Name':'Base Structure',
             'Comments':'Standard base structures as defined by the original PCFG Paper, with some renaming to prevent naming collisions. Examples are A4D2 from the training word "pass12"',
             'Directory':'Grammar',
-            'Filename':'Grammar.txt',
+            'Filenames':'Grammar.txt',
             'Inject_type':'Wordlist',
             'Function':'Transparent',
             'Is_terminal':'False',
@@ -56,9 +56,9 @@ class TrainingData:
         ########################################################
         config = {
             'Name':'A',
-            'Comments':'(A)lpha letter replacements for base structure. Aka "pass12" = A4D2, so this is the A4. Note, this is encoding specific so non-ASCII characters may be considered alpha. For example Cyrillic',
+            'Comments':'(A)lpha letter replacements for base structure. Aka "pass12" = A4D2, so this is the A4. Note, this is encoding specific so non-ASCII characters may be considered alpha. For example Cyrillic characters will be considered alpha characters',
             'Directory':'Alpha',
-            'Filename' : '.txt',
+            'Filenames' : '.txt',
             'Inject_type':'Wordlist',
             'Function':'Shadow',
             'Is_terminal':'False',
@@ -76,7 +76,7 @@ class TrainingData:
             'Name':'D',
             'Comments':'(D)igit replacement for base structure. Aka "pass12" = L4D2, so this is the D2',
             'Directory':'Digits',
-            'Filename' : '.txt',
+            'Filenames' : '.txt',
             'Inject_type':'Standard_Copy',
             'Function':'Copy',
             'Is_terminal':'True', 
@@ -91,7 +91,7 @@ class TrainingData:
             'Name':'O',
             'Comments':'(O)ther character replacement for base structure. Aka "pass$$" = L4S2, so this is the S2',
             'Directory':'Other',
-            'Filename' : '.txt',
+            'Filenames' : '.txt',
             'Inject_type':'Standard_Copy',
             'Function':'Copy',
             'Is_terminal':'True', 
@@ -106,7 +106,7 @@ class TrainingData:
             'Name':'Capitalization',
             'Comments':'Capitalization Masks for words. Aka LLLLUUUU for passWORD',
             'Directory':'Capitalization',
-            'Filename' : '.txt',
+            'Filenames' : '.txt',
             'Inject_type':'Standard_Copy',
             'Function':'Capitalize',
             'Is_terminal':'True', 
@@ -121,7 +121,7 @@ class TrainingData:
             'Name':'K',
             'Comments':'(K)eyboard replacement for base structure. Aka "test1qaz2wsx" = L4K4K4, so this is the K4s',
             'Directory':'Keyboard',
-            'Filename' : '.txt',
+            'Filenames' : '.txt',
             'Inject_type':'Standard_Copy',
             'Function':'Copy',
             'Is_terminal':'True', 
@@ -136,7 +136,7 @@ class TrainingData:
             'Name':'X',
             'Comments':'conte(X)t sensitive replacements to the base structure. This is mostly a grab bag of things like #1 or ;p',
             'Directory':'Context',
-            'Filename' : '.txt',
+            'Filenames' : '.txt',
             'Inject_type':'Standard_Copy',
             'Function':'Copy',
             'Is_terminal':'True', 
@@ -178,7 +178,9 @@ class TrainingData:
         
         #--Loop through all of the data structures and get their config sections
         for data in self.master_data_list:
-            config[data.config_name] = data.config_data
+            data_config = {}
+            data.update_config(data_config)
+            config[data.config_name] = data_config
             
         return RetType.STATUS_OK
     

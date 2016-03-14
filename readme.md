@@ -1,5 +1,19 @@
 # Welcome to the Probabilistic Context Free Grammar Password Research Project
 
+## Python PCFG Cracker Re-Write Status:
+*Training Program's Core Functionality: Done
+*Training Program's Testing Status:
+**Windows: Initial tests done
+**MacOSX: Initial tests done
+**Linux: Not started
+*Training Program's Documentation Status: TBD
+*PCFG Manager Core Functionality: In pogress
+**Core PCFG and "Next" algorithm: Done
+**Reading in grammar and parsing it correctly: In progres
+
+Long story short, it doesn't work yet but progress is being made!!
+
+
 ## Overview
 
 This is a major area of research for me, and something that I truly believe in. For years, we have been applying probability models to help speed up brute force attacks, (aka letter frequency analysis and Markov Models). At the same time though, our approach to dictionary based attacks has been fairly ad-hoc. John the Ripper’s default, (and single mode), rules while built based on their creators experiences with cracking passwords, are still extremely subjective. For example I’ve found very few passwords in my cracking attacks that were created by reversing an input dictionary word. Cain and Able, while a great product, probably has the most bizarre rule selection in that it focuses on capitalization mangling at the expense of just about everything else, (though it will also add two numbers to the end of words and replace letters with numbers). AccessData orders their default rule set not on how effective the rules are but by how large the search space is for each rule. This is not a slam on these approaches but I do think that as passwords become stronger and stronger, (either through user training or password creation policies), we need to improve how we generate and use word mangling rules.
