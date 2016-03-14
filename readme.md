@@ -7,7 +7,7 @@
   2. MacOSX: Initial tests done
   3. Linux: Not started
 3. Training Program's Documentation Status: TBD
-4. PCFG Manager Core Functionality: In pogress
+4. PCFG Manager Core Functionality: In progress
 5. Core PCFG and "Next" algorithm: Done
 6. Reading in grammar and parsing it correctly: In progres
 
