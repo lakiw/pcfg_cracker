@@ -9,7 +9,7 @@
 3. Training Program's Documentation Status: TBD
 4. PCFG Manager Core Functionality: In progress
 5. Core PCFG and "Next" algorithm: Done
-6. Reading in grammar and parsing it correctly: In progres
+6. Reading in grammar and parsing it correctly: In progress
 
 Long story short, it doesn't work yet but progress is being made!!
 
