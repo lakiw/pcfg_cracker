@@ -1,15 +1,15 @@
 # Welcome to the Probabilistic Context Free Grammar Password Research Project
 
 ## Python PCFG Cracker Re-Write Status:
-*Training Program's Core Functionality: Done
-*Training Program's Testing Status:
-**Windows: Initial tests done
-**MacOSX: Initial tests done
-**Linux: Not started
-*Training Program's Documentation Status: TBD
-*PCFG Manager Core Functionality: In pogress
-**Core PCFG and "Next" algorithm: Done
-**Reading in grammar and parsing it correctly: In progres
+1. Training Program's Core Functionality: Done
+2. Training Program's Testing Status:
+  1. Windows: Initial tests done
+  2. MacOSX: Initial tests done
+  3. Linux: Not started
+3. Training Program's Documentation Status: TBD
+4. PCFG Manager Core Functionality: In pogress
+5. Core PCFG and "Next" algorithm: Done
+6. Reading in grammar and parsing it correctly: In progres
 
 Long story short, it doesn't work yet but progress is being made!!
 
