@@ -28,7 +28,7 @@ from sample_grammar import s_preterminal
 # generic enough to support things like recursion.
 #
 # Each transition is represented by a python dictionary of the form:
-#   'name':'S' //Human readable name. Used for status messages and debugging
+#   'name':'START' //Human readable name. Used for status messages and debugging
 #   'replacements': [List of all the replacements] //the transitions that are allowed for this pre-terminal
 #
 # Each replacement is represented by a python dictionary and a single non-termial can mix and
@@ -63,9 +63,9 @@ class PcfgClass:
     ########################################################
     # Initialize the class, not really doing anything here
     ########################################################
-    def __init__(self):
+    def __init__(self, grammar=[]):
         ###---The actual grammar. It'll be loaded up later
-        self.grammar = []
+        self.grammar = grammar
     
     ##############################################################################
     # Top level function used to return all the terminals / password guesses

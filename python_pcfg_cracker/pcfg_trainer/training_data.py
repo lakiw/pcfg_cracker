@@ -108,7 +108,7 @@ class TrainingData:
             'Directory':'Capitalization',
             'Filenames' : '.txt',
             'Inject_type':'Standard_Copy',
-            'Function':'Capitalize',
+            'Function':'Capitalization',
             'Is_terminal':'True', 
         }
         self.cap_structure = DataList(type= ListType.LENGTH, config_name = 'CAPITALIZATION', config_data = config)

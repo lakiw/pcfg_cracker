@@ -273,7 +273,8 @@ def main():
     ##--it is important for repeated tests and documentation to keep track of where these rule sets came from
     config['TRAINING_DATASET_DETAILS'] = {
         'Filename':command_line_results.training_file,
-        'Comments':'None'
+        'Comments':'None',
+        'Encoding':command_line_results.encoding
     }
     ##--Gather info from the training set
     ret_value = training_results.update_config(config)

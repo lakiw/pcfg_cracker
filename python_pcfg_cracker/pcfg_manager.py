@@ -41,7 +41,7 @@ import time
 import os  ##--Used for file path information
 
 #Custom modules
-from pcfg_manager.file_io import load_grammar, load_rules
+from pcfg_manager.file_io import load_grammar
 from pcfg_manager.core_grammar import PcfgClass, test_grammar
 from pcfg_manager.priority_queue import PcfgQueue, QueueItem, test_queue
 from pcfg_manager.ret_types import RetType
@@ -53,7 +53,7 @@ from pcfg_manager.ret_types import RetType
 #########################################################################################
 class CommandLineVars:
     def __init__(self):
-        self.rule_name = "Test"
+        self.rule_name = "Default"
         #Debugging printouts
         self.verbose = True  
         ##--temporary value---
@@ -104,6 +104,7 @@ def print_error():
     print('',file=sys.stderr)
     return RetType.STATUS_OK
 
+     
 ##################################################################
 # Main function, not that exciting
 ##################################################################
@@ -112,7 +113,7 @@ def main():
     ##--Information about this program--##
     program_details = {
         'Program':'pcfg_manager.py',
-        'Version': '3.0',
+        'Version': '3.0 Alpha',
         'Author':'Matt Weir',
         'Contact':'cweir@vt.edu',
         'Source':'https://github.com/lakiw/pcfg_cracker'
@@ -130,13 +131,14 @@ def main():
     rule_directory = os.path.join(os.path.dirname(os.path.realpath(__file__)),'Rules', command_line_results.rule_name)   
    
     ##--Initialize the grammar--##
-    pcfg = PcfgClass()
-    ret_value = load_grammar(rule_directory, pcfg)
+    grammar = []
+    ret_value = load_grammar(rule_directory, grammar)
     if ret_value != RetType.STATUS_OK:
         print ("Error loading the PCFG grammar, exiting")
         print_error()
         return ret_value
 
+    pcfg = PcfgClass(grammar)
     ##--Debugging return since I'm currently working on reading in the grammar --##
     print("Debug, exiting")
     return
@@ -145,18 +147,7 @@ def main():
     p_queue = PcfgQueue()
     p_queue.initialize(pcfg)
     
-    
-       
-    
-    
-    
-    ##--Load the rules file---##
-    ret_value = load_rules(command_line_results,pcfg)
-    if ret_value != RetType.STATUS_OK:
-        print ("Error reading Rules file, exiting")
-        return ret_value
-
-    
+   
     ##--Going to break this up eventually into it's own function, but for now, process the queue--##
     queue_item_list = []
     ret_value = p_queue.next_function(pcfg, queue_item_list)
