@@ -80,6 +80,13 @@ def read_input_values(training_file, master_list =[] , encoding = 'utf-8'):
     return RetType.STATUS_OK
 
 ########################################################################################################################
+# Parses base structures and updates the grammar section for them
+########################################################################################################################
+def parse_base_structure(unformated_base,grammar_mapping,cur_replacement):
+    print(unformated_base)
+    return RetType.STATUS_OK
+    
+########################################################################################################################
 # Inserts a termininal replacement into the grammar
 ########################################################################################################################
 def insert_terminal(config, grammar, rule_directory, encoding, section_type, grammar_mapping = []):
@@ -172,8 +179,12 @@ def insert_terminal(config, grammar, rule_directory, encoding, section_type, gra
         ##--If it is a base structure, additional pre-processing needs to be done on the structures
         ##--Also the combining of multiple base structures of the same probability into the same node doesn't work so don't use that optimization
         elif function == 'Transparent':
-            for index in range(1,len(value_list)):
-                cur_replacement = {'function':function,'is_terminal':False, 'prob':value_list[0][1], 'pre_terminal':[value_list[0][0]]}
+            for index in range(0,len(value_list)):
+                cur_replacement = {'function':function,'is_terminal':False, 'prob':value_list[index][1], 'pre_terminal':[value_list[index][0]], 'replacements':[]}
+                ret_value = parse_base_structure(value_list[index],grammar_mapping,cur_replacement)
+                if ret_value != RetType.STATUS_OK:
+                    print("Error parsing base structures in grammar",file=sys.stderr)
+                    return RetType.CONFIG_ERROR
                 cur_section['replacements'].append(cur_replacement)
             grammar.append(cur_section)
         ##--Something weird is happeing so error out
