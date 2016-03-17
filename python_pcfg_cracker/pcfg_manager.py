@@ -134,13 +134,13 @@ def main():
     grammar = []
     ret_value = load_grammar(rule_directory, grammar)
     if ret_value != RetType.STATUS_OK:
-        print ("Error loading the PCFG grammar, exiting")
+        print ("Error loading the PCFG grammar, exiting",file=sys.stderr)
         print_error()
         return ret_value
 
     pcfg = PcfgClass(grammar)
     ##--Debugging return since I'm currently working on reading in the grammar --##
-    print("Debug, exiting")
+    print("Debug, exiting",file=sys.stderr)
     return
     
     ##--Initialize the priority queue--##

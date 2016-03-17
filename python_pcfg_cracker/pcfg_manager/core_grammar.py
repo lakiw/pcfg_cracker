@@ -270,4 +270,29 @@ class PcfgClass:
 def test_grammar(g_vars,c_vars,pcfg):
     pcfg.list_terminals(s_pre_terminal)
     
+
+    
+#####################################################################
+# Debug human readable output of the grammar
+# Used for troubleshooting and testing
+#####################################################################    
+def print_grammar(grammar)   :
+    print("Current grammar:",file=sys.stderr)
+    print("[",file=sys.stderr)
+    for index, item in enumerate(grammar):
+        print("("+str(index) +")\t{",file=sys.stderr)
+        for key in item.keys():
+            if key != 'replacements':
+                print("\t\t" + str(key) + ": " + str(item[key])+",",file=sys.stderr)
+            else:
+                print("\t\treplacements: [",file=sys.stderr) 
+                for rep in item['replacements']:
+                    print("\t\t\t{",file=sys.stderr)
+                    for rep_key in rep.keys():
+                        print("\t\t\t\t" + str(rep_key)+": " +str(rep[rep_key]) + ",",file=sys.stderr)
+                    print("\t\t\t},",file=sys.stderr)
+                
+                print("\t\t],",file=sys.stderr)
+        print("\t},",file=sys.stderr)
+    print("]",file=sys.stderr)
         

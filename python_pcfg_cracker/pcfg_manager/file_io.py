@@ -18,6 +18,9 @@ import codecs
 from sample_grammar import s_grammar
 from pcfg_manager.ret_types import RetType
 
+#Used for debugging
+from pcfg_manager.core_grammar import print_grammar
+
 
 #########################################################################################
 # Extracts the probabilities from tab seperated input values
@@ -79,7 +82,7 @@ def read_input_values(training_file, master_list =[] , encoding = 'utf-8'):
 ########################################################################################################################
 # Inserts a termininal replacement into the grammar
 ########################################################################################################################
-def insert_terminal(config, grammar, rule_directory, encoding, section_type):
+def insert_terminal(config, grammar, rule_directory, encoding, section_type, grammar_mapping = []):
     try:
         #--This is a terminal transition so there are no more replacemetns to processInput
         file_type = config.get(section_type,'file_type')
@@ -100,55 +103,126 @@ def insert_terminal(config, grammar, rule_directory, encoding, section_type):
         ret_value = read_input_values(full_file_path, value_list, encoding)
         if ret_value != RetType.STATUS_OK:
             return ret_value
-                    
+         
         ##--Parse the results and extract the probabilities--##
         ret_value = extract_probability(value_list)
         if ret_value != RetType.STATUS_OK:
-            return ret_value
-                
+            return ret_value               
                 
         ##--Now insert the terminals into the grammar
         cur_section = {'name':cur_file.strip('.txt'), 'type':section_type, 'replacements':[]}
                 
-        ##--Need to add the replacemetns
-        cur_replacement = {'function':function,'is_terminal':True, 'prob':value_list[0][1], 'terminal':[value_list[0][0]]}
-        last_prob = value_list[0][1]
-        for index in range(1,len(value_list)):
-            ##--Now to check if the current prob is the same or different, (aka if we can add to the previous replacement or have to create another one
-            if value_list[index][1] == last_prob:
-                cur_replacement['terminal'].append(value_list[index][0])
-                    ##--Need to create a new replacement
-            elif value_list[index][1] < last_prob:
-                ##--Add previous replacement to the full list
-                cur_section['replacements'].append(cur_replacement)
-                ##--Update new node
-                last_prob = value_list[index][1]
-                cur_replacement = {'function':function,'is_terminal':True, 'prob':value_list[index][1], 'terminal':[value_list[index][0]]}
-            ##--Should be an error condition if the list isn't in decending probability order
+        ##--Need to add the replacements
+        ##--If it is a Capitalization, Copy, or Shadow replacement, (they are all read in basically the same way)
+        if function == 'Capitalization' or function == 'Copy' or function == 'Shadow':
+            if function == 'Capitalization' or function == 'Copy':
+                cur_replacement = {'function':function,'is_terminal':True, 'prob':value_list[0][1], 'terminal':[value_list[0][0]]}
+            elif function == 'Shadow':
+                cur_replacement = {'function':function,'is_terminal':False, 'prob':value_list[0][1], 'pre_terminal':[value_list[0][0]]}
+                found = False
+                for item in grammar_mapping:
+                    if item['length'] == cur_section['name']:
+                        found = True
+                        cur_replacement['pos'] = [item['index']]
+                if found == False:
+                    print("Error finding replacement in grammar")
+                    return RetType.CONFIG_ERROR
             else:
-                print("ERROR: The training file should be in decending probability order: " + str(section_type),file=sys.stderr)
+                print("Invalid function type for grammar: " + str(function))
                 return RetType.CONFIG_ERROR
-        ##--Update the last replacement
-        cur_section['replacements'].append(cur_replacement)
-        grammar.append(cur_section)
+            last_prob = value_list[0][1]
+            
+            for index in range(1,len(value_list)):
+                
+                ##--Now to check if the current prob is the same or different, (aka if we can add to the previous replacement or have to create another one
+                if value_list[index][1] == last_prob:
+                    cur_replacement['terminal'].append(value_list[index][0])
+                
+                ##--Need to create a new replacement       
+                elif value_list[index][1] < last_prob:
+                    ##--Add previous replacement to the full list
+                    cur_section['replacements'].append(cur_replacement)
+                    ##--Update new node
+                    last_prob = value_list[index][1]
+                    if function == 'Capitalization' or function == 'Copy':
+                        cur_replacement = {'function':function,'is_terminal':True, 'prob':value_list[index][1], 'terminal':[value_list[index][0]]}
+                    elif function == 'Shadow':
+                        cur_replacement = {'function':function,'is_terminal':False, 'prob':value_list[0][1], 'pre_terminal':[value_list[0][0]]}
+                        found = False
+                        for item in grammar_mapping:
+                            if item['length'] == cur_section['name']:
+                                found = True
+                                cur_replacement['pos'] = [item['index']]
+                        if found == False:
+                            print("Error finding replacement in grammar")
+                            return RetType.CONFIG_ERROR
+                    else:
+                        print("Invalid function type for grammar: " + str(function))
+                        return RetType.CONFIG_ERROR  
+                        
+                ##--Should be an error condition if the list isn't in decending probability order
+                else:
+                    print("ERROR: The training file should be in decending probability order: " + str(section_type),file=sys.stderr)
+                    return RetType.CONFIG_ERROR
+                    
+            ##--Update the last replacement
+            cur_section['replacements'].append(cur_replacement)
+            grammar.append(cur_section)
+        
+        ##--If it is a base structure, additional pre-processing needs to be done on the structures
+        ##--Also the combining of multiple base structures of the same probability into the same node doesn't work so don't use that optimization
+        elif function == 'Transparent':
+            for index in range(1,len(value_list)):
+                cur_replacement = {'function':function,'is_terminal':False, 'prob':value_list[0][1], 'pre_terminal':[value_list[0][0]]}
+                cur_section['replacements'].append(cur_replacement)
+            grammar.append(cur_section)
+        ##--Something weird is happeing so error out
+        else:
+            print("Invalid function type for grammar: " + str(function))
+            return RetType.CONFIG_ERROR
             
     return RetType.STATUS_OK
     
+
+###########################################################################################
+# Maps the location of replacements in the grammar to the types of replacements
+#
+# grammar_mapping is the main datastructure to return
+# Contains a dictonary of {type, id, length, index}
+# --type is the type of transition. Aka BASE_A for Alpha
+# --id is the parsing id for the transition. Aka A for Alpha
+# --length is the length of the transition. Aka 4 for A4 PASS
+# --index is the index where the transition data is in grammar
+############################################################################################
+def find_grammar_mapping(config, grammar, section_type, grammar_mapping=[]):
+    try:
+        replacements = json.loads(config.get(section_type,'replacements'))
+    except configparser.Error as msg:
+        print("Error occured parsing the configuration file: " + str(msg),file=sys.stderr)
+        return RetType.CONFIG_ERROR
+        
+    for cur_replace in replacements:
+        for index, item in enumerate(grammar):
+            if cur_replace["Config_id"] == item["type"]:
+                grammar_mapping.append({'type':item["type"], 'id':cur_replace["Transition_id"], 'length':item["name"], 'index':index})
+                
+    return RetType.STATUS_OK
+
     
 ########################################################################
 # Recursivly builds a grammar from a config file and a loaded ruleset
 ########################################################################
-def build_grammar(config, grammar, rule_directory, encoding, section_type):
+def build_grammar(config, grammar, rule_directory, encoding, section_type, found_list = []):
     
     ##--Check to make sure the section we are trying to add isn't in the grammar already--##
     ##--This helps avoid loops in grammars that have recursion built into them--##
-    for x in grammar:
-        if x['type'] == section_type:
+    for x in found_list:
+        if x == section_type:
             print('Recursion found in grammar for section ' + str(section_type),file=sys.stderr)
             return RetType.STATUS_OK
-            
-    ##--What we'll eventually push into the pcfg
-    working_section = {'type':section_type,'replacements':[]}
+     
+    ##--Add this section to the found_list to avoid loops in the future--##
+    found_list.append(section_type)
     
     try:
         ##--Grab the function type for this section from the config file--##
@@ -158,45 +232,37 @@ def build_grammar(config, grammar, rule_directory, encoding, section_type):
         ##--Aka if you have S-> D1, D2, D3 then those repalcement functions are all the same
         ##--If you want to have S-> D1, A3 then those replacement functions would be different for each section
         function = config.get(section_type,'function')
-    
-        #############################################################################
-        ##--How the rest of the section is parsed will depend on the function chosen
-        ###############################################################################
         
-        ##--If the function doesn't add anything itself but calls other replacements. Example would be base structures like A4D2 -> Test12
-        if function == 'Transparent':
-            ##--Add the stub of the grammar to the pcfg to avoid loops in the future--##
-            grammar.append(working_section)
+        ##--Grab if it is a terminal replacement or not--##
+        is_terminal = config.getboolean(section_type,'is_terminal')
+          
+        ##--If the section is not a terminal replacement but instead leads to other replacements
+        if is_terminal == False:
+
             replacements = json.loads(config.get(section_type,'replacements'))
             ##--Now add the replacements to the grammar before we attempt to add the links to them for this section
             for cur_replacement in replacements:
                 ret_value = build_grammar(config, grammar, rule_directory, encoding, cur_replacement['Config_id'])
                 if ret_value != RetType.STATUS_OK:
-                    return ret_value
+                    return ret_value    
       
-        ##--If the function loads a dictionary that is passed to additional mangling steps in later transitions            
-        elif function == 'Shadow':
-            ##--Add the stub of the grammar to the pcfg to avoid loops in the future--##
-            grammar.append(working_section)
-            replacements = json.loads(config.get(section_type,'replacements'))
-            ##--Now add the replacements to the grammar before we attempt to add the links to them for this section
-            for cur_replacement in replacements:
-                ret_value = build_grammar(config, grammar, rule_directory, encoding, cur_replacement['Config_id'])
-                if ret_value != RetType.STATUS_OK:
-                    return ret_value
-                    
-        ##--If the function capitalizes the previous pre-terminal
-        elif function == 'Capitalization':
-            insert_terminal(config, grammar, rule_directory, encoding, section_type)
+            ##--All replacements should be added by now so make the mapping to be used when reading in the data
+            grammar_mapping = []
+            ret_value = find_grammar_mapping(config, grammar, section_type, grammar_mapping)
+            if ret_value != RetType.STATUS_OK:
+                return ret_value
+                
+            ##--Now actually add this section to the grammar--##
+            ret_value = insert_terminal(config, grammar, rule_directory, encoding, section_type, grammar_mapping)
+            if ret_value != RetType.STATUS_OK:
+                return ret_value            
             
-        ##--This function is a direct copy terminal. For example D2-> 99, 82, 21. There is no special processing of the previous data.
-        elif function == 'Copy':
-            insert_terminal(config, grammar, rule_directory, encoding, section_type)
-            
-        ##-- This version of the pcfg_manager doesn't support the version of the function from the training file--##
+        ##--If this section is a terminal replacement
         else:
-            print("Unsupported function type for the grammar: " + str(function),file=sys.stderr)
-            return RetType.CONFIG_ERROR
+            ret_value = insert_terminal(config, grammar, rule_directory, encoding, section_type)
+            if ret_value != RetType.STATUS_OK:
+                return ret_value
+
     except configparser.Error as msg:
         print("Error occured parsing the configuration file: " + str(msg),file=sys.stderr)
         return RetType.CONFIG_ERROR
@@ -227,7 +293,7 @@ def load_grammar(rule_directory, grammar):
     
     ##--Now build the grammar starting with the start transition--##
     ret_value = build_grammar(config,grammar, rule_directory, encoding, "START")
-    print(grammar)
+    print_grammar(grammar)
     if ret_value != RetType.STATUS_OK:
         return ret_value
     return RetType.STATUS_OK
