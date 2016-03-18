@@ -301,6 +301,7 @@ def build_grammar(config, grammar, rule_directory, encoding, section_type, found
 # Loads the grammar from a ruleset
 ##############################################################
 def load_grammar(rule_directory, grammar):
+    print("Loading the rules file",file=sys.stderr)
     
     ##--First start by setting up, reading, and parsing the config file for the ruleset--
     config = configparser.ConfigParser()
@@ -323,6 +324,8 @@ def load_grammar(rule_directory, grammar):
     #print_grammar(grammar)
     if ret_value != RetType.STATUS_OK:
         return ret_value
+    print("Rules loaded",file=sys.stderr)
+    print("",file=sys.stderr)
     return RetType.STATUS_OK
     
 

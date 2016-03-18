@@ -5,6 +5,8 @@
 # Name: PCFG_Cracker "Next" Function
 # Description: Section of the code that is responsible of outputting all of the
 #              pre-terminal values of a PCFG in probability order.
+#              Because of that, this section also handles all of the memory management
+#              of a running password generation session
 #
 #########################################################################################
 
@@ -18,6 +20,7 @@ import time
 import queue
 import copy
 import heapq
+
 
 from sample_grammar import s_preterminal
 from pcfg_manager.ret_types import RetType
@@ -153,11 +156,17 @@ class PcfgQueue:
     # Allows resuming paused, (or crashed), sessions and is used in the memory management
     ###############################################################################
     def rebuild_queue(self,pcfg):
-        print("Rebuilding p_queue")
+        print("Rebuilding p_queue", file=sys.stderr)
         self.p_queue = []
         rebuild_list = []
         self.min_probability = 0.0
-        rebuild_list.append(QueueItem(is_terminal=False, probability = 1.0, parse_tree = [0,0,[]]))
+        
+        index = pcfg.start_index()
+        if index == -1:
+            print("Could not find starting position for the pcfg")
+            return RetType.GRAMMAR_ERROR
+            
+        rebuild_list.append(QueueItem(is_terminal=False, probability = 1.0, parse_tree = [index,0,[]]))
         while len(rebuild_list) != 0:
             q_item = rebuild_list.pop(0)
             ret_list = self.rebuild_from_max(pcfg,q_item)
@@ -243,7 +252,7 @@ class PcfgQueue:
                 print("trimming Queue", file=sys.stderr)
                 self.trim_queue()
                 print("done", file=sys.stderr)
-            ##--If it is a terminal strucutre break and return it
+            ##--If it is a terminal structure break and return it
             if queue_item.is_terminal == True:
                 queue_item_list.append(queue_item)
                 break

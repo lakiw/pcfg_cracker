@@ -1,0 +1,6 @@
+##--Standard all letter passwords with no context sensitive replacements
+$MD5$d41d8cd98f00b204e9800998ecf8427e:password1
+$MD5$d41d8cd98f00b204e9800998ecf8427e:testtest2
+$MD5$d41d8cd98f00b204e9800998ecf8427e:testtest3
+$MD5$d41d8cd98f00b204e9800998ecf8427e:test2
+$MD5$d41d8cd98f00b204e9800998ecf8427e:Pass2pass

@@ -14,7 +14,7 @@ from pcfg_trainer.training_data import TrainingData
 
 
 ##-- The minimum number of passwords to train on --##
-MIN_NUMBER_OF_PASSWORDS = 5
+MIN_NUMBER_OF_PASSWORDS = 1
 
 
 
