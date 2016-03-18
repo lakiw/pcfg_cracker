@@ -73,7 +73,7 @@ s_grammar = [
                 'is_terminal':False,
                 'pos':[4],
                 'prob':0.8,
-                'pre_terminal':[
+                'values':[
                     "pas",
                     "cat",
                     "dog",
@@ -85,7 +85,7 @@ s_grammar = [
                 'is_terminal':False,
                 'pos':[4],
                 'prob':0.2,
-                'pre_terminal':[
+                'values':[
                     "mat",
                     "bat"
                 ],
@@ -100,7 +100,7 @@ s_grammar = [
                 'is_terminal':False,
                 'pos':[5],
                 'prob':0.7,
-                'pre_terminal':[
+                'values':[
                     "passw",
                     "secur"
                 ],
@@ -110,7 +110,7 @@ s_grammar = [
                 'is_terminal':False,
                 'pos':[5],
                 'prob':0.3,
-                'pre_terminal':[
+                'values':[
                     "chair",
                     "hairs"
                 ],
@@ -124,20 +124,20 @@ s_grammar = [
             {
                 'is_terminal':True,
                 'prob':0.7,
-                'terminal':[
+                'values':[
                     '1',
                 ],
-                'function':'Standard_Copy'
+                'function':'Copy'
             },
             {
                 'is_terminal':True,
                 'prob':0.3,
-                'terminal':[
+                'values':[
                     '2',
                     '3',
                     '4'
                 ],
-                'function':'Standard_Copy'
+                'function':'Copy'
             }
         ]
     },
@@ -147,7 +147,7 @@ s_grammar = [
             {
                 'is_terminal':True,
                 'prob':0.8,
-                'terminal':[
+                'values':[
                     'LLL'
                 ],
                 'function':'Capitalization'
@@ -155,7 +155,7 @@ s_grammar = [
             {
                 'is_terminal':True,
                 'prob':0.20,
-                'terminal':[
+                'values':[
                     'ULL',
                     'UUU'
                 ],
@@ -169,7 +169,7 @@ s_grammar = [
             {
                 'is_terminal':True,
                 'prob':0.8,
-                'terminal':[
+                'values':[
                     'LLLLL'
                 ],
                 'function':'Capitalization'
@@ -177,7 +177,7 @@ s_grammar = [
             {
                 'is_terminal':True,
                 'prob':0.20,
-                'terminal':[
+                'values':[
                     'ULLLL',
                     'UUUUU'
                 ],

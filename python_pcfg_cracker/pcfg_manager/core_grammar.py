@@ -44,13 +44,14 @@ from sample_grammar import s_preterminal
 #                  //---EXAMPLE, let's say the training found that D2-> 11, 15, 83, all with a probability of 0.2. Then the probability here will be 0.2
 #                  //---EXAMPLE#2, let's say that there is a L3 transition that was discovered in training at 0.8 probability. At runtime it is pointed into an input dictionary containing 10 words.
 #                  //---------     that probabilty then should be 0.8/10 = 0.08.
-#   'pre_terminal':["pas","cat","dog","hat"]  //dictionary of pre-terminals that should be applied for this transition. Note it's just a nameing convention to differentiate pre-terminals and terminals
-#   'terminal':['2','3','4']  //A listing of terminals to apply. Since they are terminals there are no futher transitions
+#   'values ':["pas","cat","dog","hat"]  //dictionary of pre-terminals that should be applied for this transition. 
+#    or
+#   'values':['2','3','4']  //A listing of terminals to apply. Since they are terminals there are no futher transitions
 #
 #   Note, there are also functions that deal with the nitty gritty about how to actually perform the transitions. Eventually I'd like to move them to a plug-in archetecture, but currently
 #   they are hardcoded
 #   'function':'Shadow'  //Used for pre-terminals like dictionary words where you want to send the current list of words to the next transition so it can do things like apply capitalization rules
-#   'function':'Standard_Copy'    //Used for terminals to do a straight swap of the contents. like have a D->'1'
+#   'function':'Copy'    //Used for terminals to do a straight swap of the contents. like have a D->'1'
 #   'function':'Capitalization'  //Used to capitalize words passed in by the previous 'shadow' function
 #   'function':'Transparent'  //There is no list of words associated with this transition. Instead you are just pushing new transitions into the stack. Aka S->AB
 #   'function':'Digit_Bruteforce'  //Used to bruteforce digits. Much like shadow but instead of having a 'terminal' list it generates it via brute force
@@ -67,6 +68,30 @@ class PcfgClass:
         ###---The actual grammar. It'll be loaded up later
         self.grammar = grammar
     
+    
+    ##############################################################################
+    # Returns an index into the starting postion for this grammar
+    # It assumes the start index is listed as type "START"
+    # Returns -1 if there is an error
+    ##############################################################################
+    def start_index(self):
+        ##--sanity check--##
+        if len(self.grammar)==0:
+            return -1
+            
+        ##--quick shortcut--##
+        if self.grammar[-1]['type'] == 'START':
+            return len(self.grammar) - 1
+        ##--Gotta go the long way through this--##
+        else:
+            for index in range(0,len(self.grammar)):
+                if self.grammar[-1]['type'] == 'START':
+                    return index
+                    
+        ##--Couldn't find it, return an error
+        return -1
+        
+        
     ##############################################################################
     # Top level function used to return all the terminals / password guesses
     # associated with the pre_terminal passed it
@@ -112,17 +137,17 @@ class PcfgClass:
         ##----Now deal with the different types of transition functions----------###
         
         ##----If you are copying the actual values over, aka D1->['1','2','3','4']. This is the simplest one
-        if cur_dic['function']=='Standard_Copy':
-            cur_combo = cur_dic['terminal']
+        if cur_dic['function']=='Copy':
+            cur_combo = cur_dic['values']
             
         ##----If you are copying over values that aren't terminals. For example L3=>['cat','hat']. They are not terminals since you still need to apply capitalization rules to them
-        elif cur_dic['function']=='shadow':
+        elif cur_dic['function']=='Shadow':
             ##--Pass the value to the next replacement to take care of
-            cur_combo =  self.expand_terminals(cur_section[2][0],cur_dic['pre_terminal'])
+            cur_combo =  self.expand_terminals(cur_section[2][0],cur_dic['values'])
         ##----Capitalize the value passed in from the previous section----
         elif cur_dic['function']=='Capitalization':
             temp_combo=[]
-            for rule in cur_dic['terminal']:
+            for rule in cur_dic['values']:
                 for word in cur_combo:
                     temp_word =''
                     for letterPos in range(0,len(word)):

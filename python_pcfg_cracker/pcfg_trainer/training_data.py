@@ -77,7 +77,7 @@ class TrainingData:
             'Comments':'(D)igit replacement for base structure. Aka "pass12" = L4D2, so this is the D2',
             'Directory':'Digits',
             'Filenames' : '.txt',
-            'Inject_type':'Standard_Copy',
+            'Inject_type':'Copy',
             'Function':'Copy',
             'Is_terminal':'True', 
         }
@@ -92,7 +92,7 @@ class TrainingData:
             'Comments':'(O)ther character replacement for base structure. Aka "pass$$" = L4S2, so this is the S2',
             'Directory':'Other',
             'Filenames' : '.txt',
-            'Inject_type':'Standard_Copy',
+            'Inject_type':'Copy',
             'Function':'Copy',
             'Is_terminal':'True', 
         }
@@ -107,7 +107,7 @@ class TrainingData:
             'Comments':'Capitalization Masks for words. Aka LLLLUUUU for passWORD',
             'Directory':'Capitalization',
             'Filenames' : '.txt',
-            'Inject_type':'Standard_Copy',
+            'Inject_type':'Copy',
             'Function':'Capitalization',
             'Is_terminal':'True', 
         }
@@ -122,7 +122,7 @@ class TrainingData:
             'Comments':'(K)eyboard replacement for base structure. Aka "test1qaz2wsx" = L4K4K4, so this is the K4s',
             'Directory':'Keyboard',
             'Filenames' : '.txt',
-            'Inject_type':'Standard_Copy',
+            'Inject_type':'Copy',
             'Function':'Copy',
             'Is_terminal':'True', 
         }
@@ -137,7 +137,7 @@ class TrainingData:
             'Comments':'conte(X)t sensitive replacements to the base structure. This is mostly a grab bag of things like #1 or ;p',
             'Directory':'Context',
             'Filenames' : '.txt',
-            'Inject_type':'Standard_Copy',
+            'Inject_type':'Copy',
             'Function':'Copy',
             'Is_terminal':'True', 
         }

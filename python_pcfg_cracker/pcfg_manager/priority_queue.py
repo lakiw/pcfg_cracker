@@ -100,12 +100,18 @@ class PcfgQueue:
 
     #############################################################################
     # Push the first value into the priority queue
-    # This will likely be 'S' unless you are constructing your PCFG some other way
+    # This will likely be 'START' unless you are constructing your PCFG some other way
     #############################################################################
     def initialize(self, pcfg):
-        q_item = QueueItem(is_terminal=False, probability = 1.0, parse_tree = [0,0,[]])
+        index = pcfg.start_index()
+        if index == -1:
+            print("Could not find starting position for the pcfg")
+            return RetType.GRAMMAR_ERROR
+        
+        q_item = QueueItem(is_terminal=False, probability = 1.0, parse_tree = [index,0,[]])
         heapq.heappush(self.p_queue,q_item)
-    
+        
+        return RetType.STATUS_OK
  
     ###############################################################################
     # Memory managment function to reduce the size of the priority queue
@@ -217,7 +223,7 @@ class PcfgQueue:
         while True:
             ##--First check if the queue is empty
             while len(self.p_queue) == 0:
-                ##--There was some memory management going on so try to rebuild the queue
+                ##--If there was some memory management going on, try to rebuild the queue
                 if self.min_probability != 0.0:
                     self.rebuild_queue(pcfg)
                 ##--The grammar has been exhaused, exit---##
@@ -227,7 +233,6 @@ class PcfgQueue:
             ##--Pop the top value off the stack
             queue_item = heapq.heappop(self.p_queue)
             self.max_probability = queue_item.probability
-            
             ##--Push the children back on the stack
             ##--Currently using the deadbeat dad algorithm as described in my dissertation
             ##--http://diginole.lib.fsu.edu/cgi/viewcontent.cgi?article=5135

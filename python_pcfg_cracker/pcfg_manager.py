@@ -137,17 +137,17 @@ def main():
         print ("Error loading the PCFG grammar, exiting",file=sys.stderr)
         print_error()
         return ret_value
-
+ 
     pcfg = PcfgClass(grammar)
-    ##--Debugging return since I'm currently working on reading in the grammar --##
-    print("Debug, exiting",file=sys.stderr)
-    return
     
     ##--Initialize the priority queue--##
     p_queue = PcfgQueue()
-    p_queue.initialize(pcfg)
+    ret_value = p_queue.initialize(pcfg)
+    if ret_value != RetType.STATUS_OK:
+        print ("Error initalizing the priority queue, exiting",file=sys.stderr)
+        print_error()
+        return ret_value
     
-   
     ##--Going to break this up eventually into it's own function, but for now, process the queue--##
     queue_item_list = []
     ret_value = p_queue.next_function(pcfg, queue_item_list)
@@ -162,24 +162,25 @@ def main():
     guess_stop_time = 0
     total_time_start = time.perf_counter()
     while ret_value == RetType.STATUS_OK:
-#       print(str(queue_item.probability) + " : " + str(queue_item.parse_tree))
+#        print(str(queue_item.probability) + " : " + str(queue_item.parse_tree))
         num_preterminals = num_preterminals +1
         guess_start_time = time.perf_counter()
         num_guesses = num_guesses + len(pcfg.list_terminals(queue_item.parse_tree))
         
         guess_stop_time = time.perf_counter() - guess_start_time
-        if num_preterminals % 10000 == 0:
-            print ("PQueue:" + str(len(queue_item.p_queue)))
-#            print ("Total number of Pre Terminals: " + str (num_preterminals))
-#            print ("PQueueTime " + str(p_queue_stop_time))
-#            print ("Guesses:" + str(num_guesses))
-#            print ("GuessTime " + str(guess_stop_time))
-#            print ("Average num of guesses per preterm: " + str(num_guesses // num_preterminals))
-#            print ("Total Time " + str(time.perf_counter() - total_time_start))
-#            print ("Number of guesses a second: " + str(num_guesses // (time.perf_counter() - total_time_start)))
+        if num_preterminals % 1000 == 0:
+            print ("PQueue:" + str(len(p_queue.p_queue)))
+            print ("Total number of Pre Terminals: " + str (num_preterminals))
+            print ("PQueueTime " + str(p_queue_stop_time))
+            print ("Guesses:" + str(num_guesses))
+            print ("GuessTime " + str(guess_stop_time))
+            print ("Average num of guesses per preterm: " + str(num_guesses // num_preterminals))
+            print ("Total Time " + str(time.perf_counter() - total_time_start))
+            print ("Number of guesses a second: " + str(num_guesses // (time.perf_counter() - total_time_start)))
             print ("Current probability: " + str(p_queue.max_probability))
-        for guess in pcfg.list_terminals(queue_item.parse_tree):
-            print(guess)
+            print ()
+#        for guess in pcfg.list_terminals(queue_item.parse_tree):
+#            print(guess)
         p_queue_start_time = time.perf_counter()
         queue_item_list = []        
         ret_value = p_queue.next_function(pcfg, queue_item_list)

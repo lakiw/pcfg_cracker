@@ -13,6 +13,7 @@ import os
 import configparser
 import json
 import codecs
+from itertools import groupby
 
 #Used for debugging and development
 from sample_grammar import s_grammar
@@ -34,6 +35,8 @@ def extract_probability(master_list = []):
             print("Error parsing the probabilities from the training file",file=sys.stderr)
             return RetType.CONFIG_ERROR
 
+        #convert probablity to a float
+        master_list[position][1] = float(master_list[position][1])
     return RetType.STATUS_OK
 
 #########################################################################################
@@ -82,8 +85,27 @@ def read_input_values(training_file, master_list =[] , encoding = 'utf-8'):
 ########################################################################################################################
 # Parses base structures and updates the grammar section for them
 ########################################################################################################################
-def parse_base_structure(unformated_base,grammar_mapping,cur_replacement):
-    print(unformated_base)
+def parse_base_structure(unformated_base,grammar_mapping, pos = []):
+
+    ##--Split up the unformated base by value + length--##
+    working_list = [''.join(g) for _, g in groupby(unformated_base, str.isalpha)]
+    
+    ##--Do a quick sanity check to make sure there are proper pairing of value digits
+    if len(working_list) % 2 != 0:
+        print("Error parsing base structure: " + str(unformatted_base))
+        return RetType.CONFIG_ERROR
+    
+    ##--Now calculate the replacement mapping
+    for index in range(0,len(working_list)//2):
+        value = working_list[index*2]
+        size = working_list[index*2 + 1]
+        #--look up the position
+        try:
+            pos.append(grammar_mapping[value][size])
+        except KeyError as msg:
+            print("Error occured parsing the links in the base structure: " + str(msg),file=sys.stderr)
+            return RetType.CONFIG_ERROR
+            
     return RetType.STATUS_OK
     
 ########################################################################################################################
@@ -94,9 +116,11 @@ def insert_terminal(config, grammar, rule_directory, encoding, section_type, gra
         #--This is a terminal transition so there are no more replacemetns to processInput
         file_type = config.get(section_type,'file_type')
         function = config.get(section_type,'function')
+        is_terminal = config.getboolean(section_type,'is_terminal')
+        
         ##--We need to go through all the files--##
         filenames = json.loads(config.get(section_type,'filenames'))
-        cur_directory = os.path.join(rule_directory, config.get(section_type,'directory'))
+        cur_directory = os.path.join(rule_directory, config.get(section_type,'directory')) 
     
     except configparser.Error as msg:
         print("Error occured parsing the configuration file: " + str(msg),file=sys.stderr)
@@ -122,50 +146,45 @@ def insert_terminal(config, grammar, rule_directory, encoding, section_type, gra
         ##--Need to add the replacements
         ##--If it is a Capitalization, Copy, or Shadow replacement, (they are all read in basically the same way)
         if function == 'Capitalization' or function == 'Copy' or function == 'Shadow':
-            if function == 'Capitalization' or function == 'Copy':
-                cur_replacement = {'function':function,'is_terminal':True, 'prob':value_list[0][1], 'terminal':[value_list[0][0]]}
-            elif function == 'Shadow':
-                cur_replacement = {'function':function,'is_terminal':False, 'prob':value_list[0][1], 'pre_terminal':[value_list[0][0]]}
-                found = False
-                for item in grammar_mapping:
-                    if item['length'] == cur_section['name']:
-                        found = True
-                        cur_replacement['pos'] = [item['index']]
-                if found == False:
-                    print("Error finding replacement in grammar")
+            ##--multiple replacements can share the same structure, (to limit the amount of list pushing and popping, (this is a performance tweak)
+            ##--therefore initialize the structure and then loop through the rest of the values seeing if they can be instereted in this replacement
+            ##--or if they have a different probability so they need their own
+            ##--Note, if items are sharing a cur_replacement and are NOT terminal, they must also share the same replacement value
+            cur_replacement = {'function':function,'is_terminal':is_terminal, 'prob':value_list[0][1], 'values':[value_list[0][0]]}
+            ##--if position info needs to be added to this structure
+            if function == 'Shadow':
+                try:
+                    all_replacements = json.loads(config.get(section_type,'replacements')) 
+                    replacement = all_replacements[0]['Transition_id']
+                    cur_replacement['pos'] = [ grammar_mapping[replacement][cur_section['name']] ]
+                except KeyError as msg:
+                    print("Error occured parsing the links in the config file: " + str(msg),file=sys.stderr)
                     return RetType.CONFIG_ERROR
-            else:
-                print("Invalid function type for grammar: " + str(function))
-                return RetType.CONFIG_ERROR
-            last_prob = value_list[0][1]
+                except configparser.Error as msg:
+                    print("Error occured parsing the configuration file: " + str(msg),file=sys.stderr)
+                    return RetType.CONFIG_ERROR
             
+            last_prob = value_list[0][1]
+                
+            ##--Now loop through all the remaining values
             for index in range(1,len(value_list)):
                 
-                ##--Now to check if the current prob is the same or different, (aka if we can add to the previous replacement or have to create another one
+                ##--If the probability is the same as the previous one--##
                 if value_list[index][1] == last_prob:
-                    cur_replacement['terminal'].append(value_list[index][0])
+                    cur_replacement['values'].append(value_list[index][0])
                 
                 ##--Need to create a new replacement       
                 elif value_list[index][1] < last_prob:
-                    ##--Add previous replacement to the full list
+                    
+                    ##--Add previous replacement to the full list    
                     cur_section['replacements'].append(cur_replacement)
+                    
                     ##--Update new node
                     last_prob = value_list[index][1]
-                    if function == 'Capitalization' or function == 'Copy':
-                        cur_replacement = {'function':function,'is_terminal':True, 'prob':value_list[index][1], 'terminal':[value_list[index][0]]}
-                    elif function == 'Shadow':
-                        cur_replacement = {'function':function,'is_terminal':False, 'prob':value_list[0][1], 'pre_terminal':[value_list[0][0]]}
-                        found = False
-                        for item in grammar_mapping:
-                            if item['length'] == cur_section['name']:
-                                found = True
-                                cur_replacement['pos'] = [item['index']]
-                        if found == False:
-                            print("Error finding replacement in grammar")
-                            return RetType.CONFIG_ERROR
-                    else:
-                        print("Invalid function type for grammar: " + str(function))
-                        return RetType.CONFIG_ERROR  
+                    cur_replacement = {'function':function,'is_terminal':is_terminal, 'prob':value_list[index][1], 'values':[value_list[index][0]]}
+                    
+                    if function == 'Shadow':
+                        cur_replacement['pos'] = [ grammar_mapping[replacement][cur_section['name']] ]
                         
                 ##--Should be an error condition if the list isn't in decending probability order
                 else:
@@ -180,8 +199,8 @@ def insert_terminal(config, grammar, rule_directory, encoding, section_type, gra
         ##--Also the combining of multiple base structures of the same probability into the same node doesn't work so don't use that optimization
         elif function == 'Transparent':
             for index in range(0,len(value_list)):
-                cur_replacement = {'function':function,'is_terminal':False, 'prob':value_list[index][1], 'pre_terminal':[value_list[index][0]], 'replacements':[]}
-                ret_value = parse_base_structure(value_list[index],grammar_mapping,cur_replacement)
+                cur_replacement = {'function':function,'is_terminal':False, 'prob':value_list[index][1], 'values':[value_list[index][0]], 'pos':[]}
+                ret_value = parse_base_structure(value_list[index][0],grammar_mapping,cur_replacement['pos'])
                 if ret_value != RetType.STATUS_OK:
                     print("Error parsing base structures in grammar",file=sys.stderr)
                     return RetType.CONFIG_ERROR
@@ -199,24 +218,22 @@ def insert_terminal(config, grammar, rule_directory, encoding, section_type, gra
 # Maps the location of replacements in the grammar to the types of replacements
 #
 # grammar_mapping is the main datastructure to return
-# Contains a dictonary of {type, id, length, index}
-# --type is the type of transition. Aka BASE_A for Alpha
+# Contains a dictonary of {id:{length:index}}
 # --id is the parsing id for the transition. Aka A for Alpha
 # --length is the length of the transition. Aka 4 for A4 PASS
 # --index is the index where the transition data is in grammar
 ############################################################################################
-def find_grammar_mapping(config, grammar, section_type, grammar_mapping=[]):
+def find_grammar_mapping(config, grammar, section_type, grammar_mapping={}):
     try:
         replacements = json.loads(config.get(section_type,'replacements'))
     except configparser.Error as msg:
         print("Error occured parsing the configuration file: " + str(msg),file=sys.stderr)
-        return RetType.CONFIG_ERROR
-        
+        return RetType.CONFIG_ERROR   
     for cur_replace in replacements:
+        grammar_mapping[cur_replace["Transition_id"]] = {}
         for index, item in enumerate(grammar):
             if cur_replace["Config_id"] == item["type"]:
-                grammar_mapping.append({'type':item["type"], 'id':cur_replace["Transition_id"], 'length':item["name"], 'index':index})
-                
+                grammar_mapping[cur_replace["Transition_id"]][item['name']] =index
     return RetType.STATUS_OK
 
     
@@ -258,11 +275,10 @@ def build_grammar(config, grammar, rule_directory, encoding, section_type, found
                     return ret_value    
       
             ##--All replacements should be added by now so make the mapping to be used when reading in the data
-            grammar_mapping = []
+            grammar_mapping = {}
             ret_value = find_grammar_mapping(config, grammar, section_type, grammar_mapping)
             if ret_value != RetType.STATUS_OK:
-                return ret_value
-                
+                return ret_value 
             ##--Now actually add this section to the grammar--##
             ret_value = insert_terminal(config, grammar, rule_directory, encoding, section_type, grammar_mapping)
             if ret_value != RetType.STATUS_OK:
@@ -304,114 +320,9 @@ def load_grammar(rule_directory, grammar):
     
     ##--Now build the grammar starting with the start transition--##
     ret_value = build_grammar(config,grammar, rule_directory, encoding, "START")
-    print_grammar(grammar)
+    #print_grammar(grammar)
     if ret_value != RetType.STATUS_OK:
         return ret_value
     return RetType.STATUS_OK
     
 
-
-#####################################################################################################
-# This code is hackish as hell. I just want to get something working as a proof of concept so I can
-# see the performance of this tool with a non-trivial grammar
-#####################################################################################################
-def load_base_structures(c_vars,pcfg):
-    base_dir = os.path.join(sys.path[0],c_vars.rule_directory, c_vars.rule_name, "Grammar")
-    try:
-        input_file = open(os.path.join(base_dir,"Grammar.txt"),'r')
-    except:
-        print ("Could not open config file: " + "Grammar.txt")
-        print( os.path.join(base_dir,"Grammar.txt"))
-        return RetType.FILE_IO_ERROR
-    
-    cheat_sheet = []
-    ##--parse line and insert it into the pcfg
-    for full_line in input_file:
-        ##--Dont' want to mess with keyboard combos yet
-        if 'K' not in full_line:
-            ###-break apart the line----###
-            cur_grammar = full_line.split('\t')
-            line = cur_grammar[0]
-            probability = float(cur_grammar[1])
-        
-            ##--Change stuctures like LLLLDD to [[L,4],[D,2]]
-            structure = []
-            last_char = line[0]
-            runLen =1 
-            for c_pos in range(1,len(line)):
-                if line[c_pos]==last_char:
-                    runLen = runLen + 1
-                else:
-                    structure.append([last_char,runLen])
-                    last_char = line[c_pos]
-                    runLen = 1
-            ##--Now take care of the last character
-            structure.append([last_char,runLen])
-        
-            ##---Now insert into the grammar
-            pcfg.grammar[0]['replacements'].append({'is_terminal':False,'pos':[],'prob':probability,'function':'Transparent'})
-            ##---Update the 'pos' links for the base structure
-            ##---valuePos references the position in the grammar, cheetsheet has one lesss item since it doesn't have 'S'
-            for value in structure:
-                if value not in cheat_sheet:
-                    cheat_sheet.append(value)
-                    valuePos = len(cheat_sheet)
-                else:
-                    valuePos = cheat_sheet.index(value) + 1
-                pcfg.grammar[0]['replacements'][-1]['pos'].append(valuePos)
-    input_file.close()
-    ##--Read in the input dictionary-----
-    input_dictionary = []
-    try:
-        input_file = open(os.path.join(sys.path[0],c_vars.input_dictionary),'r')
-        for line in input_file:
-            line_len = len(line.rstrip())
-            while line_len >= len(input_dictionary):
-                input_dictionary.append([])
-            input_dictionary[line_len].append(line.rstrip().lower())
-        input_file.close()
-    except Exception as e:
-        print ("Could not open dictionary file: " + c_vars.input_dictionary)
-        print (e)
-        return RetType.FILE_IO_ERROR
-
-    ##---Now fill in the values for the terminal structures--------------##
-    for index, value in enumerate(cheat_sheet):
-        if value[0]=='L':
-            if len(input_dictionary)<=value[1] or len(input_dictionary[value[1]])==0:
-                probability = 1
-                pcfg.grammar.append({'name':"L"+str(value[1]),'replacements':[{'is_terminal':True,'prob':probability,'terminal':[],'function':'Standard_Copy'}]})
-            else:
-                probability = 1 / len(input_dictionary[value[1]])
-                pcfg.grammar.append({'name':"L"+str(value[1]),'replacements':[{'is_terminal':True,'prob':probability,'terminal':list(input_dictionary[value[1]]),'function':'Standard_Copy'}]})
-        else:
-            input_dir="Holder"
-            if value[0] == 'D':
-                input_dir = "Digits"
-            else:
-                input_dir = "Special"
-            base_dir = os.path.join(sys.path[0],c_vars.rule_directory, c_vars.rule_name, input_dir)
-            try:
-                input_file = open(os.path.join(base_dir,str(value[1])+".txt"),'r')
-                pcfg.grammar.append({'name':value[0]+str(value[1]),'replacements':[]})
-                ##--Now add the new line
-                prev_prob = -1
-                for line in input_file:
-                    cur_transform = line.split('\t')
-                    curValue = cur_transform[0]
-                    probability = float(cur_transform[1])
-                    if probability == prev_prob:
-                        pcfg.grammar[-1]['replacements'][-1]['terminal'].append(curValue)
-                    else:
-                        prev_prob=probability
-                        pcfg.grammar[-1]['replacements'].append({'is_terminal':True,'function':'Standard_Copy','prob':probability,'terminal':[]})
-                        pcfg.grammar[-1]['replacements'][-1]['terminal'].append(curValue)
-                input_file.close()  
-            except Exception as e:
-                print ("Could not open grammar file: " + os.path.join(base_dir,str(value[1])+".txt"))
-                print(e)
-                return RetType.FILE_IO_ERROR
-                 
-    #print(str(pcfg.grammar).encode(sys.stdout.encoding, errors='replace') )        
-    return RetType.STATUS_OK
-        

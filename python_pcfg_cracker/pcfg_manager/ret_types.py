@@ -36,6 +36,9 @@ class RetType(enum.IntEnum):
     ## Error parsing the config file
     CONFIG_ERROR                        = 6
     
+    ## Error with the PCFG Grammar
+    GRAMMAR_ERROR                       = 7
+    
     ## Debug results
     DEBUG                               = 97
     
