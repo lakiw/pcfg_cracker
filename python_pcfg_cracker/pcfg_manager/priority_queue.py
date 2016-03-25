@@ -98,7 +98,7 @@ class PcfgQueue:
         self.p_queue = []  ##--The actual priority queue
         self.max_probability = 1.0 #--The current highest priority item in the queue. Used for memory management and restoring sessions
         self.min_probability = 0.0 #--The lowest prioirty item is allowed to be in order to be pushed in the queue. Used for memory management
-        self.max_queue_size = 50000 #--Used for memory management. The maximum number of items before triming the queue. (Note, the queue can temporarially be larger than this)
+        self.max_queue_size = 500000 #--Used for memory management. The maximum number of items before triming the queue. (Note, the queue can temporarially be larger than this)
         self.reduction_size = self.max_queue_size // 4  #--Used to reduce the p_queue by this amount when managing memory
 
     #############################################################################
@@ -202,7 +202,8 @@ class PcfgQueue:
         ##--Else check to see if we need to push this items children into the queue--##
         else:
             children_list = pcfg.find_children(q_item.parse_tree)
-            my_children_list = self.lazy_find_my_children(pcfg,q_item,children_list)
+            #my_children_list = self.lazy_find_my_children(pcfg,q_item,children_list)
+            my_children_list = self.find_my_children(pcfg,q_item,children_list)
             ret_list = []
             for child in my_children_list:
                 ret_list.append(QueueItem(is_terminal = pcfg.find_is_terminal(child), probability = pcfg.find_probability(child), parse_tree = child))
@@ -220,7 +221,31 @@ class PcfgQueue:
             parent_list = pcfg.findMyParents(child)
             if parent_list[0] == q_item.parse_tree:
                 my_children.append(child)
-        return my_children    
+        return my_children
+
+
+    ###########################################################################
+    # Given a list of children, find all the children who this parent should
+    # insert into the list for rebuilding the queue
+    ###########################################################################
+    def find_my_children(self,pcfg,q_item,children_list):
+        my_children = []
+        ##--Loop through all of the children---##
+        for child in children_list:
+            ##--Grab all of the potential parents for this child
+            parent_list = pcfg.findMyParents(child)
+            prob_list = []
+            for parent in parent_list:
+                prob_list.append((parent,pcfg.find_probability(parent)))
+            parent_index = 0
+            lowest_prob = prob_list[0][1]
+            for index in range(1,len(prob_list)):
+                if prob_list[index][1] < lowest_prob:
+                    parent_index = index
+            
+            if prob_list[parent_index][0] == q_item.parse_tree:
+                my_children.append(child)
+        return my_children
         
     ###############################################################################
     # Pops the top value off the queue and then inserts any children of that node

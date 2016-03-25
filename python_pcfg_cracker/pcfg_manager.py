@@ -121,7 +121,7 @@ def main():
         'Contact':'cweir@vt.edu',
         'Source':'https://github.com/lakiw/pcfg_cracker'
     }
-    
+       
      ##--Print out banner
     print_banner(program_details)
     
@@ -183,6 +183,7 @@ def main():
                 print ("Number of guesses a second: " + str(num_guesses // (time.perf_counter() - total_time_start)))
                 print ("Current probability: " + str(p_queue.max_probability))
                 print ()
+
         else:
             for guess in pcfg.list_terminals(queue_item.parse_tree):
                 try:

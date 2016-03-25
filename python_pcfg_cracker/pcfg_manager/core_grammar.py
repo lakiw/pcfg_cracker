@@ -193,6 +193,35 @@ class PcfgClass:
                     return False
         return True
         
+    ###################################################################
+    # Copies a parse tree
+    # Meant to be a faster replacement than the generic copy.deepcopy()
+    # Only works on nodes of the form [index_in_grammar, index_in_node, [[pt1],[pt2],...]]
+    #                                 [index_in_grammar, index_in_node, []]
+    ###################################################################
+    def copy_node(self,pt):
+        retnode = []
+        ##--Sanity check to make sure things don't go off the rails
+        if len(pt) != 3:
+            print ("Error copying parse tree", file=sys.stderr)
+            print(pt)
+            return None
+        
+        ##--copying the first two items is easy
+        retnode.append(pt[0])
+        retnode.append(pt[1])
+        ##--If there is no additional replacements
+        if len(pt[2]) == 0:
+            retnode.append([])
+        ##--If there are additional replacements, loop through them
+        ##--and add them recursivly
+        else:
+            item_node = []
+            for item in pt[2]:  
+                item_node.append(self.copy_node(item))
+            retnode.append(item_node)
+        return retnode
+        
         
     #################################################################
     # Finds all the children of the parse tree and returns them as a list
@@ -207,7 +236,8 @@ class PcfgClass:
             #Takes care of the incrementing if there are children
             if numReplacements > (pt[1]+1):
                 #Return the child
-                ret_list.append(copy.deepcopy(pt))
+                #ret_list.append(copy.deepcopy(pt))
+                ret_list.append(self.copy_node(pt))
                 ret_list[0][1] = pt[1] + 1
                 
             #Now take care of the expansion
@@ -215,7 +245,8 @@ class PcfgClass:
                 new_expansion = []
                 for x in self.grammar[pt[0]]['replacements'][pt[1]]['pos']:
                     new_expansion.append([x,0,[]])
-                ret_list.append(copy.deepcopy(pt))
+                #ret_list.append(copy.deepcopy(pt))
+                ret_list.append(self.copy_node(pt))
                 ret_list[-1][2] = new_expansion
         ###-----Next check to see if there are any nodes to the right that need to be checked
         ###-----This happens if the node is a pre-terminal that has already been expanded
@@ -225,7 +256,8 @@ class PcfgClass:
                 temp_list = self.find_children(pt[2][x])
                 #If there were any children, append them to the main list
                 for y in temp_list:
-                    ret_list.append(copy.deepcopy(pt))
+                    #ret_list.append(copy.deepcopy(pt))
+                    ret_list.append(self.copy_node(pt))
                     ret_list[-1][2][x] = y
         
         return ret_list
@@ -239,7 +271,8 @@ class PcfgClass:
         if len(pt[2])==0:
             #Check the curnode if is at least one other parent
             if pt[1] != 0:     
-                ret_list.append(copy.deepcopy(pt))
+                #ret_list.append(copy.deepcopy(pt))
+                ret_list.append(self.copy_node(pt))
                 ret_list[0][1] = pt[1] - 1
         else:
             ###---Used to tell if we need to include the non-expanded parse tree as a parent
@@ -252,12 +285,14 @@ class PcfgClass:
                 #If there were any parents, append them to the main list
                 if len(temp_list) != 0:
                     for y in temp_list:
-                        tempValue = copy.deepcopy(pt)
+                        #tempValue = copy.deepcopy(pt)
+                        tempValue = self.copy_node(pt)
                         tempValue[2][x] = y
                         ret_list.append(tempValue)
             ###--If there were no parents from the expanded parse tree add the non-expanded version as a parent
             if parent_size == len(ret_list):
-                ret_list.append(copy.deepcopy(pt))
+                #ret_list.append(copy.deepcopy(pt))
+                ret_list.append(self.copy_node(pt))
                 ret_list[0][2] = []
                             
         return ret_list
