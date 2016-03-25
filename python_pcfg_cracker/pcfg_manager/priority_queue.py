@@ -111,7 +111,7 @@ class PcfgQueue:
             print("Could not find starting position for the pcfg")
             return RetType.GRAMMAR_ERROR
         
-        q_item = QueueItem(is_terminal=False, probability = 1.0, parse_tree = [index,0,[]])
+        q_item = QueueItem(is_terminal=False, probability = pcfg.find_probability([index,0,[]]), parse_tree = [index,0,[]])
         heapq.heappush(self.p_queue,q_item)
         
         return RetType.STATUS_OK
@@ -202,27 +202,12 @@ class PcfgQueue:
         ##--Else check to see if we need to push this items children into the queue--##
         else:
             children_list = pcfg.find_children(q_item.parse_tree)
-            #my_children_list = self.lazy_find_my_children(pcfg,q_item,children_list)
             my_children_list = self.find_my_children(pcfg,q_item,children_list)
             ret_list = []
             for child in my_children_list:
                 ret_list.append(QueueItem(is_terminal = pcfg.find_is_terminal(child), probability = pcfg.find_probability(child), parse_tree = child))
             return ret_list
      
-    #####################################################################
-    # Given a list of children, find all the children who this parent should
-    # insert into the list for rebuilding the queue
-    # Note, this is a lazy insert since the parent is determined by position in
-    # the child's parent list vs the lowest probability parent
-    #####################################################################
-    def lazy_find_my_children(self,pcfg,q_item,children_list):
-        my_children = []
-        for child in children_list:
-            parent_list = pcfg.findMyParents(child)
-            if parent_list[0] == q_item.parse_tree:
-                my_children.append(child)
-        return my_children
-
 
     ###########################################################################
     # Given a list of children, find all the children who this parent should
@@ -304,17 +289,20 @@ class PcfgQueue:
     # TODO: There is a *TON* of optimization I can do in the current version of this "next" function
     ##################################################################################################################################################
     def deadbeat_dad(self,pcfg, queue_item):
+        
+        my_children_list = pcfg.deadbeat_dad(queue_item.parse_tree, parent_prob = queue_item.probability)
+        
         ##--First find all the potential children
-        children_list = pcfg.find_children(queue_item.parse_tree)
+        #children_list = pcfg.find_children(queue_item.parse_tree)
 
         ##--Now find the children this node is responsible for
-        my_children_list = self.find_my_children(pcfg,queue_item,children_list)
+        #my_children_list = self.find_my_children(pcfg,queue_item,children_list)
 
         ##--Create the actual QueueItem for each child and insert it in the Priority Queue
         for child in my_children_list:
             child_node = QueueItem(is_terminal = pcfg.find_is_terminal(child), probability = pcfg.find_probability(child), parse_tree = child)
             if child_node.probability <= queue_item.probability:
-                ##--Memory management chck---------
+                ##--Memory management check---------
                 ##--If the probability of the child node is too low don't bother to insert it in the queue
                 if child_node.probability >= self.min_probability:
                     heapq.heappush(self.p_queue,child_node)
