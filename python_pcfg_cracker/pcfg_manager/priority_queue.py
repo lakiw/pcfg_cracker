@@ -291,12 +291,6 @@ class PcfgQueue:
     def deadbeat_dad(self,pcfg, queue_item):
         
         my_children_list = pcfg.deadbeat_dad(queue_item.parse_tree, parent_prob = queue_item.probability)
-        
-        ##--First find all the potential children
-        #children_list = pcfg.find_children(queue_item.parse_tree)
-
-        ##--Now find the children this node is responsible for
-        #my_children_list = self.find_my_children(pcfg,queue_item,children_list)
 
         ##--Create the actual QueueItem for each child and insert it in the Priority Queue
         for child in my_children_list:
@@ -308,34 +302,6 @@ class PcfgQueue:
                     heapq.heappush(self.p_queue,child_node)
             else:
                 print("Hmmm, trying to push a parent and not a child on the list", file=sys.stderr)
-        
-    #####################################################################
-    # Given a list of children, find all the children who do not have
-    # parents of a lower priority than the current node
-    # Returns the children as a list
-    #####################################################################
-    def find_my_children(self,pcfg,q_item,children_list):
-        my_children = []
-        for child in children_list:
-            parent_list = pcfg.findMyParents(child)
-            is_my_child = True
-            for parent in parent_list:
-                ##--First check to make sure the other parent isn't this node
-                if parent != q_item.parse_tree:
-                    ##--If there is another parent that will take care of the child node
-                    if pcfg.find_probability(parent) < q_item.probability:
-                        is_my_child = False
-                        break
-                    ##--Need to make sure only one parent pushes the child in if there are multiple parents of same probability
-                    ##--Currently just cheating and using the python compare operator
-                    elif pcfg.find_probability(parent) == q_item.probability:
-                        if parent < q_item.parse_tree:
-                            is_my_child = False
-                            break
-                        
-            if is_my_child:
-                my_children.append(child)
-        return my_children
                 
             
 ###################################################################
