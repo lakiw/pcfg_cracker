@@ -225,9 +225,36 @@ class PcfgClass:
             retnode.append(item_node)
         return retnode
         
+    
+    ##################################################################################################
+    # Prints out the parse tree in a human readable fashion
+    # Used for debugging but may end up using this for status prints as well
+    ##################################################################################################
+    def print_parse_tree(self,pt=[]):
+        ret_string = ''
+        if len(pt[2])==0:
+            ret_string += self.grammar[pt[0]]['name']
+            ret_string += "[" + str(pt[1] + 1) + " of " + str(len(self.grammar[pt[0]]['replacements'])) + "]"
+            if self.grammar[pt[0]]['replacements'][pt[1]]['is_terminal'] == True:
+                ret_string += "->terminal"
+            else:
+                ret_string += "->incomplete"
+        else:
+            ret_string += self.grammar[pt[0]]['name'] 
+            ret_string += "[" + str(pt[1] + 1) + " of " + str(len(self.grammar[pt[0]]['replacements'])) + "]"
+            ret_string += "-> ("
+            for x in range(0,len(pt[2])):
+                ret_string += self.print_parse_tree(pt[2][x])
+                if x != len(pt[2])-1:
+                    ret_string +=" , "
+            ret_string += ")"
         
+        return ret_string
+        
+    
     #################################################################
     # Finds all the children of the parse tree and returns them as a list
+    # Not currently being used by anything but it's nice functionality to have
     #################################################################
     def find_children(self,pt):
         #basically we want to increment one step if possible
@@ -267,6 +294,7 @@ class PcfgClass:
 
     ######################################################################
     # Returns a list of all the parents for a child node / parse-tree
+    # Not currently being used by anything but it's nice functionality to 
     ######################################################################    
     def findMyParents(self,pt):
         ret_list = []
@@ -316,15 +344,13 @@ class PcfgClass:
     # that will appear later. I know the name is unfortunate, but it really sums up the approach.
     # Basically we're trading computation time for memory. Keeping the queue small though saves computation time too though so
     # in longer runs this approach should be a clear winner compared to the original next function
+    # In the case of a tie where two parents have the same probability, the "leftmost" parent on the parse tree is chosen.
     ################################################################################################################################################
-    def deadbeat_dad(self,pt=[], parent_prob = None):
-        ##--Update the probability of the parent if it was not passed in
-        if parent_prob == None:
-            parent_prob = self.find_probability(pt)
+    def deadbeat_dad(self,pt=[]):
         
         ##-- The list of all children to return
         my_children_list = []
-        ret_value = self.find_children_dd(pt,pt,parent_prob, my_children_list)
+        ret_value = self.find_children_dd(pt,pt, my_children_list)
         return my_children_list
         
     ###################################################################################################################################################
@@ -334,7 +360,7 @@ class PcfgClass:
     # --parent_prob is the probability of the parent
     # --my_children_list is a list of all the children for this parent
     ###################################################################################################################################################    
-    def find_children_dd(self, cur_node, parent, parent_prob, my_children_list):
+    def find_children_dd(self, cur_node, parent, my_children_list):
         #basically we want to increment one step if possible
         
         ##--Only increment and expand if the transition options are blank, aka (x,y,[]) vs (x,y,[some values])
@@ -343,9 +369,10 @@ class PcfgClass:
             #Takes care of the incrementing if there are children
             if numReplacements > (cur_node[1]+1):
                 #There is a potential child, check to see if its parent is the current parent
+                parent_prob_diff = self.grammar[cur_node[0]]['replacements'][cur_node[1]]['prob'] - self.grammar[cur_node[0]]['replacements'][cur_node[1] + 1]['prob']
                 cur_node[1] = cur_node[1] + 1
-                childs_parent = []
-                if self.dd_is_my_child(parent,parent_prob, childs_parent):
+                childs_parent = [] 
+                if self.dd_is_my_child(parent,parent_prob_diff, childs_parent):
                     cur_node[1] = cur_node[1] - 1 
                     if parent == childs_parent[0]:
                         cur_node[1] = cur_node[1] + 1
@@ -357,12 +384,15 @@ class PcfgClass:
             #Now take care of the expansion
             if self.grammar[cur_node[0]]['replacements'][0]['is_terminal'] != True:
                 new_expansion = []
+                new_expansion_prob = 1
                 for x in self.grammar[cur_node[0]]['replacements'][cur_node[1]]['pos']:
                     new_expansion.append([x,0,[]])
+                    new_expansion_prob *= self.grammar[x]['replacements'][0]['prob']
                 #There is a potential child, check to see if its parent is the current parent
+                parent_prob_diff = 1 - new_expansion_prob
                 cur_node[2] = new_expansion
                 childs_parent = []
-                if self.dd_is_my_child(parent,parent_prob, childs_parent):
+                if self.dd_is_my_child(parent,parent_prob_diff, childs_parent):
                     cur_node[2] = []
                     if parent == childs_parent[0]:
                         cur_node[2] = new_expansion
@@ -376,7 +406,7 @@ class PcfgClass:
         else:    
             for x in range(0,len(cur_node[2])):
                 #Doing it recursively!
-                temp_list = self.find_children_dd(cur_node[2][x], parent, parent_prob, my_children_list)
+                temp_list = self.find_children_dd(cur_node[2][x], parent, my_children_list)
 
         return True
     
@@ -385,33 +415,20 @@ class PcfgClass:
     # Checks to see if a child's lowest probability parent is equal to the calling_parent_prob
     # Returns the actual child's parent in childs_parent if True
     #################################################################################################
-    def dd_is_my_child(self, child , previous_parent_prob, childs_parent):
-        #parent_list = self.findMyParents(child)
-        #for parent in parent_list:
-        #    current_parent_prob = self.find_probability(parent)
-        #    ##--If there is another parent that will take care of the child node
-        #    if current_parent_prob < previous_parent_prob:
-        #        return False
-        #    elif current_parent_prob == previous_parent_prob:
-        #        if not childs_parent:
-        #            childs_parent.append(parent)
+    def dd_is_my_child(self, child , parent_prob_diff, childs_parent):
 
-        #return True
-        
-        
-        done = False
         cur_parse_tree = [child]
         while cur_parse_tree:
             cur_node = cur_parse_tree.pop(-1)
             if len(cur_node[2])==0:
                 #Check the curnode if is at least one other parent
-                if cur_node[1] != 0:     
+                if cur_node[1] != 0:
+                    other_parent_prob_diff = self.grammar[cur_node[0]]['replacements'][cur_node[1] -1]['prob'] - self.grammar[cur_node[0]]['replacements'][cur_node[1]]['prob']
                     cur_node[1] = cur_node[1] - 1
-                    current_parent_prob = self.find_probability(child)
-                    if current_parent_prob < previous_parent_prob:
+                    if parent_prob_diff < other_parent_prob_diff:
                         cur_node[1] = cur_node[1] + 1
                         return False
-                    elif current_parent_prob == previous_parent_prob:
+                    elif parent_prob_diff == other_parent_prob_diff:
                         if not childs_parent:
                             childs_parent.append(self.copy_node(child))
                     cur_node[1] = cur_node[1] + 1   
@@ -426,13 +443,16 @@ class PcfgClass:
 
                 ###--If there were no parents from the expanded parse tree add the non-expanded version as a parent
                 if empty_list_parent:
+                    new_expansion_prob = 1
+                    for x in cur_node[2]:
+                        new_expansion_prob *= self.grammar[x[0]]['replacements'][0]['prob']
                     prev_replacements = cur_node[2]
                     cur_node[2] = []
-                    current_parent_prob = self.find_probability(child)
-                    if current_parent_prob < previous_parent_prob:
+                    other_parent_prob_diff = 1 - new_expansion_prob
+                    if parent_prob_diff < other_parent_prob_diff:
                         cur_node[2] = prev_replacements
                         return False
-                    elif current_parent_prob == previous_parent_prob:
+                    elif parent_prob_diff == other_parent_prob_diff:
                         if not childs_parent:
                             childs_parent.append(self.copy_node(child))
                     cur_node[2] = prev_replacements         
@@ -440,30 +460,7 @@ class PcfgClass:
         return True
     
     
-    ##################################################################################################
-    # Prints out the parse tree in a human readable fashion
-    # Used for debugging but may end up using this for status prints as well
-    ##################################################################################################
-    def print_parse_tree(self,pt=[]):
-        ret_string = ''
-        if len(pt[2])==0:
-            ret_string += self.grammar[pt[0]]['name']
-            ret_string += "[" + str(pt[1] + 1) + " of " + str(len(self.grammar[pt[0]]['replacements'])) + "]"
-            if self.grammar[pt[0]]['replacements'][pt[1]]['is_terminal'] == True:
-                ret_string += "->terminal"
-            else:
-                ret_string += "->incomplete"
-        else:
-            ret_string += self.grammar[pt[0]]['name'] 
-            ret_string += "[" + str(pt[1] + 1) + " of " + str(len(self.grammar[pt[0]]['replacements'])) + "]"
-            ret_string += "-> ("
-            for x in range(0,len(pt[2])):
-                ret_string += self.print_parse_tree(pt[2][x])
-                if x != len(pt[2])-1:
-                    ret_string +=" , "
-            ret_string += ")"
-        
-        return ret_string
+    
                 
 ###################################################################
 # Function I'm using to test how the password guesses are being

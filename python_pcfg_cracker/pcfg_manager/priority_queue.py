@@ -290,13 +290,7 @@ class PcfgQueue:
     ##################################################################################################################################################
     def deadbeat_dad(self,pcfg, queue_item):
         
-        my_children_list = pcfg.deadbeat_dad(queue_item.parse_tree, parent_prob = queue_item.probability)
-        
-        ##--First find all the potential children
-        #children_list = pcfg.find_children(queue_item.parse_tree)
-
-        ##--Now find the children this node is responsible for
-        #my_children_list = self.find_my_children(pcfg,queue_item,children_list)
+        my_children_list = pcfg.deadbeat_dad(queue_item.parse_tree)
 
         ##--Create the actual QueueItem for each child and insert it in the Priority Queue
         for child in my_children_list:
