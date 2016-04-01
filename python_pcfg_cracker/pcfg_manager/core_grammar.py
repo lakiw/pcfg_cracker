@@ -225,7 +225,184 @@ class PcfgClass:
             retnode.append(item_node)
         return retnode
         
+
+    ################################################################################################################################################
+    # Used to return all the children according the the deadbeat dad "next" algorithm
+    # Moving this funcitonality from the priority queue to the core grammar to achive some speed ups and reduce copy instructions
+    #
+    # The deadbead dad "next" algorithm is described in http://diginole.lib.fsu.edu/cgi/viewcontent.cgi?article=5135
+    # In a nutshell, imagine the parse tree as a graph with the 'S' node at top
+    # The original "next" function inserted every child parse through it by incrementing the counter by one to the left
+    # so the node (1,1,1) would have the children (2,1,1), (1,2,1), and (1,1,2).
+    # The child (1,2,1) would only have the children (1,3,1) and (1,2,2) though.
+    # This was to prevent any duplicate entries being pushing into the queue
+    # The problem was this was *very* memory intensive
+    #
+    # The deadbeat dad algorithm instead looks at all the potential parents of *every* child node it could create
+    # If any of those parents have lower probability than the current node, it "abandons" that child for the other parent to take care of it
+    # Only the parent with the lowest probability inserts the child into the queue. That is because that parent knows there are no other parents
+    # that will appear later. I know the name is unfortunate, but it really sums up the approach.
+    # Basically we're trading computation time for memory. Keeping the queue small though saves computation time too though so
+    # in longer runs this approach should be a clear winner compared to the original next function
+    # In the case of a tie where two parents have the same probability, the "leftmost" parent on the parse tree is chosen.
+    ################################################################################################################################################
+    def deadbeat_dad(self,pt=[]):
+        
+        ##-- The list of all children to return
+        my_children_list = []
+        ret_value = self.dd_find_children(pt,pt, my_children_list)
+        return my_children_list
+     
     
+    ###################################################################################################################################################
+    # Recursivly find all the children for a given parent using the deadbeat dad algorithm
+    # --cur_node is the part of the parent we are currently looking at/modifying to find children
+    # --parent is the original parent 
+    # --parent_prob is the probability of the parent
+    # --my_children_list is a list of all the children for this parent
+    ###################################################################################################################################################    
+    def dd_find_children(self, cur_node, this_parent, my_children_list):
+        
+        #########################################################################################################
+        # First check to see if we can increment the current node
+        # --Only increment and expand if the transition options are blank, aka (x,y,[]) vs (x,y,[some values])
+        # --So (1,2,[]) => (1,3,[])
+        # --But if it is (1,2,[[5,0,[]]]) do not increment it
+        #
+        # After that we need to also create children for the expastion
+        # --So (1,2,[]) => (1,2,[[5,0,[]]])
+        #########################################################################################################
+        if len(cur_node[2])==0:
+            numReplacements = len(self.grammar[cur_node[0]]['replacements'])
+            #Takes care of the incrementing if there are children for the current node. Aka(1,2,[]) => (1,3,[])
+            if numReplacements > (cur_node[1]+1):
+                ##--Make this a child node
+                cur_node[1] = cur_node[1] + 1         
+
+                if self.dd_is_my_parent(this_parent, cur_node, is_expansion=False):
+                    my_children_list.append(self.copy_node(this_parent))
+                    
+                ##--Replace the parent's value    
+                cur_node[1] = cur_node[1] - 1
+                
+            #Now take care of the expansion. Aka (1,2,[]) => (1,2,[[5,0,[]]])
+            if self.grammar[cur_node[0]]['replacements'][0]['is_terminal'] != True:
+                #--First fill out the expansion for the new child
+                new_expansion = []
+                for x in self.grammar[cur_node[0]]['replacements'][cur_node[1]]['pos']:
+                    new_expansion.append([x,0,[]])
+                
+                ##--Make this a child node
+                cur_node[2] = new_expansion
+
+                if self.dd_is_my_parent(this_parent, cur_node, is_expansion=True):
+                    my_children_list.append(self.copy_node(this_parent))
+
+                ##--Replace the parent's value 
+                cur_node[2] = []
+                
+        ###-----Next check to see if there are any nodes to the right that need to be checked
+        ###-----This happens if the node is a pre-terminal that has already been expanded
+        ###-----Ex: [5,2,[[1,2,[]],[3,1,[]]]] => [5,2,[[1,3,[]],[3,1,[]]]] + [5,2,[[1,2,[]],[3,2,[]]]] + [5,2,[[1,2,[....]],[3,1,[]]]] + [5,2,[[1,2,[]],[3,1,[....]]]]
+        else:    
+            for x in range(0,len(cur_node[2])):
+                #Doing it recursively!
+                self.dd_find_children(cur_node[2][x], this_parent, my_children_list)
+
+        return True
+    
+    
+    #################################################################################################
+    # Returns true if the calling parent is this child node's lowest probability parent
+    # Ties are determined by the parent that occurs leftmost in the expansion
+    # --child : The child node to check
+    # --orig_parent_node: The node that was changed from the parent to create the child node
+    # --is_expansion: If the child created from an expansion from the orig_parent_node. Aka [5,1,[]] -> [5,1,[[2,0,[]],[3,0,[]]]]
+    #################################################################################################
+    def dd_is_my_parent(self, child, orig_parent_node, is_expansion = False):
+        ##--Didn't want to do this recursivly, so keeping track of which parts of the parse tree haven't been processed in cur_parse_tree
+        cur_parse_tree = [child]
+        
+        ##--Using the min difference between child and parent probability to determine lowest prob parent
+        ##--Setting it to 2 so if a difference is 1 from a transition, (shouldn't happend but weirder things occur with floats), the first instance of it is caught
+        min_diff = 2
+        found_orig_parent = False
+        
+        ##--Walk through all of the transitions for that child
+        while cur_parse_tree:
+            
+            ##--Get the current transition we are looking at
+            cur_node = cur_parse_tree.pop(-1)
+            ##--If there are no expansions to the right of this. Aka it looks like [5,1,[])
+            if len(cur_node[2])==0:
+                #Check to see if there is a parent for this replacement. Aka [5,1,[]] has a parent of [5,0,[]]
+                if cur_node[1] != 0:
+                    parent_prob_diff = self.grammar[cur_node[0]]['replacements'][cur_node[1] -1]['prob'] - self.grammar[cur_node[0]]['replacements'][cur_node[1]]['prob']
+
+                    if parent_prob_diff < min_diff:
+                        if (orig_parent_node == cur_node) and (is_expansion == False):
+                            found_orig_parent = True
+                        elif (found_orig_parent):
+                            return False 
+                        min_diff = parent_prob_diff
+                        
+                    elif (orig_parent_node == cur_node) and (is_expansion == False):
+                        return False
+               
+            else:
+                empty_list_parent = True
+                ##---Now go through the expanded parse tree and see if there are any parents from them
+                ##---Aka [5,1,[[8,2,[]]]] has a parent of [5,1,[[8,1.[]]]]
+                ##---While [5,1,[[8,0,[]]]] parent will be [5,1,[]]
+                for x in range(0,len(cur_node[2])):
+                    if (cur_node[2][x][1] != 0) or (len(cur_node[2][x][2])!=0):
+                        empty_list_parent = False
+                        cur_parse_tree.append(cur_node[2][x])
+
+                ###--If there were no parents from the expanded parse tree check the non-expanded version as a possible parent
+                if empty_list_parent:
+                    new_expansion_prob = 1
+                    for index in range(0, len(cur_node[2])):
+                        new_expansion_prob *= self.grammar[cur_node[2][index][0]]['replacements'][0]['prob']
+
+                    parent_prob_diff = 1 - new_expansion_prob
+                    
+                    if parent_prob_diff < min_diff:
+                        if (orig_parent_node == cur_node) and (is_expansion == True):
+                            found_orig_parent = True
+                        elif (found_orig_parent):
+                            return False   
+                        min_diff = parent_prob_diff
+                        
+                    elif (orig_parent_node == cur_node) and (is_expansion == True):
+                        return False
+
+        
+        return True
+    
+    #=================================================================================================================================================#
+    # The following functoins are not currently being used but I'm keeping them around since they may be useful in the future for
+    # debugging or development
+    #=================================================================================================================================================#
+
+    ####################################################################################################################################################
+    # Compares two parse trees and sees if they are the same
+    # If they are the same returns True
+    # If they are not, returns False
+    ####################################################################################################################################################
+    def cmp_parse_trees(self, node1, node2):
+        if node1[0] != node2[0]:
+            return False
+        if node1[1] != node2[1]:
+            return False
+        if len(node1[2]) != len(node2[2]):
+            return False
+        for index in range(0,len(node1[2])):
+            if not self.cmp_parse_trees(node1[2][index],node2[2][index]):
+                return False
+        return True
+     
+     
     ##################################################################################################
     # Prints out the parse tree in a human readable fashion
     # Used for debugging but may end up using this for status prints as well
@@ -325,151 +502,6 @@ class PcfgClass:
                             
         return ret_list
     
-
-    ################################################################################################################################################
-    # Used to return all the children according the the deadbeat dad "next" algorithm
-    # Moving this funcitonality from the priority queue to the core grammar to achive some speed ups and reduce copy instructions
-    #
-    # The deadbead dad "next" algorithm is described in http://diginole.lib.fsu.edu/cgi/viewcontent.cgi?article=5135
-    # In a nutshell, imagine the parse tree as a graph with the 'S' node at top
-    # The original "next" function inserted every child parse through it by incrementing the counter by one to the left
-    # so the node (1,1,1) would have the children (2,1,1), (1,2,1), and (1,1,2).
-    # The child (1,2,1) would only have the children (1,3,1) and (1,2,2) though.
-    # This was to prevent any duplicate entries being pushing into the queue
-    # The problem was this was *very* memory intensive
-    #
-    # The deadbeat dad algorithm instead looks at all the potential parents of *every* child node it could create
-    # If any of those parents have lower probability than the current node, it "abandons" that child for the other parent to take care of it
-    # Only the parent with the lowest probability inserts the child into the queue. That is because that parent knows there are no other parents
-    # that will appear later. I know the name is unfortunate, but it really sums up the approach.
-    # Basically we're trading computation time for memory. Keeping the queue small though saves computation time too though so
-    # in longer runs this approach should be a clear winner compared to the original next function
-    # In the case of a tie where two parents have the same probability, the "leftmost" parent on the parse tree is chosen.
-    ################################################################################################################################################
-    def deadbeat_dad(self,pt=[]):
-        
-        ##-- The list of all children to return
-        my_children_list = []
-        ret_value = self.find_children_dd(pt,pt, my_children_list)
-        return my_children_list
-        
-    ###################################################################################################################################################
-    # Recursivly find all the children for a given parent using the deadbeat dad algorithm
-    # --cur_node is the part of the parent we are currently looking at/modifying to find children
-    # --parent is the original parent 
-    # --parent_prob is the probability of the parent
-    # --my_children_list is a list of all the children for this parent
-    ###################################################################################################################################################    
-    def find_children_dd(self, cur_node, parent, my_children_list):
-        #basically we want to increment one step if possible
-        
-        ##--Only increment and expand if the transition options are blank, aka (x,y,[]) vs (x,y,[some values])
-        if len(cur_node[2])==0:
-            numReplacements = len(self.grammar[cur_node[0]]['replacements'])
-            #Takes care of the incrementing if there are children
-            if numReplacements > (cur_node[1]+1):
-                #There is a potential child, check to see if its parent is the current parent
-                parent_prob_diff = self.grammar[cur_node[0]]['replacements'][cur_node[1]]['prob'] - self.grammar[cur_node[0]]['replacements'][cur_node[1] + 1]['prob']
-                cur_node[1] = cur_node[1] + 1
-                childs_parent = [] 
-                if self.dd_is_my_child(parent,parent_prob_diff, childs_parent):
-                    cur_node[1] = cur_node[1] - 1 
-                    if parent == childs_parent[0]:
-                        cur_node[1] = cur_node[1] + 1
-                        my_children_list.append(self.copy_node(parent))
-                        cur_node[1] = cur_node[1] - 1
-                else:
-                    cur_node[1] = cur_node[1] - 1
-                    
-            #Now take care of the expansion
-            if self.grammar[cur_node[0]]['replacements'][0]['is_terminal'] != True:
-                new_expansion = []
-                new_expansion_prob = 1
-                for x in self.grammar[cur_node[0]]['replacements'][cur_node[1]]['pos']:
-                    new_expansion.append([x,0,[]])
-                    new_expansion_prob *= self.grammar[x]['replacements'][0]['prob']
-                #There is a potential child, check to see if its parent is the current parent
-                parent_prob_diff = 1 - new_expansion_prob
-                cur_node[2] = new_expansion
-                childs_parent = []
-                if self.dd_is_my_child(parent,parent_prob_diff, childs_parent):
-                    cur_node[2] = []
-                    if parent == childs_parent[0]:
-                        cur_node[2] = new_expansion
-                        my_children_list.append(self.copy_node(parent))
-                        cur_node[2] = []
-                else:
-                    cur_node[2] = []
-
-        ###-----Next check to see if there are any nodes to the right that need to be checked
-        ###-----This happens if the node is a pre-terminal that has already been expanded
-        else:    
-            for x in range(0,len(cur_node[2])):
-                #Doing it recursively!
-                temp_list = self.find_children_dd(cur_node[2][x], parent, my_children_list)
-
-        return True
-    
-    
-    #################################################################################################
-    # Checks to see if a child's lowest probability parent is equal to the calling_parent_prob
-    # Returns the actual child's parent in childs_parent if True
-    #################################################################################################
-    def dd_is_my_child(self, child , parent_prob_diff, childs_parent):
-
-        cur_parse_tree = [child]
-        while cur_parse_tree:
-            cur_node = cur_parse_tree.pop(-1)
-            if len(cur_node[2])==0:
-                #Check the curnode if is at least one other parent
-                if cur_node[1] != 0:
-                    other_parent_prob_diff = self.grammar[cur_node[0]]['replacements'][cur_node[1] -1]['prob'] - self.grammar[cur_node[0]]['replacements'][cur_node[1]]['prob']
-                    cur_node[1] = cur_node[1] - 1
-                    if parent_prob_diff < other_parent_prob_diff:
-                        cur_node[1] = cur_node[1] + 1
-                        return False
-                    elif parent_prob_diff == other_parent_prob_diff:
-                        if not childs_parent:
-                            childs_parent.append(self.copy_node(child))
-                    cur_node[1] = cur_node[1] + 1   
-                
-            else:
-                empty_list_parent = True
-                ##---Now go through the expanded parse tree and see if there are any parents from them
-                for x in range(0,len(cur_node[2])):
-                    if cur_node[2][x][1] != 0:
-                        empty_list_parent = False
-                    cur_parse_tree.append(cur_node[2][x])
-
-                ###--If there were no parents from the expanded parse tree add the non-expanded version as a parent
-                if empty_list_parent:
-                    new_expansion_prob = 1
-                    for x in cur_node[2]:
-                        new_expansion_prob *= self.grammar[x[0]]['replacements'][0]['prob']
-                    prev_replacements = cur_node[2]
-                    cur_node[2] = []
-                    other_parent_prob_diff = 1 - new_expansion_prob
-                    if parent_prob_diff < other_parent_prob_diff:
-                        cur_node[2] = prev_replacements
-                        return False
-                    elif parent_prob_diff == other_parent_prob_diff:
-                        if not childs_parent:
-                            childs_parent.append(self.copy_node(child))
-                    cur_node[2] = prev_replacements         
-                            
-        return True
-    
-    
-    
-                
-###################################################################
-# Function I'm using to test how the password guesses are being
-# generated from a pre-terminal structure and the PCFG grammar
-####################################################################                
-def test_grammar(g_vars,c_vars,pcfg):
-    pcfg.list_terminals(s_pre_terminal)
-    
-
     
 #####################################################################
 # Debug human readable output of the grammar
