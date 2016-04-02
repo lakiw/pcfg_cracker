@@ -199,6 +199,7 @@ def main():
     #ret_value = test_queue(pcfg)
     #ret_value = test_grammar(pcfg)
    
+    print ("Final number of Pre Terminals: " + str (num_preterminals),file=sys.stderr)
     
     return RetType.STATUS_OK
     
