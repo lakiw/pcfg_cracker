@@ -34,8 +34,14 @@
 #
 #########################################################################################
 
-
+##--Including this to print error message if python < 3.0 is used
+from __future__ import print_function
 import sys
+###--Check for python3 and error out if not--##
+if sys.version_info[0] < 3:
+    print("This program requires Python 3.x", file=sys.stderr)
+    sys.exit(1)
+    
 import argparse
 import time
 import os  ##--Used for file path information

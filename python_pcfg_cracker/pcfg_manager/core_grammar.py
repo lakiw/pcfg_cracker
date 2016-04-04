@@ -280,7 +280,7 @@ class PcfgClass:
                 cur_node[1] = cur_node[1] + 1   
                 ##--An id to identify the calling node as the parent                
                 cur_node.append(True) 
-                if self.dd_is_my_parent(this_parent, cur_node, is_expansion=False):
+                if self.dd_is_my_parent(this_parent, is_expansion=False):
                     ##--Remove the id  
                     del cur_node[3]
                     my_children_list.append(self.copy_node(this_parent))
@@ -303,7 +303,7 @@ class PcfgClass:
                 ##--An id to identify the calling node as the parent                
                 cur_node.append(True) 
                 
-                if self.dd_is_my_parent(this_parent, cur_node, is_expansion=True):
+                if self.dd_is_my_parent(this_parent, is_expansion=True):
                     ##--Remove the id  
                     del cur_node[3]
                     my_children_list.append(self.copy_node(this_parent))
@@ -330,10 +330,9 @@ class PcfgClass:
     # Returns true if the calling parent is this child node's lowest probability parent
     # Ties are determined by the parent that occurs leftmost in the expansion
     # --child : The child node to check
-    # --orig_parent_node: The node that was changed from the parent to create the child node
     # --is_expansion: If the child created from an expansion from the orig_parent_node. Aka [5,1,[]] -> [5,1,[[2,0,[]],[3,0,[]]]]
     #################################################################################################
-    def dd_is_my_parent(self, child, orig_parent_node, is_expansion = False, index = [0]):
+    def dd_is_my_parent(self, child, is_expansion = False, index = [0]):
         ##--Didn't want to do this recursivly, so keeping track of which parts of the parse tree haven't been processed in cur_parse_tree
         cur_parse_tree = [child]
         new_index = 0
@@ -360,7 +359,7 @@ class PcfgClass:
                         elif (found_orig_parent):
                             return False 
                         min_diff = parent_prob_diff
-                        
+                    ##--The current node is the calling parent but isn't the lowest probability parent    
                     elif (len(cur_node)==4)  and (is_expansion == False):
                         return False
                
