@@ -219,7 +219,7 @@ def main():
             queue_item = queue_item_list[0]
         p_queue_stop_time = time.perf_counter() - p_queue_start_time
     #ret_value = test_queue(pcfg)
-    print_grammar(pcfg.grammar)
+    #print_grammar(pcfg.grammar)
     print ("Final number of Pre Terminals: " + str (num_preterminals),file=sys.stderr)
     return RetType.STATUS_OK
     
