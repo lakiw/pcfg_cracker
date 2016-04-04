@@ -277,13 +277,19 @@ class PcfgClass:
             #Takes care of the incrementing if there are children for the current node. Aka(1,2,[]) => (1,3,[])
             if numReplacements > (cur_node[1]+1):
                 ##--Make this a child node
-                cur_node[1] = cur_node[1] + 1         
-
+                cur_node[1] = cur_node[1] + 1   
+                ##--An id to identify the calling node as the parent                
+                cur_node.append(True) 
                 if self.dd_is_my_parent(this_parent, cur_node, is_expansion=False):
+                    ##--Remove the id  
+                    del cur_node[3]
                     my_children_list.append(self.copy_node(this_parent))
-                    
+                else:
+                    ##--Remove the id  
+                    del cur_node[3]
                 ##--Replace the parent's value    
                 cur_node[1] = cur_node[1] - 1
+
                 
             #Now take care of the expansion. Aka (1,2,[]) => (1,2,[[5,0,[]]])
             if self.grammar[cur_node[0]]['replacements'][0]['is_terminal'] != True:
@@ -294,12 +300,20 @@ class PcfgClass:
                 
                 ##--Make this a child node
                 cur_node[2] = new_expansion
-
+                ##--An id to identify the calling node as the parent                
+                cur_node.append(True) 
+                
                 if self.dd_is_my_parent(this_parent, cur_node, is_expansion=True):
+                    ##--Remove the id  
+                    del cur_node[3]
                     my_children_list.append(self.copy_node(this_parent))
-
+                else:
+                    ##--Remove the id  
+                    del cur_node[3]
+                    
                 ##--Replace the parent's value 
                 cur_node[2] = []
+                
                 
         ###-----Next check to see if there are any nodes to the right that need to be checked
         ###-----This happens if the node is a pre-terminal that has already been expanded
@@ -319,10 +333,10 @@ class PcfgClass:
     # --orig_parent_node: The node that was changed from the parent to create the child node
     # --is_expansion: If the child created from an expansion from the orig_parent_node. Aka [5,1,[]] -> [5,1,[[2,0,[]],[3,0,[]]]]
     #################################################################################################
-    def dd_is_my_parent(self, child, orig_parent_node, is_expansion = False):
+    def dd_is_my_parent(self, child, orig_parent_node, is_expansion = False, index = [0]):
         ##--Didn't want to do this recursivly, so keeping track of which parts of the parse tree haven't been processed in cur_parse_tree
         cur_parse_tree = [child]
-        
+        new_index = 0
         ##--Using the min difference between child and parent probability to determine lowest prob parent
         ##--Setting it to 2 so if a difference is 1 from a transition, (shouldn't happend but weirder things occur with floats), the first instance of it is caught
         min_diff = 2
@@ -340,13 +354,14 @@ class PcfgClass:
                     parent_prob_diff = self.grammar[cur_node[0]]['replacements'][cur_node[1] -1]['prob'] - self.grammar[cur_node[0]]['replacements'][cur_node[1]]['prob']
 
                     if parent_prob_diff < min_diff:
-                        if (orig_parent_node == cur_node) and (is_expansion == False):
+                        ##--If len(cur_node) == 4, then this was the parent node that called this function
+                        if (len(cur_node)==4) and (is_expansion == False):
                             found_orig_parent = True
                         elif (found_orig_parent):
                             return False 
                         min_diff = parent_prob_diff
                         
-                    elif (orig_parent_node == cur_node) and (is_expansion == False):
+                    elif (len(cur_node)==4)  and (is_expansion == False):
                         return False
                
             else:
@@ -368,16 +383,16 @@ class PcfgClass:
                     parent_prob_diff = 1 - new_expansion_prob
                     
                     if parent_prob_diff < min_diff:
-                        if (orig_parent_node == cur_node) and (is_expansion == True):
+                        if (len(cur_node)==4) and (is_expansion == True):
                             found_orig_parent = True
                         elif (found_orig_parent):
                             return False   
                         min_diff = parent_prob_diff
                         
-                    elif (orig_parent_node == cur_node) and (is_expansion == True):
+                    elif (len(cur_node)==4) and (is_expansion == True):
                         return False
 
-        
+            new_index = new_index + 1
         return True
     
     #=================================================================================================================================================#
