@@ -43,7 +43,7 @@ import os  ##--Used for file path information
 
 #Custom modules
 from pcfg_manager.file_io import load_grammar
-from pcfg_manager.core_grammar import PcfgClass
+from pcfg_manager.core_grammar import PcfgClass, print_grammar
 from pcfg_manager.priority_queue import PcfgQueue, QueueItem, test_queue
 from pcfg_manager.ret_types import RetType
 
@@ -213,7 +213,7 @@ def main():
             queue_item = queue_item_list[0]
         p_queue_stop_time = time.perf_counter() - p_queue_start_time
     #ret_value = test_queue(pcfg)
-   
+    print_grammar(pcfg.grammar)
     print ("Final number of Pre Terminals: " + str (num_preterminals),file=sys.stderr)
     return RetType.STATUS_OK
     
