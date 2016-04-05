@@ -186,7 +186,7 @@ def main():
     guess_stop_time = 0
     total_time_start = time.perf_counter()
     while ret_value == RetType.STATUS_OK:
-        print(str(queue_item.probability) + " : " + str(queue_item.parse_tree))
+        #print(str(queue_item.probability) + " : " + str(queue_item.parse_tree))
         num_preterminals = num_preterminals +1
         guess_start_time = time.perf_counter()
         num_guesses = num_guesses + len(pcfg.list_terminals(queue_item.parse_tree))
@@ -220,7 +220,7 @@ def main():
         p_queue_stop_time = time.perf_counter() - p_queue_start_time
     #ret_value = test_queue(pcfg)
     #print_grammar(pcfg.grammar)
-    print ("Final number of Pre Terminals: " + str (num_preterminals),file=sys.stderr)
+    #print ("Final number of Pre Terminals: " + str (num_preterminals),file=sys.stderr)
     return RetType.STATUS_OK
     
 
