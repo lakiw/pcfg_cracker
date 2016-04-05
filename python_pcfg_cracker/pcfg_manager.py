@@ -34,15 +34,22 @@
 #
 #########################################################################################
 
-
+##--Including this to print error message if python < 3.0 is used
+from __future__ import print_function
 import sys
+###--Check for python3 and error out if not--##
+if sys.version_info[0] < 3:
+    print("This program requires Python 3.x", file=sys.stderr)
+    sys.exit(1)
+    
 import argparse
 import time
 import os  ##--Used for file path information
 
+
 #Custom modules
 from pcfg_manager.file_io import load_grammar
-from pcfg_manager.core_grammar import PcfgClass, test_grammar
+from pcfg_manager.core_grammar import PcfgClass, print_grammar
 from pcfg_manager.priority_queue import PcfgQueue, QueueItem, test_queue
 from pcfg_manager.ret_types import RetType
 
@@ -165,7 +172,7 @@ def main():
     guess_stop_time = 0
     total_time_start = time.perf_counter()
     while ret_value == RetType.STATUS_OK:
-#        print(str(queue_item.probability) + " : " + str(queue_item.parse_tree))
+        #print(str(queue_item.probability) + " : " + str(queue_item.parse_tree))
         num_preterminals = num_preterminals +1
         guess_start_time = time.perf_counter()
         num_guesses = num_guesses + len(pcfg.list_terminals(queue_item.parse_tree))
@@ -173,15 +180,16 @@ def main():
         guess_stop_time = time.perf_counter() - guess_start_time
         if command_line_results.queue_info == True:
             if num_preterminals % 1000 == 0:
-                print ("PQueue:" + str(len(p_queue.p_queue)))
-                print ("Total number of Pre Terminals: " + str (num_preterminals))
-                print ("PQueueTime " + str(p_queue_stop_time))
-                print ("Guesses:" + str(num_guesses))
-                print ("GuessTime " + str(guess_stop_time))
-                print ("Average num of guesses per preterm: " + str(num_guesses // num_preterminals))
-                print ("Total Time " + str(time.perf_counter() - total_time_start))
-                print ("Number of guesses a second: " + str(num_guesses // (time.perf_counter() - total_time_start)))
-                print ("Current probability: " + str(p_queue.max_probability))
+                print ("PQueue:" + str(len(p_queue.p_queue)),file=sys.stderr)
+                print ("Total number of Pre Terminals: " + str (num_preterminals),file=sys.stderr)
+                print ("PQueueTime " + str(p_queue_stop_time),file=sys.stderr)
+                print ("Guesses:" + str(num_guesses),file=sys.stderr)
+                print ("GuessTime " + str(guess_stop_time),file=sys.stderr)
+                print ("Average num of guesses per preterm: " + str(num_guesses // num_preterminals),file=sys.stderr)
+                print ("Total Time " + str(time.perf_counter() - total_time_start),file=sys.stderr)
+                print ("Number of guesses a second: " + str(num_guesses // (time.perf_counter() - total_time_start)),file=sys.stderr)
+                print ("Current probability: " + str(p_queue.max_probability),file=sys.stderr)
+                #print ("Parse Tree : " + str(queue_item.parse_tree))
                 print ()
 
         else:
@@ -196,11 +204,7 @@ def main():
         if len(queue_item_list) > 0:
             queue_item = queue_item_list[0]
         p_queue_stop_time = time.perf_counter() - p_queue_start_time
-    #ret_value = test_queue(pcfg)
-    #ret_value = test_grammar(pcfg)
-   
-    print ("Final number of Pre Terminals: " + str (num_preterminals),file=sys.stderr)
-    
+
     return RetType.STATUS_OK
     
 

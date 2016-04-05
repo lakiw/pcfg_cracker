@@ -157,6 +157,10 @@ class PcfgQueue:
     ###############################################################################
     def rebuild_queue(self,pcfg):
         print("Rebuilding p_queue", file=sys.stderr)
+        print("This part is horribly slow and probably buggy", file=sys.stderr)
+        print("It is on my to-do list to redo this functionality before moving from alpha to beta build of this program", file=sys.stderr)
+        print("Until then, you can delay this function being called by modifying the max_queue_size in priority_queue.py", file=sys.stderr)
+        print("--Matt", file=sys.stderr)
         self.p_queue = []
         rebuild_list = []
         self.min_probability = 0.0
@@ -166,7 +170,7 @@ class PcfgQueue:
             print("Could not find starting position for the pcfg")
             return RetType.GRAMMAR_ERROR
             
-        rebuild_list.append(QueueItem(is_terminal=False, probability = 1.0, parse_tree = [index,0,[]]))
+        rebuild_list.append(QueueItem(is_terminal=False, probability =  pcfg.find_probability([index,0,[]]), parse_tree = [index,0,[]]))
         while len(rebuild_list) != 0:
             q_item = rebuild_list.pop(0)
             ret_list = self.rebuild_from_max(pcfg,q_item)
@@ -255,7 +259,7 @@ class PcfgQueue:
             ##--Push the children back on the stack
             ##--Currently using the deadbeat dad algorithm as described in my dissertation
             ##--http://diginole.lib.fsu.edu/cgi/viewcontent.cgi?article=5135
-            self.deadbeat_dad(pcfg, queue_item)
+            self.add_children_to_queue(pcfg, queue_item)
             
             ##--Memory management
             if len(self.p_queue) > self.max_queue_size:
@@ -271,26 +275,15 @@ class PcfgQueue:
         #print(queue_item_list[0].detailed_print(pcfg), file=sys.stderr)
         return RetType.STATUS_OK
 
-    #################################################################################################################################################
-    # The deadbead dad "next" algorithm as described in http://diginole.lib.fsu.edu/cgi/viewcontent.cgi?article=5135
-    # In a nutshell, imagine the parse tree as a graph with the 'S' node at top
-    # The original "next" function inserted every child parse through it by incrementing the counter by one to the left
-    # so the node (1,1,1) would have the children (2,1,1), (1,2,1), and (1,1,2).
-    # The child (1,2,1) would only have the children (1,3,1) and (1,2,2) though.
-    # This was to prevent any duplicate entries being pushing into the queue
-    # The problem was this was *very* memory intensive
-    #
-    # The deadbeat dad algorithm instead looks at all the potential parents of *every* child node it could create
-    # If any of those parents have lower probability than the current node, it "abandons" that child for the other parent to take care of it
-    # Only the parent with the lowest probability inserts the child into the queue. That is because that parent knows there are no other parents
-    # that will appear later. I know the name is unfortunate, but it really sums up the approach.
-    # Basically we're trading computation time for memory. Keeping the queue small though saves computation time too though so
-    # in longer runs this approach should be a clear winner compared to the original next function
-    # TODO: There is a *TON* of optimization I can do in the current version of this "next" function
-    ##################################################################################################################################################
-    def deadbeat_dad(self,pcfg, queue_item):
         
-        my_children_list = pcfg.deadbeat_dad(queue_item.parse_tree, parent_prob = queue_item.probability)
+    #################################################################################################################################################
+    # Adds children to the priority queue
+    # Currently using the deadbeat dad algorithm to determine which children to add
+    # The deadbead dad "next" algorithm as described in http://diginole.lib.fsu.edu/cgi/viewcontent.cgi?article=5135
+    ##################################################################################################################################################
+    def add_children_to_queue(self,pcfg, queue_item):
+        
+        my_children_list = pcfg.deadbeat_dad(queue_item.parse_tree)
 
         ##--Create the actual QueueItem for each child and insert it in the Priority Queue
         for child in my_children_list:
@@ -302,7 +295,7 @@ class PcfgQueue:
                     heapq.heappush(self.p_queue,child_node)
             else:
                 print("Hmmm, trying to push a parent and not a child on the list", file=sys.stderr)
-                
+
             
 ###################################################################
 # Random Test Function
