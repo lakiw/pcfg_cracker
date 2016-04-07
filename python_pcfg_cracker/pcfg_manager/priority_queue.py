@@ -106,48 +106,66 @@ class PcfgQueue:
     # This will likely be 'START' unless you are constructing your PCFG some other way
     #############################################################################
     def initialize(self, pcfg):
+        
+        ##--Find the START index into the grammar--##
         index = pcfg.start_index()
         if index == -1:
-            print("Could not find starting position for the pcfg")
+            print("Could not find starting position for the pcfg", file=sys.stderr)
             return RetType.GRAMMAR_ERROR
         
+        ##--Push the very first item into the queue--##
         q_item = QueueItem(is_terminal=False, probability = pcfg.find_probability([index,0,[]]), parse_tree = [index,0,[]])
         heapq.heappush(self.p_queue,q_item)
         
         return RetType.STATUS_OK
  
     ###############################################################################
-    # Memory managment function to reduce the size of the priority queue
-    # This is *hugely* wasteful right now. On my todo list is to modify the
-    # p_queue code to allow easier deletion of low priority items
+    # Memory managment function to reduce the size of the priority queue by
+    # deleting the last 1/2 ish of the priority queue
+    # It's not an exact number since if multiple items have the same probability
+    # and those items fall in the middle of the priority queue then it will save
+    # all of them.
+    # Aka if the list looks like [0,1,2,3,3,3,7], it will save [0,1,2,3,3,3]
+    # If the list looked like [0,1,2,3,4,5,6,7] it will save [0,1,2,3]
+    # There is an edge case where no items will be deleted if they all are the same probabilities
     ###############################################################################
     def trim_queue(self):
-        keep_list = []
+        ##--First sort the queue so we can easily delete the least probable items--##
+        ##--Aka turn it from a heap into a sorted list, since heap pops are somewhat expensive--##
+        self.p_queue.sort()
+        
+        ##--Save the size information about the list
         orig_size = len(self.p_queue)
         
-        ##---Pop the top 1/2 of the priority queue off and save it ---##
-        #for index in range(0,(self.max_queue_size//2)):
-        for index in range(0,self.max_queue_size-self.reduction_size):
-            item = heapq.heappop(self.p_queue)
-            heapq.heappush(keep_list,item)
-            #if index == (self.max_queue_size//2)-1:
-            if index == (self.max_queue_size-self.reduction_size)-1:
-                ###--- Save the probability of the lowest priority item on the new Queue
-                self.min_probability = item.probability
-                print("min prob: " + str(self.min_probability), file=sys.stderr)
-                ###--- Copy all items of similar probabilities over so everything dropped is lower probability
-                item = heapq.heappop(self.p_queue)
-                while item.probability == self.min_probability:
-                    heapq.heappush(keep_list,item)
-                    item = heapq.heappop(self.p_queue)
-                    
-        ##--Now copy the top 1/2 of the priority queue back----##
-        self.p_queue = copy.deepcopy(keep_list)
+        ##--middle represents the point where we are going to cut the list to remove low probability items
+        middle = orig_size//2
+        
+        ##--Assign the min probabilty to the item currently in the middle of the queue--##
+        self.min_probability = self.p_queue[middle].probability
+        print("min prob: " + str(self.min_probability), file=sys.stderr)
+        
+        ##--Now find the middle we want to cut in case multiple items in the current middle share the same probability
+        while (middle < orig_size-1) and (self.p_queue[middle].probability == self.p_queue[middle+1].probability):
+            middle = middle + 1
+            
+        ##--Sanity check for edge case where nothing gets deleted
+        if middle == orig_size - 1:
+            print("Could not trim the priority queue since at least half the items have the same probability", file=sys.stderr)
+            print("Not so much a bug as an edge case I haven't implimented a solution for. Performance is going to be slow until you stop seeing this message --Matt", file=sys.stderr)
+        
+        ##--Now actually delete the entries--##
+        del(self.p_queue[middle+1:])
 
-        ##--The grammar would have to be pretty weird for this sanity check to fail, but it's better to check
-        ##--since weirdness happens
-        if orig_size == len(keep_list):
+        ##--Re-heapify the priority queue
+        heapq.heapify(self.p_queue)
+        
+        ##--This can happen if the queue is full of items all of the same probability
+        if len(self.pqueue) == orig_size:
             return RetType.QUEUE_FULL_ERROR
+        ##--Not an immediate problem but this state will cause issues with resuming sessions. For now report an error state
+        if self.min_probability == self.max_probability:
+            return RetType.QUEUE_FULL_ERROR
+        
         return RetType.STATUS_OK
         
      
@@ -157,84 +175,108 @@ class PcfgQueue:
     ###############################################################################
     def rebuild_queue(self,pcfg):
         print("Rebuilding p_queue", file=sys.stderr)
-        print("This part is horribly slow and probably buggy", file=sys.stderr)
-        print("It is on my to-do list to redo this functionality before moving from alpha to beta build of this program", file=sys.stderr)
-        print("Until then, you can delay this function being called by modifying the max_queue_size in priority_queue.py", file=sys.stderr)
-        print("--Matt", file=sys.stderr)
+        
+        ##--Initialize the values
         self.p_queue = []
-        rebuild_list = []
+        ##--Initially don't bound the minimum probability. We are only bounding the maximum probability
         self.min_probability = 0.0
         
+        ##--Build the first node in the parse tree
         index = pcfg.start_index()
         if index == -1:
             print("Could not find starting position for the pcfg")
             return RetType.GRAMMAR_ERROR
+          
+        current_parse_tree = [index,0,[]]
+        cur_node = current_parse_tree
+        
+        ##--Now go through and actually rebuild the priority queue
+        ret_value = rebuild_queue_from_node(current_parse_tree, cur_node)
+        if ret_value != RetType.STATUS_OK:
+            print("Error rebuilding the priority queue", file=sys.stderr)
+            return ret_value
             
-        rebuild_list.append(QueueItem(is_terminal=False, probability =  pcfg.find_probability([index,0,[]]), parse_tree = [index,0,[]]))
-        while len(rebuild_list) != 0:
-            q_item = rebuild_list.pop(0)
-            ret_list = self.rebuild_from_max(pcfg,q_item)
-            if len(self.p_queue) > self.max_queue_size:
-                print("trimming Queue", file=sys.stderr)
-                self.trim_queue()
-                print("done", file=sys.stderr)
-            for item in ret_list:
-                rebuild_list.append(item)
-                
+        ##--Now re-heapify the priority queue--##    
+        heapq.heapify(self.p_queue)
+        
         print("Done", file=sys.stderr)
         return RetType.STATUS_OK    
         
-    #########################################################################################################
-    # Used for memory management. I probably should rename it. What this function does is
-    # determine whether to insert the item into the p_queue if it is lower probability than max_probability
-    # or returns the item's children if it is higher probability than max_probability    
-    #########################################################################################################
-    def rebuild_from_max(self,pcfg,q_item):
-        ##--If we potentially want to push this into the p_queue
-        if q_item.probability <= self.max_probability:
-            ##--Check to see if any of it's parents should go into the p_queue--##
-            parent_list = pcfg.findMyParents(q_item.parse_tree)
-            for parent in parent_list:
-                ##--The parent will be inserted in the queue so do not insert this child--##
-                if pcfg.find_probability(parent) <=self.max_probability:
-                    return []
-            ##--Insert this item in the p_queue----##
-            if q_item.probability >= self.min_probability:
-                heapq.heappush(self.p_queue,q_item) 
-            return []
-            
-        ##--Else check to see if we need to push this items children into the queue--##
-        else:
-            children_list = pcfg.find_children(q_item.parse_tree)
-            my_children_list = self.find_my_children(pcfg,q_item,children_list)
-            ret_list = []
-            for child in my_children_list:
-                ret_list.append(QueueItem(is_terminal = pcfg.find_is_terminal(child), probability = pcfg.find_probability(child), parse_tree = child))
-            return ret_list
-     
+    
 
-    ###########################################################################
-    # Given a list of children, find all the children who this parent should
-    # insert into the list for rebuilding the queue
-    ###########################################################################
-    def find_my_children(self,pcfg,q_item,children_list):
-        my_children = []
-        ##--Loop through all of the children---##
-        for child in children_list:
-            ##--Grab all of the potential parents for this child
-            parent_list = pcfg.findMyParents(child)
-            prob_list = []
-            for parent in parent_list:
-                prob_list.append((parent,pcfg.find_probability(parent)))
-            parent_index = 0
-            lowest_prob = prob_list[0][1]
-            for index in range(1,len(prob_list)):
-                if prob_list[index][1] < lowest_prob:
-                    parent_index = index
-            
-            if prob_list[parent_index][0] == q_item.parse_tree:
-                my_children.append(child)
-        return my_children
+    ###############################################################################################################
+    # Quick (hopefully) way to go through all the parse trees and insert items that fall between the min and max
+    # allowed probabilities
+    # --Note, this digs a bit more into the core grammar structures than I'd really like, but it fits in better
+    #   here. I may move this around a bit in the future.
+    ###############################################################################################################
+    def rebuild_queue_from_node(current_parse_tree, cur_node):
+        ##--Quick bail out while I write the part below
+        return RetType.STATUS_OK
+        #########################################################################################################
+        # First check to see if we can increment the current node
+        # --Only increment and expand if the transition options are blank, aka (x,y,[]) vs (x,y,[some values])
+        # --So (1,2,[]) => (1,3,[])
+        # --But if it is (1,2,[[5,0,[]]]) do not increment it
+        #
+        # After that we need to also create children for the expastion
+        # --So (1,2,[]) => (1,2,[[5,0,[]]])
+        #########################################################################################################
+        if len(cur_node[2])==0:
+            numReplacements = len(self.grammar[cur_node[0]]['replacements'])
+            #Takes care of the incrementing if there are children for the current node. Aka(1,2,[]) => (1,3,[])
+            if numReplacements > (cur_node[1]+1):
+                ##--Make this a child node
+                cur_node[1] = cur_node[1] + 1   
+                ##--An id to identify the calling node as the parent                
+                cur_node.append(True) 
+                if self.dd_is_my_parent(this_parent, is_expansion=False):
+                    ##--Remove the id  
+                    del cur_node[3]
+                    my_children_list.append(self.copy_node(this_parent))
+                else:
+                    ##--Remove the id  
+                    del cur_node[3]
+                ##--Replace the parent's value    
+                cur_node[1] = cur_node[1] - 1
+
+                
+            #Now take care of the expansion. Aka (1,2,[]) => (1,2,[[5,0,[]]])
+            if self.grammar[cur_node[0]]['replacements'][0]['is_terminal'] != True:
+                #--First fill out the expansion for the new child
+                new_expansion = []
+                for x in self.grammar[cur_node[0]]['replacements'][cur_node[1]]['pos']:
+                    new_expansion.append([x,0,[]])
+                
+                ##--Make this a child node
+                cur_node[2] = new_expansion
+                ##--An id to identify the calling node as the parent                
+                cur_node.append(True) 
+                
+                if self.dd_is_my_parent(this_parent, is_expansion=True):
+                    ##--Remove the id  
+                    del cur_node[3]
+                    my_children_list.append(self.copy_node(this_parent))
+                else:
+                    ##--Remove the id  
+                    del cur_node[3]
+                    
+                ##--Replace the parent's value 
+                cur_node[2] = []
+                
+                
+        ###-----Next check to see if there are any nodes to the right that need to be checked
+        ###-----This happens if the node is a pre-terminal that has already been expanded
+        ###-----Ex: [5,2,[[1,2,[]],[3,1,[]]]] => [5,2,[[1,3,[]],[3,1,[]]]] + [5,2,[[1,2,[]],[3,2,[]]]] + [5,2,[[1,2,[....]],[3,1,[]]]] + [5,2,[[1,2,[]],[3,1,[....]]]]
+        else:    
+            for x in range(0,len(cur_node[2])):
+                #Doing it recursively!
+                self.dd_find_children(cur_node[2][x], this_parent, my_children_list)
+        
+        return RetType.STATUS_OK
+        
+        
+      
         
     ###############################################################################
     # Pops the top value off the queue and then inserts any children of that node
