@@ -222,7 +222,7 @@ class PcfgQueue:
     ###############################################################################################################
     def rebuild_queue_from_node(self, pcfg, current_parse_tree, cur_node):
         
-        num_replacements = len(pcfg.grammar[cur_node[0]].replacements)
+        num_replacements = len(pcfg.grammar[cur_node[0]]['replacements'])
         for index in range(0, num_replacements -1):
             cur_node[1] = index
             ##--We don't want to check replacements at 0 since they were done in the calling function
@@ -238,9 +238,9 @@ class PcfgQueue:
                 ##--This is a potential node to insert 
                 elif cur_prob <= self.max_probability:
                     if not pcfg.is_parent_in_queue(current_parse_tree, current_parse_tree, self.max_probability):
-                        self.pqueue.append(QueueItem(is_terminal = pcfg.find_is_terminal(current_parse_tree), probability = cur_prob, parse_tree = current_parse_tree))
+                        self.p_queue.append(QueueItem(is_terminal = pcfg.find_is_terminal(current_parse_tree), probability = cur_prob, parse_tree = pcfg.copy_node(current_parse_tree)))
                         ##--Make sure the queue doesn't get too big--##
-                        if len(self.pqueue) > self.max_queue_size:
+                        if len(self.p_queue) > self.max_queue_size:
                             self.trim_queue()
                     ##--Regardless of it this node is inserted in the queue, none of it's children will go in the current queue since they all have a parent, (or grandparent), in the queue
                     break
@@ -248,7 +248,7 @@ class PcfgQueue:
             ##--Now take care of the expanded parse trees
             if pcfg.grammar[cur_node[0]]['replacements'][cur_node[1]]['is_terminal'] == False:
                 expanded_tree = []
-                for item in pcfg.grammar[cur_node[0]]['replacements']['pos']:
+                for item in pcfg.grammar[cur_node[0]]['replacements'][0]['pos']:
                     expanded_tree.append([item,0,[]])
                 cur_node[2] = expanded_tree
                 
@@ -260,9 +260,9 @@ class PcfgQueue:
                     if cur_prob <= self.max_probability:
                         ##--If it has a parent in the queue
                         if not pcfg.is_parent_in_queue(current_parse_tree, current_parse_tree, self.max_probability):
-                            self.pqueue.append(QueueItem(is_terminal = pcfg.find_is_terminal(current_parse_tree), probability = cur_prob, parse_tree = current_parse_tree))
+                            self.p_queue.append(QueueItem(is_terminal = pcfg.find_is_terminal(current_parse_tree), probability = cur_prob, parse_tree = pcfg.copy_node(current_parse_tree)))
                             ##--Make sure the queue doesn't get too big--##
-                            if len(self.pqueue) > self.max_queue_size:
+                            if len(self.p_queue) > self.max_queue_size:
                                 self.trim_queue()
                       
                     ##--This node has already been processed, check it's children from the expanded parse tree--##
@@ -274,7 +274,7 @@ class PcfgQueue:
                 
                 cur_node[2] = []
                 
-        cur_ndoe[1] = 0
+        cur_node[1] = 0
         return RetType.STATUS_OK
         
         
