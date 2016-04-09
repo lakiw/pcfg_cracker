@@ -394,6 +394,41 @@ class PcfgClass:
             new_index = new_index + 1
         return True
     
+    
+    
+    ####################################################################################################################################
+    # Used to see if a parent of the current node is in the queue or not using the deadbeat dad algorithm
+    # Slightly less computationally expensive then running the full deadbead dad next function
+    ####################################################################################################################################
+    def is_parent_in_queue(self,current_parse_tree, cur_node, max_probability):
+        ##--Check the curnode's direct parent
+        if cur_node[1] != 0:
+            cur_node[1] = cur_node - 1
+            if self.find_probability(current_parse_tree) < max_probability:
+                cur_node[1] = cur_node + 1
+                return True
+            cur_node[1] = cur_node + 1
+    
+        ##--Now check the expanded parse tree, aka the [2,0,[]],[3,0,[]] in [1,0,[[2,0,[]],[3,0,[]]]]
+        if len(cur_node[2]) != 0:
+            ##--if true when this is done, we can test the empty parse tree as a possible parent
+            parent_has_no_expanded_pt = True
+            for item in cur_node[2]:
+                if item[1] != 0 or len(item[2]) != 0:
+                    parent_has_no_expanded_pt = False
+                    if self.is_parent_in_queue(current_parse_tree, item, self.max_probability):
+                        return True
+            ##--Now check the empty list parent
+            if parent_has_no_expanded_pt:
+                temp_hoder = cur_node[2]
+                cur_node[2] = []
+                if self.find_probability(current_parse_tree) < max_probability:
+                    cur_node[2] = temp_holder
+                    return True
+                cur_node[2] = temp_holder
+        
+        return False
+    
     #=================================================================================================================================================#
     # The following functoins are not currently being used but I'm keeping them around since they may be useful in the future for
     # debugging or development

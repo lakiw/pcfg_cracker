@@ -50,7 +50,7 @@ import os  ##--Used for file path information
 #Custom modules
 from pcfg_manager.file_io import load_grammar
 from pcfg_manager.core_grammar import PcfgClass, print_grammar
-from pcfg_manager.priority_queue import PcfgQueue, QueueItem, test_queue
+from pcfg_manager.priority_queue import PcfgQueue
 from pcfg_manager.ret_types import RetType
 
 
@@ -64,8 +64,7 @@ class CommandLineVars:
         #Debugging printouts
         self.verbose = False  
         self.queue_info = False
-        ##--temporary value---
-        self.input_dictionary = "passwords.lst"
+
 
 
 ####################################################

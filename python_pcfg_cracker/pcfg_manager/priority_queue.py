@@ -21,9 +21,8 @@ import queue
 import copy
 import heapq
 
-
-from sample_grammar import s_preterminal
 from pcfg_manager.ret_types import RetType
+from pcfg_manager.core_grammar import PcfgClass
 
 ###################################################################################################
 # Used to hold the parse_tree of a path through the PCFG that is then stored in the priority queue
@@ -35,8 +34,9 @@ class QueueItem:
     ############################################################################
     def __init__(self, is_terminal = False, probability = 0.0, parse_tree = []):
         self.is_terminal = is_terminal      ##-Used to say if the parse_tree has any expansion left or if all the nodes represent terminals
-        self.probability = probability    ##-The probability of this queue items
+        self.probability = probability      ##-The probability of this queue items
         self.parse_tree = parse_tree        ##-The actual parse through the PCFG that this item represents
+        
         
     ##############################################################################
     # Need to have a custom compare functions for use in the priority queue
@@ -63,6 +63,7 @@ class QueueItem:
     def __ge__(self, other):
         return self.probability <= other.probability
     
+    
     ###############################################################################
     # Overloading print operation to make debugging easier
     ################################################################################
@@ -71,7 +72,8 @@ class QueueItem:
         ret_string += "Probability = " + str(self.probability) + "\n"
         ret_string += "ParseTree = " + str(self.parse_tree) + "\n"
         return ret_string
-        
+       
+       
     #################################################################################
     # A more detailed print that is easier to read. Requires passing in the pcfg
     #################################################################################
@@ -98,9 +100,10 @@ class PcfgQueue:
         self.p_queue = []  ##--The actual priority queue
         self.max_probability = 1.0 #--The current highest priority item in the queue. Used for memory management and restoring sessions
         self.min_probability = 0.0 #--The lowest prioirty item is allowed to be in order to be pushed in the queue. Used for memory management
-        self.max_queue_size = 500000 #--Used for memory management. The maximum number of items before triming the queue. (Note, the queue can temporarially be larger than this)
+        self.max_queue_size = 5000 #--Used for memory management. The maximum number of items before triming the queue. (Note, the queue can temporarially be larger than this)
         self.reduction_size = self.max_queue_size // 4  #--Used to reduce the p_queue by this amount when managing memory
 
+        
     #############################################################################
     # Push the first value into the priority queue
     # This will likely be 'START' unless you are constructing your PCFG some other way
@@ -118,6 +121,7 @@ class PcfgQueue:
         heapq.heappush(self.p_queue,q_item)
         
         return RetType.STATUS_OK
+ 
  
     ###############################################################################
     # Memory managment function to reduce the size of the priority queue by
@@ -160,7 +164,7 @@ class PcfgQueue:
         heapq.heapify(self.p_queue)
         
         ##--This can happen if the queue is full of items all of the same probability
-        if len(self.pqueue) == orig_size:
+        if len(self.p_queue) == orig_size:
             return RetType.QUEUE_FULL_ERROR
         ##--Not an immediate problem but this state will cause issues with resuming sessions. For now report an error state
         if self.min_probability == self.max_probability:
@@ -190,18 +194,24 @@ class PcfgQueue:
         current_parse_tree = [index,0,[]]
         cur_node = current_parse_tree
         
-        ##--Now go through and actually rebuild the priority queue
-        ret_value = rebuild_queue_from_node(current_parse_tree, cur_node)
-        if ret_value != RetType.STATUS_OK:
-            print("Error rebuilding the priority queue", file=sys.stderr)
-            return ret_value
+        ##--The first node "shouldn't" be in the priority queue if this function is being called, but might as well
+        ##--handle that edge case
+        cur_prob = pcfg.find_probability(current_parse_tree)
+        if self.max_probability >= cur_prob:
+            self.pqueue.append(QueueItem(is_terminal = pcfg.find_is_terminal(current_parse_tree), probability = cur_prob, parse_tree = current_parse_tree))
+        
+        ##--Now do the real work and go through and actually rebuild the priority queue
+        else: 
+            ret_value = self.rebuild_queue_from_node(pcfg, current_parse_tree, cur_node)
+            if ret_value != RetType.STATUS_OK:
+                print("Error rebuilding the priority queue", file=sys.stderr)
+                return ret_value
             
         ##--Now re-heapify the priority queue--##    
         heapq.heapify(self.p_queue)
         
         print("Done", file=sys.stderr)
-        return RetType.STATUS_OK    
-        
+        return RetType.STATUS_OK           
     
 
     ###############################################################################################################
@@ -210,73 +220,63 @@ class PcfgQueue:
     # --Note, this digs a bit more into the core grammar structures than I'd really like, but it fits in better
     #   here. I may move this around a bit in the future.
     ###############################################################################################################
-    def rebuild_queue_from_node(current_parse_tree, cur_node):
-        ##--Quick bail out while I write the part below
-        return RetType.STATUS_OK
-        #########################################################################################################
-        # First check to see if we can increment the current node
-        # --Only increment and expand if the transition options are blank, aka (x,y,[]) vs (x,y,[some values])
-        # --So (1,2,[]) => (1,3,[])
-        # --But if it is (1,2,[[5,0,[]]]) do not increment it
-        #
-        # After that we need to also create children for the expastion
-        # --So (1,2,[]) => (1,2,[[5,0,[]]])
-        #########################################################################################################
-        if len(cur_node[2])==0:
-            numReplacements = len(self.grammar[cur_node[0]]['replacements'])
-            #Takes care of the incrementing if there are children for the current node. Aka(1,2,[]) => (1,3,[])
-            if numReplacements > (cur_node[1]+1):
-                ##--Make this a child node
-                cur_node[1] = cur_node[1] + 1   
-                ##--An id to identify the calling node as the parent                
-                cur_node.append(True) 
-                if self.dd_is_my_parent(this_parent, is_expansion=False):
-                    ##--Remove the id  
-                    del cur_node[3]
-                    my_children_list.append(self.copy_node(this_parent))
-                else:
-                    ##--Remove the id  
-                    del cur_node[3]
-                ##--Replace the parent's value    
-                cur_node[1] = cur_node[1] - 1
-
+    def rebuild_queue_from_node(self, pcfg, current_parse_tree, cur_node):
+        
+        num_replacements = len(pcfg.grammar[cur_node[0]].replacements)
+        for index in range(0, num_replacements -1):
+            cur_node[1] = index
+            ##--We don't want to check replacements at 0 since they were done in the calling function
+            ##--This is to avoid duplicates being inserted in the queue for expansions
+            ##-- Aka [1,1,[[2,0,[]],[[3,0,[]]]]] will be inserted in the queue by the calling parent but
+            ##-- we don't want to be inserted twice more when the nodes [2,0,[]] and [3,0,[]] are processed
+            if index != 0:
+                ##--See if the current node
+                cur_prob = pcfg.find_probability(current_parse_tree)
+                ##--No sense going to lower probabilty items since this is already too low probability
+                if cur_prob < self.min_probability:
+                    break
+                ##--This is a potential node to insert 
+                elif cur_prob <= self.max_probability:
+                    if not pcfg.is_parent_in_queue(current_parse_tree, current_parse_tree, self.max_probability):
+                        self.pqueue.append(QueueItem(is_terminal = pcfg.find_is_terminal(current_parse_tree), probability = cur_prob, parse_tree = current_parse_tree))
+                        ##--Make sure the queue doesn't get too big--##
+                        if len(self.pqueue) > self.max_queue_size:
+                            self.trim_queue()
+                    ##--Regardless of it this node is inserted in the queue, none of it's children will go in the current queue since they all have a parent, (or grandparent), in the queue
+                    break
+        
+            ##--Now take care of the expanded parse trees
+            if pcfg.grammar[cur_node[0]]['replacements'][cur_node[1]]['is_terminal'] == False:
+                expanded_tree = []
+                for item in pcfg.grammar[cur_node[0]]['replacements']['pos']:
+                    expanded_tree.append([item,0,[]])
+                cur_node[2] = expanded_tree
                 
-            #Now take care of the expansion. Aka (1,2,[]) => (1,2,[[5,0,[]]])
-            if self.grammar[cur_node[0]]['replacements'][0]['is_terminal'] != True:
-                #--First fill out the expansion for the new child
-                new_expansion = []
-                for x in self.grammar[cur_node[0]]['replacements'][cur_node[1]]['pos']:
-                    new_expansion.append([x,0,[]])
-                
-                ##--Make this a child node
-                cur_node[2] = new_expansion
-                ##--An id to identify the calling node as the parent                
-                cur_node.append(True) 
-                
-                if self.dd_is_my_parent(this_parent, is_expansion=True):
-                    ##--Remove the id  
-                    del cur_node[3]
-                    my_children_list.append(self.copy_node(this_parent))
-                else:
-                    ##--Remove the id  
-                    del cur_node[3]
+                cur_prob = pcfg.find_probability(current_parse_tree)
+                ##--First, is the probability too low?
+                if cur_prob >= self.min_probability:
                     
-                ##--Replace the parent's value 
+                    ##--Check to see if this parse tree belongs in the queue
+                    if cur_prob <= self.max_probability:
+                        ##--If it has a parent in the queue
+                        if not pcfg.is_parent_in_queue(current_parse_tree, current_parse_tree, self.max_probability):
+                            self.pqueue.append(QueueItem(is_terminal = pcfg.find_is_terminal(current_parse_tree), probability = cur_prob, parse_tree = current_parse_tree))
+                            ##--Make sure the queue doesn't get too big--##
+                            if len(self.pqueue) > self.max_queue_size:
+                                self.trim_queue()
+                      
+                    ##--This node has already been processed, check it's children from the expanded parse tree--##
+                    else:
+                        for item in cur_node[2]:
+                            ret_value = self.rebuild_queue_from_node(pcfg, current_parse_tree, item)
+                            if ret_value != RetType.STATUS_OK:
+                                return ret_value
+                
                 cur_node[2] = []
                 
-                
-        ###-----Next check to see if there are any nodes to the right that need to be checked
-        ###-----This happens if the node is a pre-terminal that has already been expanded
-        ###-----Ex: [5,2,[[1,2,[]],[3,1,[]]]] => [5,2,[[1,3,[]],[3,1,[]]]] + [5,2,[[1,2,[]],[3,2,[]]]] + [5,2,[[1,2,[....]],[3,1,[]]]] + [5,2,[[1,2,[]],[3,1,[....]]]]
-        else:    
-            for x in range(0,len(cur_node[2])):
-                #Doing it recursively!
-                self.dd_find_children(cur_node[2][x], this_parent, my_children_list)
-        
+        cur_ndoe[1] = 0
         return RetType.STATUS_OK
         
-        
-      
         
     ###############################################################################
     # Pops the top value off the queue and then inserts any children of that node
@@ -338,14 +338,5 @@ class PcfgQueue:
             else:
                 print("Hmmm, trying to push a parent and not a child on the list", file=sys.stderr)
 
-            
-###################################################################
-# Random Test Function
-####################################################################                
-def test_queue(pcfg):
-    s_queue_item = QueueItem(parse_tree=s_pre_terminal)
-    print(s_queue_item, file=sys.stderr)
-    print("--------------", file=sys.stderr)
-    print(s_queue_item.detailed_print(pcfg), file=sys.stderr)
             
         
