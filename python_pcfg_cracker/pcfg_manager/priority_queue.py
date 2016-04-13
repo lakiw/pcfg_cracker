@@ -105,8 +105,9 @@ class PcfgQueue:
         
         self.storage_list = [] #--Used to store low probability nodes to keep the size of p_queue down
         self.storage_min_probability = 0.0 #-- The lowest probability item allowed into the storage list. Anything lower than this is discarded
-        self.storage_size = 10000000 #--The maximum size to save in the storage list before we start discarding items
-        
+        self.storage_size = 1000 #--The maximum size to save in the storage list before we start discarding items
+        self.backup_reduction_size = self.storage_size - self.storage_size // 4
+         
         ##--sanity checks for the data structures for when people edit the above default values
         if self.storage_size < self.max_queue_size:
             raise Exception
@@ -225,7 +226,7 @@ class PcfgQueue:
         
         ##--If there are no items in the storage list--##
         if len(self.storage_list) == 0:
-            returnrebuild_queue_from_max(self,pcfg)
+            return self.rebuild_queue_from_max(self,pcfg)
             
         ##--Sort the storage list so only the top items go into the priority queue
         self.storage_list.sort()
@@ -259,12 +260,60 @@ class PcfgQueue:
     
     
     #####################################################################################################################
+    # Trims the backup storage list so it can take more items
+    #####################################################################################################################
+    def trim_list(self, input_list, max_size, target_size, lower_bound_prob = [0]):
+        ##--First sort the list so we can easily delete the least probable items--##
+        ##--Aka turn it from a heap into a sorted list, since heap pops are somewhat expensive--##
+        input_list.sort()
+        
+        ##--Save the size information about the list
+        orig_size = len(input_list)
+        
+        ##--divider represents the point where we are going to cut the list to remove low probability items
+        divider = target_size
+        
+        ##--Assign the min probabilty to the item currently in the divider of the queue--##
+        lower_bound_prob[0] = input_list[divider].probability
+        #print("min prob: " + str(self.min_probability), file=sys.stderr)
+        
+        ##--Now find the divider we want to cut in case multiple items in the current divider share the same probability
+        while (divider < orig_size-1) and (input_list[divider].probability == input_list[divider+1].probability):
+            divider = divider + 1
+            
+        ##--Sanity check for edge case where nothing gets deleted
+        if divider == orig_size - 1:
+            print("Could not trim one of the storage lists since too many items have the same probability", file=sys.stderr)
+            print("Not so much a bug as an edge case I haven't implimented a solution for. Performance is going to be slow until you stop seeing this message --Matt", file=sys.stderr)
+        
+         
+        ##--Delete the entries from the list
+        del(self.p_queue[divider+1:])
+        
+        ##--This can happen if the queue is full of items all of the same probability
+        if len(self.p_queue) == orig_size:
+            return RetType.QUEUE_FULL_ERROR
+        ##--Not an immediate problem but this state will cause issues with resuming sessions. For now report an error state
+        if self.min_probability == self.max_probability:
+            return RetType.QUEUE_FULL_ERROR
+        
+        return RetType.STATUS_OK
+    
+    #####################################################################################################################
     # Stores a QueueItem in the backup storage mechanism, or drops it depending on how that storage mechanism handles it
     #####################################################################################################################
     def insert_into_backup_storage(self,queue_item):
+        ##--Insert the item
         if queue_item.probability >= self.storage_min_probability:
             self.storage_list.append(queue_item)
     
+        ##--Check if the backup storage has grown too large
+        if len(self.storage_list) >= self.storage_size:
+            new_min = [self.storage_min_probability]
+            ret_value =  self.trim_list(self.storage_list, self.storage_size, self.backup_reduction_size, new_min)
+            self.storage_min_probability = new_min[0]
+            return ret_value
+        
         return RetType.STATUS_OK
     
     
