@@ -100,9 +100,17 @@ class PcfgQueue:
         self.p_queue = []  ##--The actual priority queue
         self.max_probability = 1.0 #--The current highest priority item in the queue. Used for memory management and restoring sessions
         self.min_probability = 0.0 #--The lowest prioirty item is allowed to be in order to be pushed in the queue. Used for memory management
-        self.max_queue_size = 5000 #--Used for memory management. The maximum number of items before triming the queue. (Note, the queue can temporarially be larger than this)
-        self.reduction_size = self.max_queue_size // 4  #--Used to reduce the p_queue by this amount when managing memory
-
+        self.max_queue_size = 500 #--Used for memory management. The maximum number of items before triming the queue. (Note, the queue can temporarially be larger than this)
+        self.reduction_size = self.max_queue_size - self.max_queue_size // 4  #--Target size for the p_queue when it is reduced for memory management
+        
+        self.storage_list = [] #--Used to store low probability nodes to keep the size of p_queue down
+        self.storage_min_probability = 0.0 #-- The lowest probability item allowed into the storage list. Anything lower than this is discarded
+        self.storage_size = 10000000 #--The maximum size to save in the storage list before we start discarding items
+        
+        ##--sanity checks for the data structures for when people edit the above default values
+        if self.storage_size < self.max_queue_size:
+            raise Exception
+        
         
     #############################################################################
     # Push the first value into the priority queue
@@ -127,7 +135,7 @@ class PcfgQueue:
     # Memory managment function to reduce the size of the priority queue by
     # deleting the last 1/2 ish of the priority queue
     # It's not an exact number since if multiple items have the same probability
-    # and those items fall in the middle of the priority queue then it will save
+    # and those items fall in the divider of the priority queue then it will save
     # all of them.
     # Aka if the list looks like [0,1,2,3,3,3,7], it will save [0,1,2,3,3,3]
     # If the list looked like [0,1,2,3,4,5,6,7] it will save [0,1,2,3]
@@ -141,24 +149,37 @@ class PcfgQueue:
         ##--Save the size information about the list
         orig_size = len(self.p_queue)
         
-        ##--middle represents the point where we are going to cut the list to remove low probability items
-        middle = orig_size//2
+        ##--divider represents the point where we are going to cut the list to remove low probability items
+        divider = self.reduction_size
         
-        ##--Assign the min probabilty to the item currently in the middle of the queue--##
-        self.min_probability = self.p_queue[middle].probability
+        ##--Assign the min probabilty to the item currently in the divider of the queue--##
+        self.min_probability = self.p_queue[divider].probability
         print("min prob: " + str(self.min_probability), file=sys.stderr)
         
-        ##--Now find the middle we want to cut in case multiple items in the current middle share the same probability
-        while (middle < orig_size-1) and (self.p_queue[middle].probability == self.p_queue[middle+1].probability):
-            middle = middle + 1
+        ##--Now find the divider we want to cut in case multiple items in the current divider share the same probability
+        while (divider < orig_size-1) and (self.p_queue[divider].probability == self.p_queue[divider+1].probability):
+            divider = divider + 1
             
         ##--Sanity check for edge case where nothing gets deleted
-        if middle == orig_size - 1:
+        if divider == orig_size - 1:
             print("Could not trim the priority queue since at least half the items have the same probability", file=sys.stderr)
             print("Not so much a bug as an edge case I haven't implimented a solution for. Performance is going to be slow until you stop seeing this message --Matt", file=sys.stderr)
         
-        ##--Now actually delete the entries--##
-        del(self.p_queue[middle+1:])
+        ##--Now actually remove the entries--##
+        ##--Currently saving them to the storage_list--##
+        ##--Need to check to make sure we are not saving items of lower probability then can go into the storage list--##
+        storage_end = len(self.p_queue) - 1
+        while self.p_queue[storage_end].probability < self.storage_min_probability and storage_end > divider:
+            storage_end = storage_end - 1
+            
+        ##--Copy saved items to the storage_list    
+        if storage_end != divider:
+            self.storage_list.extend(self.p_queue[divider+1:])
+        else:
+            print("The 'backup' storage list for memory mangement is getting full. Performance may start to be affected soon", file=sys.stderr)
+            
+        ##--Delete the entries from the p_queue
+        del(self.p_queue[divider+1:])
 
         ##--Re-heapify the priority queue
         heapq.heapify(self.p_queue)
@@ -174,110 +195,79 @@ class PcfgQueue:
         
      
     ###############################################################################
-    # Used to restore the priority queue from a previous state
-    # Allows resuming paused, (or crashed), sessions and is used in the memory management
+    # Used to add items to the priority queue from a previous max probability state
+    # End goal is to allow easy rebuilidng and continuation from a previous session
+    # This can also be used for memory management so the pqueue can discard nodes that are too
+    # low probability as it is running and then rebuild the queue later to bring them back in
+    # if the session runs long enough
+    #
+    # Dev notes: I tried a couple of implimentations of this in the past, but with
+    #            the grammar supporting recursion I really struggled with coming up with
+    #            and effecient algorithm that was easier than "Run the full session again, (with all the popping, pushing, and
+    #            using the next algorithm" until hitting the desired probability threshold
+    ###############################################################################
+    def rebuild_queue_from_max(self,pcfg):
+        print("Functionality to rebuild the priority queue from a previous max probability not implimented yet", file=sys.stderr)
+        self.min_probability = 0
+        return RetType.STATUS_OK
+
+
+    ###############################################################################
+    # Rebuild the priority queue when it becomes empty
+    # Currently just copying items from the storage list back into the priorty queue
     ###############################################################################
     def rebuild_queue(self,pcfg):
-        print("Rebuilding p_queue", file=sys.stderr)
-        
-        ##--Initialize the values
+        ##--Remove the min probability
+        ##--Depending on what type of memory management functionality is in place this may be raised
+        ##--at a later point as items get copied back into the priority queue
+        self.min_probability = 0
         self.p_queue = []
-        ##--Initially don't bound the minimum probability. We are only bounding the maximum probability
-        self.min_probability = 0.0
         
-        ##--Build the first node in the parse tree
-        index = pcfg.start_index()
-        if index == -1:
-            print("Could not find starting position for the pcfg")
-            return RetType.GRAMMAR_ERROR
-          
-        current_parse_tree = [index,0,[]]
-        cur_node = current_parse_tree
-        
-        ##--The first node "shouldn't" be in the priority queue if this function is being called, but might as well
-        ##--handle that edge case
-        cur_prob = pcfg.find_probability(current_parse_tree)
-        if self.max_probability >= cur_prob:
-            self.pqueue.append(QueueItem(is_terminal = pcfg.find_is_terminal(current_parse_tree), probability = cur_prob, parse_tree = current_parse_tree))
-        
-        ##--Now do the real work and go through and actually rebuild the priority queue
-        else: 
-            ret_value = self.rebuild_queue_from_node(pcfg, current_parse_tree, cur_node)
-            if ret_value != RetType.STATUS_OK:
-                print("Error rebuilding the priority queue", file=sys.stderr)
-                return ret_value
+        ##--If there are no items in the storage list--##
+        if len(self.storage_list) == 0:
+            returnrebuild_queue_from_max(self,pcfg)
             
-        ##--Now re-heapify the priority queue--##    
+        ##--Sort the storage list so only the top items go into the priority queue
+        self.storage_list.sort()
+        
+        ##--If we can copy the entire storage list into the priority queue
+        if len(self.storage_list) <= self.reduction_size:
+            self.p_queue.extend(self.storage_list)
+            self.storage_list = []
+            self.min_probability = self.storage_min_probability
+            
+        else:
+            divider = self.reduction_size
+            self.min_probability = self.storage_list[divider].probability
+            while (divider < len(self.storage_list)-1) and (self.storage_list[divider].probability == self.storage_list[divider + 1].probability):
+                divider = divider + 1
+            
+            self.p_queue.extend(self.storage_list[:divider+1])
+            del(self.storage_list[:divider+1])
+            
+        #--Now re-hepify the priority_queue
         heapq.heapify(self.p_queue)
         
-        print("Done", file=sys.stderr)
-        return RetType.STATUS_OK           
+        ##--This can happen if the queue is full of items all of the same probability
+        if len(self.p_queue) >= self.max_queue_size:
+            return RetType.QUEUE_FULL_ERROR
+        ##--Not an immediate problem but this state will cause issues with resuming sessions. For now report an error state
+        if self.min_probability == self.max_probability:
+            return RetType.QUEUE_FULL_ERROR
+        
+        return RetType.STATUS_OK   
     
-
-    ###############################################################################################################
-    # Quick (hopefully) way to go through all the parse trees and insert items that fall between the min and max
-    # allowed probabilities
-    # --Note, this digs a bit more into the core grammar structures than I'd really like, but it fits in better
-    #   here. I may move this around a bit in the future.
-    ###############################################################################################################
-    def rebuild_queue_from_node(self, pcfg, current_parse_tree, cur_node):
-        
-        num_replacements = len(pcfg.grammar[cur_node[0]]['replacements'])
-        for index in range(0, num_replacements -1):
-            cur_node[1] = index
-            ##--We don't want to check replacements at 0 since they were done in the calling function
-            ##--This is to avoid duplicates being inserted in the queue for expansions
-            ##-- Aka [1,1,[[2,0,[]],[[3,0,[]]]]] will be inserted in the queue by the calling parent but
-            ##-- we don't want to be inserted twice more when the nodes [2,0,[]] and [3,0,[]] are processed
-            if index != 0:
-                ##--See if the current node
-                cur_prob = pcfg.find_probability(current_parse_tree)
-                ##--No sense going to lower probabilty items since this is already too low probability
-                if cur_prob < self.min_probability:
-                    break
-                ##--This is a potential node to insert 
-                elif cur_prob <= self.max_probability:
-                    if not pcfg.is_parent_in_queue(current_parse_tree, current_parse_tree, self.max_probability):
-                        self.p_queue.append(QueueItem(is_terminal = pcfg.find_is_terminal(current_parse_tree), probability = cur_prob, parse_tree = pcfg.copy_node(current_parse_tree)))
-                        ##--Make sure the queue doesn't get too big--##
-                        if len(self.p_queue) > self.max_queue_size:
-                            self.trim_queue()
-                    ##--Regardless of it this node is inserted in the queue, none of it's children will go in the current queue since they all have a parent, (or grandparent), in the queue
-                    break
-        
-            ##--Now take care of the expanded parse trees
-            if pcfg.grammar[cur_node[0]]['replacements'][cur_node[1]]['is_terminal'] == False:
-                expanded_tree = []
-                for item in pcfg.grammar[cur_node[0]]['replacements'][0]['pos']:
-                    expanded_tree.append([item,0,[]])
-                cur_node[2] = expanded_tree
-                
-                cur_prob = pcfg.find_probability(current_parse_tree)
-                ##--First, is the probability too low?
-                if cur_prob >= self.min_probability:
-                    
-                    ##--Check to see if this parse tree belongs in the queue
-                    if cur_prob <= self.max_probability:
-                        ##--If it has a parent in the queue
-                        if not pcfg.is_parent_in_queue(current_parse_tree, current_parse_tree, self.max_probability):
-                            self.p_queue.append(QueueItem(is_terminal = pcfg.find_is_terminal(current_parse_tree), probability = cur_prob, parse_tree = pcfg.copy_node(current_parse_tree)))
-                            ##--Make sure the queue doesn't get too big--##
-                            if len(self.p_queue) > self.max_queue_size:
-                                self.trim_queue()
-                      
-                    ##--This node has already been processed, check it's children from the expanded parse tree--##
-                    else:
-                        for item in cur_node[2]:
-                            ret_value = self.rebuild_queue_from_node(pcfg, current_parse_tree, item)
-                            if ret_value != RetType.STATUS_OK:
-                                return ret_value
-                
-                cur_node[2] = []
-                
-        cur_node[1] = 0
+    
+    #####################################################################################################################
+    # Stores a QueueItem in the backup storage mechanism, or drops it depending on how that storage mechanism handles it
+    #####################################################################################################################
+    def insert_into_backup_storage(self,queue_item):
+        if queue_item.probability >= self.storage_min_probability:
+            self.storage_list.append(queue_item)
+    
         return RetType.STATUS_OK
-        
-        
+    
+    
     ###############################################################################
     # Pops the top value off the queue and then inserts any children of that node
     # back in the queue
@@ -335,6 +325,9 @@ class PcfgQueue:
                 ##--If the probability of the child node is too low don't bother to insert it in the queue
                 if child_node.probability >= self.min_probability:
                     heapq.heappush(self.p_queue,child_node)
+                ##--Else insert it into the backup storage
+                else:
+                    self.insert_into_backup_storage(child_node)
             else:
                 print("Hmmm, trying to push a parent and not a child on the list", file=sys.stderr)
 

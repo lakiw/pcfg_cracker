@@ -122,7 +122,7 @@ def main():
     ##--Information about this program--##
     program_details = {
         'Program':'pcfg_manager.py',
-        'Version': '3.0 Alpha',
+        'Version': '3.1 Alpha',
         'Author':'Matt Weir',
         'Contact':'cweir@vt.edu',
         'Source':'https://github.com/lakiw/pcfg_cracker'
@@ -169,40 +169,47 @@ def main():
     p_queue_stop_time = 0
     guess_start_time = 0
     guess_stop_time = 0
+    running_queue_time = 0
+    running_guess_time = 0
     total_time_start = time.perf_counter()
     while ret_value == RetType.STATUS_OK:
-        #print(str(queue_item.probability) + " : " + str(queue_item.parse_tree))
-        num_preterminals = num_preterminals +1
-        guess_start_time = time.perf_counter()
-        num_guesses = num_guesses + len(pcfg.list_terminals(queue_item.parse_tree))
-        
-        guess_stop_time = time.perf_counter() - guess_start_time
+
         if command_line_results.queue_info == True:
+            
+            num_preterminals = num_preterminals +1
+            guess_start_time = time.perf_counter()
+            num_guesses = num_guesses + len(pcfg.list_terminals(queue_item.parse_tree)) 
+            guess_stop_time = time.perf_counter() - guess_start_time
+            running_guess_time = running_guess_time + guess_stop_time
+            
             if num_preterminals % 1000 == 0:
                 print ("PQueue:" + str(len(p_queue.p_queue)),file=sys.stderr)
+                print ("Backup storage list:" + str(len(p_queue.storage_list)),file=sys.stderr)
                 print ("Total number of Pre Terminals: " + str (num_preterminals),file=sys.stderr)
-                print ("PQueueTime " + str(p_queue_stop_time),file=sys.stderr)
+                print ("PQueueTime " + str(running_queue_time),file=sys.stderr)
                 print ("Guesses:" + str(num_guesses),file=sys.stderr)
-                print ("GuessTime " + str(guess_stop_time),file=sys.stderr)
+                print ("GuessTime " + str(running_guess_time),file=sys.stderr)
                 print ("Average num of guesses per preterm: " + str(num_guesses // num_preterminals),file=sys.stderr)
                 print ("Total Time " + str(time.perf_counter() - total_time_start),file=sys.stderr)
                 print ("Number of guesses a second: " + str(num_guesses // (time.perf_counter() - total_time_start)),file=sys.stderr)
                 print ("Current probability: " + str(p_queue.max_probability),file=sys.stderr)
                 #print ("Parse Tree : " + str(queue_item.parse_tree))
                 print ()
+                
 
         else:
             for guess in pcfg.list_terminals(queue_item.parse_tree):
                 try:
                     print(guess)
                 except UnicodeEncodeError:
-                    print("UNICODE_ERROR")
+                    print("UNICODE_ERROR",file=sys.stderr)
         p_queue_start_time = time.perf_counter()
         queue_item_list = []        
         ret_value = p_queue.next_function(pcfg, queue_item_list)
         if len(queue_item_list) > 0:
             queue_item = queue_item_list[0]
         p_queue_stop_time = time.perf_counter() - p_queue_start_time
+        running_queue_time = running_queue_time + p_queue_stop_time
 
     return RetType.STATUS_OK
     
