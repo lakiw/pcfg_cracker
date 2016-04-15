@@ -12,13 +12,8 @@
 
 
 import sys   #--Used for printing to stderr
-import string
-import struct
-import os
 import types
 import time
-import queue
-import copy
 import heapq
 
 from pcfg_manager.ret_types import RetType
@@ -82,8 +77,7 @@ class QueueItem:
         ret_string += "Probability = " + str(self.probability) + "\n"
         ret_string += "ParseTree = "
         ret_string += pcfg.print_parse_tree(self.parse_tree)
-        return ret_string
-        
+        return ret_string        
     
             
 #######################################################################################################
@@ -96,7 +90,7 @@ class PcfgQueue:
     ############################################################################
     # Basic initialization function
     ############################################################################
-    def __init__(self):
+    def __init__(self, verbose = False):
         self.p_queue = []  ##--The actual priority queue
         self.max_probability = 1.0 #--The current highest priority item in the queue. Used for memory management and restoring sessions
         self.min_probability = 0.0 #--The lowest prioirty item is allowed to be in order to be pushed in the queue. Used for memory management
@@ -105,13 +99,14 @@ class PcfgQueue:
         
         self.storage_list = [] #--Used to store low probability nodes to keep the size of p_queue down
         self.storage_min_probability = 0.0 #-- The lowest probability item allowed into the storage list. Anything lower than this is discarded
-        self.storage_size = 1000 #--The maximum size to save in the storage list before we start discarding items
+        self.storage_size = 15000 #--The maximum size to save in the storage list before we start discarding items
         self.backup_reduction_size = self.storage_size - self.storage_size // 4
          
         ##--sanity checks for the data structures for when people edit the above default values
         if self.storage_size < self.max_queue_size:
             raise Exception
         
+        self.verbose = verbose
         
     #############################################################################
     # Push the first value into the priority queue
@@ -132,6 +127,38 @@ class PcfgQueue:
         return RetType.STATUS_OK
  
  
+    #####################################################################################################################
+    # Finds a divider in the input_list where to delete items
+    # Basically it first sorts the list
+    # Then it goes to where the desired trim location and then finds the last item in the list with that probability
+    #####################################################################################################################
+    def find_list_delete_point(self, input_list, target_size):
+        ##--First sort the list so we can easily delete the least probable items--##
+        ##--Aka turn it from a heap into a sorted list, since heap pops are somewhat expensive--##
+        input_list.sort()
+        
+        ##--Save the size information about the list
+        orig_size = len(input_list)
+        
+        ##--divider represents the point where we are going to cut the list to remove low probability items
+        divider = target_size
+        
+        ##--Shouldn't happen so fail out
+        if divider > orig_size:
+            raise Exception
+        
+        ##--Now find the divider we want to cut in case multiple items in the current divider share the same probability
+        while (divider < orig_size-1) and (input_list[divider].probability == input_list[divider+1].probability):
+            divider = divider + 1
+            
+        ##--Sanity check for edge case where nothing gets deleted
+        if divider == orig_size - 1:
+            print("Could not trim one of the storage lists since too many items have the same probability", file=sys.stderr)
+            print("Not so much a bug as an edge case I haven't implimented a solution for. Performance is going to be slow until you stop seeing this message --Matt", file=sys.stderr)
+        
+        return divider
+
+        
     ###############################################################################
     # Memory managment function to reduce the size of the priority queue by
     # deleting the last 1/2 ish of the priority queue
@@ -143,41 +170,17 @@ class PcfgQueue:
     # There is an edge case where no items will be deleted if they all are the same probabilities
     ###############################################################################
     def trim_queue(self):
-        ##--First sort the queue so we can easily delete the least probable items--##
-        ##--Aka turn it from a heap into a sorted list, since heap pops are somewhat expensive--##
-        self.p_queue.sort()
         
-        ##--Save the size information about the list
-        orig_size = len(self.p_queue)
-        
-        ##--divider represents the point where we are going to cut the list to remove low probability items
-        divider = self.reduction_size
+        ##--Find the point at where we want to trim the priority queue
+        divider =  self.find_list_delete_point(self.p_queue, self.reduction_size)
         
         ##--Assign the min probabilty to the item currently in the divider of the queue--##
         self.min_probability = self.p_queue[divider].probability
-        print("min prob: " + str(self.min_probability), file=sys.stderr)
+        if self.verbose:
+            print("min prob: " + str(self.min_probability), file=sys.stderr)
         
-        ##--Now find the divider we want to cut in case multiple items in the current divider share the same probability
-        while (divider < orig_size-1) and (self.p_queue[divider].probability == self.p_queue[divider+1].probability):
-            divider = divider + 1
-            
-        ##--Sanity check for edge case where nothing gets deleted
-        if divider == orig_size - 1:
-            print("Could not trim the priority queue since at least half the items have the same probability", file=sys.stderr)
-            print("Not so much a bug as an edge case I haven't implimented a solution for. Performance is going to be slow until you stop seeing this message --Matt", file=sys.stderr)
-        
-        ##--Now actually remove the entries--##
-        ##--Currently saving them to the storage_list--##
-        ##--Need to check to make sure we are not saving items of lower probability then can go into the storage list--##
-        storage_end = len(self.p_queue) - 1
-        while self.p_queue[storage_end].probability < self.storage_min_probability and storage_end > divider:
-            storage_end = storage_end - 1
-            
-        ##--Copy saved items to the storage_list    
-        if storage_end != divider:
-            self.storage_list.extend(self.p_queue[divider+1:])
-        else:
-            print("The 'backup' storage list for memory mangement is getting full. Performance may start to be affected soon", file=sys.stderr)
+        ##--Save the items off into the storage list
+        self.storage_list.extend(self.p_queue[divider+1:])
             
         ##--Delete the entries from the p_queue
         del(self.p_queue[divider+1:])
@@ -186,7 +189,7 @@ class PcfgQueue:
         heapq.heapify(self.p_queue)
         
         ##--This can happen if the queue is full of items all of the same probability
-        if len(self.p_queue) == orig_size:
+        if len(self.p_queue) == self.max_queue_size:
             return RetType.QUEUE_FULL_ERROR
         ##--Not an immediate problem but this state will cause issues with resuming sessions. For now report an error state
         if self.min_probability == self.max_probability:
@@ -226,7 +229,7 @@ class PcfgQueue:
         
         ##--If there are no items in the storage list--##
         if len(self.storage_list) == 0:
-            return self.rebuild_queue_from_max(self,pcfg)
+            return self.rebuild_queue_from_max(pcfg)
             
         ##--Sort the storage list so only the top items go into the priority queue
         self.storage_list.sort()
@@ -260,46 +263,6 @@ class PcfgQueue:
     
     
     #####################################################################################################################
-    # Trims the backup storage list so it can take more items
-    #####################################################################################################################
-    def trim_list(self, input_list, max_size, target_size, lower_bound_prob = [0]):
-        ##--First sort the list so we can easily delete the least probable items--##
-        ##--Aka turn it from a heap into a sorted list, since heap pops are somewhat expensive--##
-        input_list.sort()
-        
-        ##--Save the size information about the list
-        orig_size = len(input_list)
-        
-        ##--divider represents the point where we are going to cut the list to remove low probability items
-        divider = target_size
-        
-        ##--Assign the min probabilty to the item currently in the divider of the queue--##
-        lower_bound_prob[0] = input_list[divider].probability
-        #print("min prob: " + str(self.min_probability), file=sys.stderr)
-        
-        ##--Now find the divider we want to cut in case multiple items in the current divider share the same probability
-        while (divider < orig_size-1) and (input_list[divider].probability == input_list[divider+1].probability):
-            divider = divider + 1
-            
-        ##--Sanity check for edge case where nothing gets deleted
-        if divider == orig_size - 1:
-            print("Could not trim one of the storage lists since too many items have the same probability", file=sys.stderr)
-            print("Not so much a bug as an edge case I haven't implimented a solution for. Performance is going to be slow until you stop seeing this message --Matt", file=sys.stderr)
-        
-         
-        ##--Delete the entries from the list
-        del(self.p_queue[divider+1:])
-        
-        ##--This can happen if the queue is full of items all of the same probability
-        if len(self.p_queue) == orig_size:
-            return RetType.QUEUE_FULL_ERROR
-        ##--Not an immediate problem but this state will cause issues with resuming sessions. For now report an error state
-        if self.min_probability == self.max_probability:
-            return RetType.QUEUE_FULL_ERROR
-        
-        return RetType.STATUS_OK
-    
-    #####################################################################################################################
     # Stores a QueueItem in the backup storage mechanism, or drops it depending on how that storage mechanism handles it
     #####################################################################################################################
     def insert_into_backup_storage(self,queue_item):
@@ -309,11 +272,19 @@ class PcfgQueue:
     
         ##--Check if the backup storage has grown too large
         if len(self.storage_list) >= self.storage_size:
-            new_min = [self.storage_min_probability]
-            ret_value =  self.trim_list(self.storage_list, self.storage_size, self.backup_reduction_size, new_min)
-            self.storage_min_probability = new_min[0]
-            return ret_value
-        
+            ##--Find the point at where we want to trim the storage_list
+            divider =  self.find_list_delete_point(self.storage_list, self.backup_reduction_size)
+             
+            ##--Delete the entries from the list
+            del(self.storage_list[divider+1:])
+            self.storage_min_probability = self.storage_list[-1].probability
+            ##--This can happen if the queue is full of items all of the same probability
+            if len(self.storage_list) == self.storage_size:
+                return RetType.QUEUE_FULL_ERROR
+            ##--Not an immediate problem but this state will cause issues with resuming sessions. For now report an error state
+            if self.min_probability == self.max_probability:
+                return RetType.QUEUE_FULL_ERROR
+      
         return RetType.STATUS_OK
     
     
@@ -344,16 +315,13 @@ class PcfgQueue:
             
             ##--Memory management
             if len(self.p_queue) > self.max_queue_size:
-                print("trimming Queue", file=sys.stderr)
                 self.trim_queue()
-                print("done", file=sys.stderr)
+
             ##--If it is a terminal structure break and return it
             if queue_item.is_terminal == True:
                 queue_item_list.append(queue_item)
                 break
 
-        #print("--Returning this value")
-        #print(queue_item_list[0].detailed_print(pcfg), file=sys.stderr)
         return RetType.STATUS_OK
 
         
@@ -380,5 +348,4 @@ class PcfgQueue:
             else:
                 print("Hmmm, trying to push a parent and not a child on the list", file=sys.stderr)
 
-            
-        
+        return RetType.STATUS_OK   

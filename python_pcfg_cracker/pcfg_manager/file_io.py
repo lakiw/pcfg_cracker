@@ -15,8 +15,6 @@ import json
 import codecs
 from itertools import groupby
 
-#Used for debugging and development
-from sample_grammar import s_grammar
 from pcfg_manager.ret_types import RetType
 
 #Used for debugging
@@ -321,7 +319,7 @@ def load_grammar(rule_directory, grammar):
     
     ##--Now build the grammar starting with the start transition--##
     ret_value = build_grammar(config,grammar, rule_directory, encoding, "START")
-    #print_grammar(grammar)
+
     if ret_value != RetType.STATUS_OK:
         return ret_value
     print("Rules loaded",file=sys.stderr)

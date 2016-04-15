@@ -62,11 +62,11 @@ class CommandLineVars:
     def __init__(self):
         self.rule_name = "Default"
         #Debugging printouts
+        #-They actually are initialized false under parse_command_line regardless of the value here
         self.verbose = False  
         self.queue_info = False
 
-
-
+        
 ####################################################
 # Simply parses the command line
 ####################################################
@@ -87,7 +87,7 @@ def parse_command_line(command_line_results):
 
     
 ###################################################################################
-# ASCII art for the banner
+# Prints the startup banner when this tool is run
 ###################################################################################
 def print_banner(program_details):
     print('',file=sys.stderr)
@@ -150,12 +150,16 @@ def main():
     pcfg = PcfgClass(grammar)
     
     ##--Initialize the priority queue--##
-    p_queue = PcfgQueue()
+    p_queue = PcfgQueue(verbose = command_line_results.verbose)
     ret_value = p_queue.initialize(pcfg)
     if ret_value != RetType.STATUS_OK:
         print ("Error initalizing the priority queue, exiting",file=sys.stderr)
         print_error()
         return ret_value
+    
+    ##--Setup is done, now start generating rules
+    print ("Starting to generate password guesses",file=sys.stderr)
+    
     
     ##--Going to break this up eventually into it's own function, but for now, process the queue--##
     queue_item_list = []
@@ -163,6 +167,7 @@ def main():
     if len(queue_item_list) > 0:
         queue_item = queue_item_list[0]
     
+    ##--All these variables are simply for debugging and profiling the code
     num_preterminals = 0
     num_guesses = 0
     p_queue_start_time = 0
@@ -172,8 +177,10 @@ def main():
     running_queue_time = 0
     running_guess_time = 0
     total_time_start = time.perf_counter()
+    
     while ret_value == RetType.STATUS_OK:
 
+        ##--This is all for debugging and performance improvements
         if command_line_results.queue_info == True:
             
             num_preterminals = num_preterminals +1
@@ -195,14 +202,16 @@ def main():
                 print ("Current probability: " + str(p_queue.max_probability),file=sys.stderr)
                 #print ("Parse Tree : " + str(queue_item.parse_tree))
                 print ()
-                
 
+        ##--This is if you are actually trying to generate guesses
         else:
             for guess in pcfg.list_terminals(queue_item.parse_tree):
                 try:
                     print(guess)
+                ##--While I could silently replace/ignore the Unicode character for now I want to know if this is happening
                 except UnicodeEncodeError:
                     print("UNICODE_ERROR",file=sys.stderr)
+                    
         p_queue_start_time = time.perf_counter()
         queue_item_list = []        
         ret_value = p_queue.next_function(pcfg, queue_item_list)
