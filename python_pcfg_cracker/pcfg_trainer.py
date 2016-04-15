@@ -1,13 +1,20 @@
 #!/usr/bin/env python3
 
 
-import sys #used to clear out the print buffer for the status bar
+##--Including this to print error message if python < 3.0 is used
+from __future__ import print_function
+import sys
+###--Check for python3 and error out if not--##
+if sys.version_info[0] < 3:
+    print("This program requires Python 3.x", file=sys.stderr)
+    sys.exit(1)
+    
 import argparse
 import configparser
 import os
 import math #Used for the MeasurementStatus bar
 
-##--User Defined Imports---##
+##--Program Specific Imports---##
 from pcfg_trainer.ret_types import RetType
 from pcfg_trainer.trainer_file_io import is_jtr_pot, read_input_passwords, detect_file_encoding, make_rule_dirs, write_config
 from pcfg_trainer.training_data import TrainingData
@@ -56,6 +63,7 @@ class MeasurementStatus:
         ##--If true, show a periodic status update. Will be false if debugging is going on
         self.display_status = display_status
     
+    
     ##########################################################################
     # Increments the number of parsed passwords by one and prints out any
     # status updates
@@ -70,9 +78,7 @@ class MeasurementStatus:
                 sys.stdout.flush()
         return RetType.STATUS_OK
         
-        
-        
-        
+              
 ###################################################################################
 # ASCII art for the banner
 ###################################################################################
@@ -104,6 +110,7 @@ def print_banner():
     print()
     return RetType.STATUS_OK
     
+    
 ###################################################################################
 # ASCII art for when program fails
 ###################################################################################
@@ -124,6 +131,7 @@ def ascii_fail():
     print()
     return RetType.STATUS_OK
 
+    
 ####################################################
 # Simply parses the command line
 ####################################################
@@ -213,8 +221,7 @@ def main():
     if len(master_password_list) > 1000000:
         print("PRO TIP: Past experiments have shown the value of training on a dataset larger than a million passwords is negligable. If this training program takes too long to run you may want to consider training on a smaller set of passwords")
     print()
-    print("Current Status:")
-    
+    print("Current Status:") 
     
     ##--Initialize the training results--## 
     training_results = TrainingData()
@@ -239,6 +246,7 @@ def main():
             print("Exiting...")
             return
         progress_bar.update_status()
+        
     ##--Save the data to disk------------------###
     ##--Get the base directory to save all the data to
     ##  Don't want to use the relative path since who knows where someone is invoking this script from

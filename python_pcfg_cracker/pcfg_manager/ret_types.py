@@ -39,6 +39,9 @@ class RetType(enum.IntEnum):
     ## Error with the PCFG Grammar
     GRAMMAR_ERROR                       = 7
     
+    ## No more children for this particula node
+    NO_MORE_CHILDREN                    = 8
+    
     ## Debug results
     DEBUG                               = 97
     

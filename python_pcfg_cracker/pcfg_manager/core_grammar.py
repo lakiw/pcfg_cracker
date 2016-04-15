@@ -8,18 +8,7 @@
 #
 #########################################################################################
 
-import sys
-import string
-import struct
-import os
-import types
-import time
-import copy
-
-
-
-#Used for debugging and development
-from sample_grammar import s_preterminal
+import sys   #--Used for printing to stderr
 
 
 ##########################################################################################
@@ -394,6 +383,41 @@ class PcfgClass:
             new_index = new_index + 1
         return True
     
+    
+    
+    ####################################################################################################################################
+    # Used to see if a parent of the current node is in the queue or not using the deadbeat dad algorithm
+    # Slightly less computationally expensive then running the full deadbead dad next function
+    ####################################################################################################################################
+    def is_parent_in_queue(self,current_parse_tree, cur_node, max_probability):
+        ##--Check the curnode's direct parent
+        if cur_node[1] != 0:
+            cur_node[1] = cur_node[1] - 1
+            if self.find_probability(current_parse_tree) < max_probability:
+                cur_node[1] = cur_node[1] + 1
+                return True
+            cur_node[1] = cur_node[1] + 1
+    
+        ##--Now check the expanded parse tree, aka the [2,0,[]],[3,0,[]] in [1,0,[[2,0,[]],[3,0,[]]]]
+        if len(cur_node[2]) != 0:
+            ##--if true when this is done, we can test the empty parse tree as a possible parent
+            parent_has_no_expanded_pt = True
+            for item in cur_node[2]:
+                if item[1] != 0 or len(item[2]) != 0:
+                    parent_has_no_expanded_pt = False
+                    if self.is_parent_in_queue(current_parse_tree, item, max_probability):
+                        return True
+            ##--Now check the empty list parent
+            if parent_has_no_expanded_pt:
+                temp_holder = cur_node[2]
+                cur_node[2] = []
+                if self.find_probability(current_parse_tree) < max_probability:
+                    cur_node[2] = temp_holder
+                    return True
+                cur_node[2] = temp_holder
+        
+        return False
+    
     #=================================================================================================================================================#
     # The following functoins are not currently being used but I'm keeping them around since they may be useful in the future for
     # debugging or development
@@ -457,7 +481,6 @@ class PcfgClass:
             #Takes care of the incrementing if there are children
             if numReplacements > (pt[1]+1):
                 #Return the child
-                #ret_list.append(copy.deepcopy(pt))
                 ret_list.append(self.copy_node(pt))
                 ret_list[0][1] = pt[1] + 1
                 
@@ -466,7 +489,6 @@ class PcfgClass:
                 new_expansion = []
                 for x in self.grammar[pt[0]]['replacements'][pt[1]]['pos']:
                     new_expansion.append([x,0,[]])
-                #ret_list.append(copy.deepcopy(pt))
                 ret_list.append(self.copy_node(pt))
                 ret_list[-1][2] = new_expansion
         ###-----Next check to see if there are any nodes to the right that need to be checked
@@ -477,12 +499,12 @@ class PcfgClass:
                 temp_list = self.find_children(pt[2][x])
                 #If there were any children, append them to the main list
                 for y in temp_list:
-                    #ret_list.append(copy.deepcopy(pt))
                     ret_list.append(self.copy_node(pt))
                     ret_list[-1][2][x] = y
         
         return ret_list
 
+        
     ######################################################################
     # Returns a list of all the parents for a child node / parse-tree
     # Not currently being used by anything but it's nice functionality to 
