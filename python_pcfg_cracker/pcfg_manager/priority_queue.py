@@ -94,12 +94,12 @@ class PcfgQueue:
         self.p_queue = []  ##--The actual priority queue
         self.max_probability = 1.0 #--The current highest priority item in the queue. Used for memory management and restoring sessions
         self.min_probability = 0.0 #--The lowest prioirty item is allowed to be in order to be pushed in the queue. Used for memory management
-        self.max_queue_size = 500 #--Used for memory management. The maximum number of items before triming the queue. (Note, the queue can temporarially be larger than this)
+        self.max_queue_size = 100000 #--Used for memory management. The maximum number of items before triming the queue. (Note, the queue can temporarially be larger than this)
         self.reduction_size = self.max_queue_size - self.max_queue_size // 4  #--Target size for the p_queue when it is reduced for memory management
         
         self.storage_list = [] #--Used to store low probability nodes to keep the size of p_queue down
         self.storage_min_probability = 0.0 #-- The lowest probability item allowed into the storage list. Anything lower than this is discarded
-        self.storage_size = 15000 #--The maximum size to save in the storage list before we start discarding items
+        self.storage_size = 50000000 #--The maximum size to save in the storage list before we start discarding items
         self.backup_reduction_size = self.storage_size - self.storage_size // 4
          
         ##--sanity checks for the data structures for when people edit the above default values
