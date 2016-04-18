@@ -46,12 +46,32 @@ import argparse
 import time
 import os  ##--Used for file path information
 
+import threading
 
 #Custom modules
 from pcfg_manager.file_io import load_grammar
 from pcfg_manager.core_grammar import PcfgClass, print_grammar
 from pcfg_manager.priority_queue import PcfgQueue
 from pcfg_manager.ret_types import RetType
+
+
+###########################################################################################
+# Used to check to see if a key was pressed to output program status
+# *Hopefully* should work on multiple OSs
+# --Simply check user_input_char to see if it is not none
+###########################################################################################
+def keypress(user_input_ref):
+    user_input_ref[0] = input() 
+
+######################################################################################################
+# Displays status of cracking session
+######################################################################################################
+def display_status(guess_list = []):
+    print ("Status Report:",file=sys.stderr)
+    if len(guess_list) != 0:
+        print ("Currently generating guesses from " + str(guess_list[0]) + " to " + str(guess_list[-1]),file=sys.stderr)
+    print("",file=sys.stderr)
+    return RetType.STATUS_OK
 
 
 #########################################################################################
@@ -157,8 +177,16 @@ def main():
         print_error()
         return ret_value
     
+    ##--Setup the check to see if a user is pressing a button--#
+    user_input = [None]
+    user_thread = threading.Thread(target=keypress, args=(user_input,))
+    user_thread.daemon = True  # thread dies when main thread (only non-daemon thread) exits.
+    user_thread.start()
+    
+    
     ##--Setup is done, now start generating rules
     print ("Starting to generate password guesses",file=sys.stderr)
+    print ("Press [ENTER] to display a status output",file=sys.stderr)
     
     
     ##--Going to break this up eventually into it's own function, but for now, process the queue--##
@@ -179,17 +207,20 @@ def main():
     total_time_start = time.perf_counter()
     
     while ret_value == RetType.STATUS_OK:
-
+    
+        ##--Expand the guesses from the parse tree
+        current_guesses = pcfg.list_terminals(queue_item.parse_tree)
+        
         ##--This is all for debugging and performance improvements
         if command_line_results.queue_info == True:
             
             num_preterminals = num_preterminals +1
             guess_start_time = time.perf_counter()
-            num_guesses = num_guesses + len(pcfg.list_terminals(queue_item.parse_tree)) 
+            num_guesses = num_guesses + len(current_guesses) 
             guess_stop_time = time.perf_counter() - guess_start_time
             running_guess_time = running_guess_time + guess_stop_time
             
-            if num_preterminals % 1000 == 0:
+            if num_preterminals % 10000 == 0:
                 print ("PQueue:" + str(len(p_queue.p_queue)),file=sys.stderr)
                 print ("Backup storage list:" + str(len(p_queue.storage_list)),file=sys.stderr)
                 print ("Total number of Pre Terminals: " + str (num_preterminals),file=sys.stderr)
@@ -205,7 +236,7 @@ def main():
 
         ##--This is if you are actually trying to generate guesses
         else:
-            for guess in pcfg.list_terminals(queue_item.parse_tree):
+            for guess in current_guesses:
                 try:
                     print(guess)
                 ##--While I could silently replace/ignore the Unicode character for now I want to know if this is happening
@@ -219,7 +250,17 @@ def main():
             queue_item = queue_item_list[0]
         p_queue_stop_time = time.perf_counter() - p_queue_start_time
         running_queue_time = running_queue_time + p_queue_stop_time
-
+        
+        ##--Check for user requested status output--##
+        if user_input[0] is not None:          
+            display_status(guess_list = current_guesses)
+            user_input[0] = None
+            ##--Kick off again the thread to check if user_input was entered
+            if not user_thread.is_alive():
+                user_thread = threading.Thread(target=keypress, args=(user_input,))
+                user_thread.daemon = True  # thread dies when main thread (only non-daemon thread) exits.
+                user_thread.start()
+            
     return RetType.STATUS_OK
     
 
