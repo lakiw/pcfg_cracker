@@ -46,7 +46,8 @@ import argparse
 import time
 import os  ##--Used for file path information
 
-import threading
+import threading ##--Used only for the "check for user input" threads
+from multiprocessing import Process, Queue
 
 #Custom modules
 from pcfg_manager.file_io import load_grammar
@@ -133,7 +134,16 @@ def print_error():
     print('',file=sys.stderr)
     return RetType.STATUS_OK
 
-     
+
+########################################################################################
+# Exands a parse tree and prints it out
+########################################################################################
+def get_guesses(pcfg = None, parse_tree = None, results = []):
+    return
+    results.append(pcfg.list_terminals(parse_tree))
+    print("hey")
+
+  
 ##################################################################
 # Main function, not that exciting
 ##################################################################
@@ -206,19 +216,47 @@ def main():
     running_guess_time = 0
     total_time_start = time.perf_counter()
     
+    expand_results_process = None
+    
     while ret_value == RetType.STATUS_OK:
     
         ##--Expand the guesses from the parse tree
-        current_guesses = pcfg.list_terminals(queue_item.parse_tree)
+        guess_start_time = time.perf_counter()
+        
+        ##--Wait for the thread to finish
+        if expand_results_process != None and expand_results_process.is_alive():
+            expand_results_process.join()
+         
+        ##--Start up the thread to expand the results
+        results = []
+        expand_results_process = Process(target = get_guesses, args=(pcfg, queue_item.parse_tree, results,))
+        expand_results_process.daemon = True
+        expand_results_process.start()
+        
+        guess_stop_time = time.perf_counter() - guess_start_time
+        running_guess_time = running_guess_time + guess_stop_time
+        
+        p_queue_start_time = time.perf_counter()
+        queue_item_list = []        
+        ret_value = p_queue.next_function(pcfg, queue_item_list)
+        if len(queue_item_list) > 0:
+            queue_item = queue_item_list[0]
+        p_queue_stop_time = time.perf_counter() - p_queue_start_time
+        running_queue_time = running_queue_time + p_queue_stop_time
+        
+        if expand_results_process.is_alive():
+            expand_results_process.join()
+            
+        if len(results) == 0:
+            current_guesses = []
+        else:
+            current_guesses = results[0]
         
         ##--This is all for debugging and performance improvements
         if command_line_results.queue_info == True:
             
             num_preterminals = num_preterminals +1
-            guess_start_time = time.perf_counter()
             num_guesses = num_guesses + len(current_guesses) 
-            guess_stop_time = time.perf_counter() - guess_start_time
-            running_guess_time = running_guess_time + guess_stop_time
             
             if num_preterminals % 10000 == 0:
                 print ("PQueue:" + str(len(p_queue.p_queue)),file=sys.stderr)
@@ -243,13 +281,7 @@ def main():
                 except UnicodeEncodeError:
                     print("UNICODE_ERROR",file=sys.stderr)
                     
-        p_queue_start_time = time.perf_counter()
-        queue_item_list = []        
-        ret_value = p_queue.next_function(pcfg, queue_item_list)
-        if len(queue_item_list) > 0:
-            queue_item = queue_item_list[0]
-        p_queue_stop_time = time.perf_counter() - p_queue_start_time
-        running_queue_time = running_queue_time + p_queue_stop_time
+        
         
         ##--Check for user requested status output--##
         if user_input[0] is not None:          
