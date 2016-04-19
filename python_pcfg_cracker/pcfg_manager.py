@@ -43,36 +43,15 @@ if sys.version_info[0] < 3:
     sys.exit(1)
     
 import argparse
-import time
 import os  ##--Used for file path information
-
-import threading ##--Used only for the "check for user input" threads
-from multiprocessing import Process, Queue
 
 #Custom modules
 from pcfg_manager.file_io import load_grammar
 from pcfg_manager.core_grammar import PcfgClass, print_grammar
 from pcfg_manager.priority_queue import PcfgQueue
 from pcfg_manager.ret_types import RetType
+from pcfg_manager.cracking_session import CrackingSession
 
-
-###########################################################################################
-# Used to check to see if a key was pressed to output program status
-# *Hopefully* should work on multiple OSs
-# --Simply check user_input_char to see if it is not none
-###########################################################################################
-def keypress(user_input_ref):
-    user_input_ref[0] = input() 
-
-######################################################################################################
-# Displays status of cracking session
-######################################################################################################
-def display_status(guess_list = []):
-    print ("Status Report:",file=sys.stderr)
-    if len(guess_list) != 0:
-        print ("Currently generating guesses from " + str(guess_list[0]) + " to " + str(guess_list[-1]),file=sys.stderr)
-    print("",file=sys.stderr)
-    return RetType.STATUS_OK
 
 
 #########################################################################################
@@ -185,114 +164,15 @@ def main():
     if ret_value != RetType.STATUS_OK:
         print ("Error initalizing the priority queue, exiting",file=sys.stderr)
         print_error()
-        return ret_value
-    
-    ##--Setup the check to see if a user is pressing a button--#
-    user_input = [None]
-    user_thread = threading.Thread(target=keypress, args=(user_input,))
-    user_thread.daemon = True  # thread dies when main thread (only non-daemon thread) exits.
-    user_thread.start()
-    
+        return ret_value 
     
     ##--Setup is done, now start generating rules
     print ("Starting to generate password guesses",file=sys.stderr)
     print ("Press [ENTER] to display a status output",file=sys.stderr)
     
-    
-    ##--Going to break this up eventually into it's own function, but for now, process the queue--##
-    queue_item_list = []
-    ret_value = p_queue.next_function(pcfg, queue_item_list)
-    if len(queue_item_list) > 0:
-        queue_item = queue_item_list[0]
-    
-    ##--All these variables are simply for debugging and profiling the code
-    num_preterminals = 0
-    num_guesses = 0
-    p_queue_start_time = 0
-    p_queue_stop_time = 0
-    guess_start_time = 0
-    guess_stop_time = 0
-    running_queue_time = 0
-    running_guess_time = 0
-    total_time_start = time.perf_counter()
-    
-    expand_results_process = None
-    
-    while ret_value == RetType.STATUS_OK:
-    
-        ##--Expand the guesses from the parse tree
-        guess_start_time = time.perf_counter()
-        
-        ##--Wait for the thread to finish
-        if expand_results_process != None and expand_results_process.is_alive():
-            expand_results_process.join()
-         
-        ##--Start up the thread to expand the results
-        results = []
-        expand_results_process = Process(target = get_guesses, args=(pcfg, queue_item.parse_tree, results,))
-        expand_results_process.daemon = True
-        expand_results_process.start()
-        
-        guess_stop_time = time.perf_counter() - guess_start_time
-        running_guess_time = running_guess_time + guess_stop_time
-        
-        p_queue_start_time = time.perf_counter()
-        queue_item_list = []        
-        ret_value = p_queue.next_function(pcfg, queue_item_list)
-        if len(queue_item_list) > 0:
-            queue_item = queue_item_list[0]
-        p_queue_stop_time = time.perf_counter() - p_queue_start_time
-        running_queue_time = running_queue_time + p_queue_stop_time
-        
-        if expand_results_process.is_alive():
-            expand_results_process.join()
-            
-        if len(results) == 0:
-            current_guesses = []
-        else:
-            current_guesses = results[0]
-        
-        ##--This is all for debugging and performance improvements
-        if command_line_results.queue_info == True:
-            
-            num_preterminals = num_preterminals +1
-            num_guesses = num_guesses + len(current_guesses) 
-            
-            if num_preterminals % 10000 == 0:
-                print ("PQueue:" + str(len(p_queue.p_queue)),file=sys.stderr)
-                print ("Backup storage list:" + str(len(p_queue.storage_list)),file=sys.stderr)
-                print ("Total number of Pre Terminals: " + str (num_preterminals),file=sys.stderr)
-                print ("PQueueTime " + str(running_queue_time),file=sys.stderr)
-                print ("Guesses:" + str(num_guesses),file=sys.stderr)
-                print ("GuessTime " + str(running_guess_time),file=sys.stderr)
-                print ("Average num of guesses per preterm: " + str(num_guesses // num_preterminals),file=sys.stderr)
-                print ("Total Time " + str(time.perf_counter() - total_time_start),file=sys.stderr)
-                print ("Number of guesses a second: " + str(num_guesses // (time.perf_counter() - total_time_start)),file=sys.stderr)
-                print ("Current probability: " + str(p_queue.max_probability),file=sys.stderr)
-                #print ("Parse Tree : " + str(queue_item.parse_tree))
-                print ()
-
-        ##--This is if you are actually trying to generate guesses
-        else:
-            for guess in current_guesses:
-                try:
-                    print(guess)
-                ##--While I could silently replace/ignore the Unicode character for now I want to know if this is happening
-                except UnicodeEncodeError:
-                    print("UNICODE_ERROR",file=sys.stderr)
-                    
-        
-        
-        ##--Check for user requested status output--##
-        if user_input[0] is not None:          
-            display_status(guess_list = current_guesses)
-            user_input[0] = None
-            ##--Kick off again the thread to check if user_input was entered
-            if not user_thread.is_alive():
-                user_thread = threading.Thread(target=keypress, args=(user_input,))
-                user_thread.daemon = True  # thread dies when main thread (only non-daemon thread) exits.
-                user_thread.start()
-            
+    current_cracking_session = CrackingSession(pcfg = pcfg, p_queue = p_queue)
+    current_cracking_session.run(print_queue_info = command_line_results.queue_info)
+      
     return RetType.STATUS_OK
     
 
