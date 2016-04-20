@@ -105,7 +105,11 @@ class CrackingSession:
                         print(guess)
                     ##--While I could silently replace/ignore the Unicode character for now I want to know if this is happening
                     except UnicodeEncodeError:
-                        print("UNICODE_ERROR",file=sys.stderr)                       
+                        print("UNICODE_ERROR",file=sys.stderr)       
+                    except IOError:
+                        print("Consumer, (probably the password cracker), stopped accepting input.",file=sys.stderr)
+                        print("Halting guess generation and exiting",file=sys.stderr)
+                        return RetType.BROKEN_PIPE
             
             ##--Check for user requested status output--##
             if user_input[0] is not None:          
