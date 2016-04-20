@@ -43,15 +43,14 @@ if sys.version_info[0] < 3:
     sys.exit(1)
     
 import argparse
-import time
 import os  ##--Used for file path information
-
 
 #Custom modules
 from pcfg_manager.file_io import load_grammar
 from pcfg_manager.core_grammar import PcfgClass, print_grammar
 from pcfg_manager.priority_queue import PcfgQueue
 from pcfg_manager.ret_types import RetType
+from pcfg_manager.cracking_session import CrackingSession
 
 
 #########################################################################################
@@ -113,7 +112,16 @@ def print_error():
     print('',file=sys.stderr)
     return RetType.STATUS_OK
 
-     
+
+########################################################################################
+# Exands a parse tree and prints it out
+########################################################################################
+def get_guesses(pcfg = None, parse_tree = None, results = []):
+    return
+    results.append(pcfg.list_terminals(parse_tree))
+    print("hey")
+
+  
 ##################################################################
 # Main function, not that exciting
 ##################################################################
@@ -155,71 +163,15 @@ def main():
     if ret_value != RetType.STATUS_OK:
         print ("Error initalizing the priority queue, exiting",file=sys.stderr)
         print_error()
-        return ret_value
+        return ret_value 
     
     ##--Setup is done, now start generating rules
     print ("Starting to generate password guesses",file=sys.stderr)
+    print ("Press [ENTER] to display a status output",file=sys.stderr)
     
-    
-    ##--Going to break this up eventually into it's own function, but for now, process the queue--##
-    queue_item_list = []
-    ret_value = p_queue.next_function(pcfg, queue_item_list)
-    if len(queue_item_list) > 0:
-        queue_item = queue_item_list[0]
-    
-    ##--All these variables are simply for debugging and profiling the code
-    num_preterminals = 0
-    num_guesses = 0
-    p_queue_start_time = 0
-    p_queue_stop_time = 0
-    guess_start_time = 0
-    guess_stop_time = 0
-    running_queue_time = 0
-    running_guess_time = 0
-    total_time_start = time.perf_counter()
-    
-    while ret_value == RetType.STATUS_OK:
-
-        ##--This is all for debugging and performance improvements
-        if command_line_results.queue_info == True:
-            
-            num_preterminals = num_preterminals +1
-            guess_start_time = time.perf_counter()
-            num_guesses = num_guesses + len(pcfg.list_terminals(queue_item.parse_tree)) 
-            guess_stop_time = time.perf_counter() - guess_start_time
-            running_guess_time = running_guess_time + guess_stop_time
-            
-            if num_preterminals % 1000 == 0:
-                print ("PQueue:" + str(len(p_queue.p_queue)),file=sys.stderr)
-                print ("Backup storage list:" + str(len(p_queue.storage_list)),file=sys.stderr)
-                print ("Total number of Pre Terminals: " + str (num_preterminals),file=sys.stderr)
-                print ("PQueueTime " + str(running_queue_time),file=sys.stderr)
-                print ("Guesses:" + str(num_guesses),file=sys.stderr)
-                print ("GuessTime " + str(running_guess_time),file=sys.stderr)
-                print ("Average num of guesses per preterm: " + str(num_guesses // num_preterminals),file=sys.stderr)
-                print ("Total Time " + str(time.perf_counter() - total_time_start),file=sys.stderr)
-                print ("Number of guesses a second: " + str(num_guesses // (time.perf_counter() - total_time_start)),file=sys.stderr)
-                print ("Current probability: " + str(p_queue.max_probability),file=sys.stderr)
-                #print ("Parse Tree : " + str(queue_item.parse_tree))
-                print ()
-
-        ##--This is if you are actually trying to generate guesses
-        else:
-            for guess in pcfg.list_terminals(queue_item.parse_tree):
-                try:
-                    print(guess)
-                ##--While I could silently replace/ignore the Unicode character for now I want to know if this is happening
-                except UnicodeEncodeError:
-                    print("UNICODE_ERROR",file=sys.stderr)
-                    
-        p_queue_start_time = time.perf_counter()
-        queue_item_list = []        
-        ret_value = p_queue.next_function(pcfg, queue_item_list)
-        if len(queue_item_list) > 0:
-            queue_item = queue_item_list[0]
-        p_queue_stop_time = time.perf_counter() - p_queue_start_time
-        running_queue_time = running_queue_time + p_queue_stop_time
-
+    current_cracking_session = CrackingSession(pcfg = pcfg, p_queue = p_queue)
+    current_cracking_session.run(print_queue_info = command_line_results.queue_info)
+      
     return RetType.STATUS_OK
     
 
