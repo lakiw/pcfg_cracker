@@ -53,7 +53,6 @@ from pcfg_manager.ret_types import RetType
 from pcfg_manager.cracking_session import CrackingSession
 
 
-
 #########################################################################################
 # Holds the command line values
 # Also holds the default values if you don't want to enter them every time you run this
