@@ -328,12 +328,12 @@ class TrainingData:
         items = []
         ret_value = cur_pass.parse_base(items)
         if ret_value != RetType.STATUS_OK:
-            print("Error parsing special character combos")
+            print("Error parsing a password. There were sections that were not processed")
             return ret_value
         ##--Now update the special character combo list
         ret_value = self.base_structure.insert_list(items)
         if ret_value != RetType.STATUS_OK:
-            print("Error parsing special charcter combos")
+            print("Error inserting a base structure object")
             return ret_value
             
         return RetType.STATUS_OK

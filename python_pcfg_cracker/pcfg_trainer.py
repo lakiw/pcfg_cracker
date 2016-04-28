@@ -43,6 +43,15 @@ class CommandLineVars:
         
         ##--The character encoding of the training set, (for example UTF-8)
         self.encoding = None
+
+        ##--The default amount of probability smoothing to perform
+        ##  This is how much "similar" items should be given the same probability
+        ##  For example if it is set to 0.1 then items differening by 10% will be given the same probability
+        ##  Setting this to 0 effectivly turns off probability smoothing
+        ##  Why would you want to use probability smoothing? Well it can mean more terminals are generated from pre-terminals on avearge
+        ##  for your generated grammar. Essentially the grammar becomes less precise but since generating the pre-terminals
+        ##  takes a large amount of time in a password cracking attack, the grammar becomes "faster".
+        self.smoothing = 0.01
         
 #############################################################################
 # Used to print out the status of a current measurement
@@ -141,11 +150,15 @@ def parse_command_line(command_line_results):
     parser.add_argument('--training','-t', help='The training set of passwords to train from',metavar='TRAINING_SET',required=True)
     parser.add_argument('--encoding','-e', help='File encoding to read the input training set. If not specified autodetect is used', metavar='ENCODING', required=False)
     parser.add_argument('--verbose','-v', help='Turns on verbose output', required=False, action="store_true")
+    parser.add_argument('--smoothing', '-s', 
+        help='The amount of probability smoothing to apply to the generated grammar. For example, if it is 0.01 then items with a prob difference of 1%% will be given the same prob. A setting of 0 will turn this off. Default: (%(default)s)',
+        required=False, default=command_line_results.smoothing)
     try:
         args=parser.parse_args()
         command_line_results.rule_name = args.output
         command_line_results.training_file = args.training
         command_line_results.encoding = args.encoding
+    #    command_line_results.smoothing = args.smoothing
 
         if args.verbose:
             command_line_results.verbose = True

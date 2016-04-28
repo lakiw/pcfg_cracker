@@ -569,10 +569,6 @@ class PasswordParser:
                 
         ##--Now copy the section list to the main processed_mask
         self.processed_mask = section_list.copy()
-        #print(str(self.processed_mask).encode('ascii',errors='replace'))
-        #print(self.processed_mask)
-        #for x, y in self.processed_mask:
-        #    print (y)
         return RetType.STATUS_OK
         
     ##################################################################################
