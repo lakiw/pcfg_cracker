@@ -9,6 +9,7 @@
 #########################################################################################
 
 import sys   #--Used for printing to stderr
+import random  #--Used for generating honeywords
 
 
 ##########################################################################################
@@ -417,6 +418,64 @@ class PcfgClass:
                 cur_node[2] = temp_holder
         
         return False
+
+
+    #=================================================================================================================================================#
+    # The following functions are to support honeyword operations
+    #=================================================================================================================================================#
+
+    ###################################################################################################################################################
+    # Performs a random walk of the grammar and returns a parse tree
+    # The random walk is weighted by probability. Therefore if there are two choices and one is 90% and the other is 10% the random walk will take
+    # the 90% path 90% of the time on average.
+    # This is used to help pick parse trees for honeyword generation
+    # This function works recursivly, call it with the root node
+    # ---AKA: cur_index = self.start_index()
+    # -cur_index = current index to start the walk from
+    # -Returns the parse tree generated
+    ###################################################################################################################################################
+    def random_grammar_walk(self, cur_index):
+        ##--Find the random number to do the walk with
+        random_number = random.random()
+
+        ##--Now find which transition that random number refers to
+        cur_transition = -1 #--Initialation value, also denotes an error occured if it is still -1 at the end
+        #--Order the probabilities with the first one starting at 0. So if two probs were 90%, and 10%, first would be from 0-90%
+        #--Second one would be from 90-100. The upper transition prob is "less than"
+        transition_prob = 0 
+        for i in range(0,len(self.grammar[cur_index['replacements']])):
+            #-The probability of the current transition
+            transition_prob = transition_prob + self.grammar[cur_index]['replacements'][i].prob
+            ##--This is the transition to take on the random walk
+            if random_number < transition_prob:
+                cur_transitoin = i
+                break
+
+        ##--Error check to make sure some transition was found--##
+        if cur_transition == -1:
+            print("Error with random walk, the probabilities of all the transitions was less than one in the grammar",file=sys.stderr)
+            return None
+
+        ##--Create the parse tree
+        parse_tree = [cur_index,cur_transition,[]]
+
+        ##--Check if it is a terminal
+        if self.grammar[cur_index]['replacements'][cur_transition].is_terminal:
+            ##-return the parse tree
+            return parse_tree
+
+        ##-Not a terminal, we need to fill out the replacements
+        for i in range(0,len(self.grammar[cur_index]['replacements'][cur_transition].pos)):
+            child_node = self.random_grammar_walk(self.grammar[cur_index]['replacements'][cur_transition].pos[i])
+            ##--Error handling to pass errors back up the recursive chain
+            if child_node == None:
+                return None
+            parse_tree[2].append(child_node)
+
+        return parse_tree
+
+
+
     
     #=================================================================================================================================================#
     # The following functoins are not currently being used but I'm keeping them around since they may be useful in the future for
