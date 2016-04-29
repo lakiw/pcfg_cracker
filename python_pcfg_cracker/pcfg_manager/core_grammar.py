@@ -442,17 +442,26 @@ class PcfgClass:
         cur_transition = -1 #--Initialation value, also denotes an error occured if it is still -1 at the end
         #--Order the probabilities with the first one starting at 0. So if two probs were 90%, and 10%, first would be from 0-90%
         #--Second one would be from 90-100. The upper transition prob is "less than"
-        transition_prob = 0 
-        for i in range(0,len(self.grammar[cur_index['replacements']])):
+        transition_prob = 0
+        for i in range(0,len(self.grammar[cur_index]['replacements'])):
             #-The probability of the current transition
-            transition_prob = transition_prob + self.grammar[cur_index]['replacements'][i].prob
+            #-Need to calculate it differently if it has values or not, (multiple repalcements packed in the same index)
+            if 'values' in self.grammar[cur_index]['replacements'][i]:
+                transition_prob = transition_prob + (self.grammar[cur_index]['replacements'][i]['prob'] * len(self.grammar[cur_index]['replacements'][i]['values']))
+            else:
+                transition_prob = transition_prob + self.grammar[cur_index]['replacements'][i]['prob']
             ##--This is the transition to take on the random walk
             if random_number < transition_prob:
-                cur_transitoin = i
+                cur_transition = i
                 break
 
         ##--Error check to make sure some transition was found--##
         if cur_transition == -1:
+            print(transition_prob)
+            print(random_number)
+            print(cur_index)
+            print(self.grammar[cur_index]['name'])
+            print(self.grammar[cur_index]['replacements'][0])
             print("Error with random walk, the probabilities of all the transitions was less than one in the grammar",file=sys.stderr)
             return None
 
@@ -460,13 +469,13 @@ class PcfgClass:
         parse_tree = [cur_index,cur_transition,[]]
 
         ##--Check if it is a terminal
-        if self.grammar[cur_index]['replacements'][cur_transition].is_terminal:
+        if self.grammar[cur_index]['replacements'][cur_transition]['is_terminal']:
             ##-return the parse tree
             return parse_tree
 
         ##-Not a terminal, we need to fill out the replacements
-        for i in range(0,len(self.grammar[cur_index]['replacements'][cur_transition].pos)):
-            child_node = self.random_grammar_walk(self.grammar[cur_index]['replacements'][cur_transition].pos[i])
+        for i in range(0,len(self.grammar[cur_index]['replacements'][cur_transition]['pos'])):
+            child_node = self.random_grammar_walk(self.grammar[cur_index]['replacements'][cur_transition]['pos'][i])
             ##--Error handling to pass errors back up the recursive chain
             if child_node == None:
                 return None

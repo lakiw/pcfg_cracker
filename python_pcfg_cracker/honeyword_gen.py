@@ -2,15 +2,10 @@
 
 ########################################################################################
 #
-# Name: PCFG Manager
-#  --Probabilistic Context Free Grammar (PCFG) Password Guessing Program
+# Name: Honeyword Generator
+#  --Generate honeywords, (synthetic passwords), from a PCFG grammar
 #
 #  Written by Matt Weir
-#  Backend algorithm developed by Matt Weir, Sudhir Aggarwal, and Breno de Medeiros
-#  Special thanks to Bill Glodek for work on an earlier version
-#  Special thanks to the National Institute of Justice and the NW3C for support with the initial reasearch
-#  Huge thanks to Florida State University's ECIT lab where this was developed
-#  And the list goes on and on... And thank you whoever is reading this. Be good!
 #
 #
 #  This program is free software; you can redistribute it and/or
@@ -30,7 +25,7 @@
 #
 #  Contact Info: cweir@vt.edu
 #
-#  pcfg_manager.py
+#  honeyword_gen.py
 #
 #########################################################################################
 
@@ -48,9 +43,7 @@ import os  ##--Used for file path information
 #Custom modules
 from pcfg_manager.file_io import load_grammar
 from pcfg_manager.core_grammar import PcfgClass, print_grammar
-from pcfg_manager.priority_queue import PcfgQueue
 from pcfg_manager.ret_types import RetType
-from pcfg_manager.cracking_session import CrackingSession
 
 
 #########################################################################################
@@ -60,26 +53,38 @@ from pcfg_manager.cracking_session import CrackingSession
 class CommandLineVars:
     def __init__(self):
         self.rule_name = "Default"
+        self.num_honeywords = 1
         #Debugging printouts
         #-They actually are initialized false under parse_command_line regardless of the value here
         self.verbose = False  
-        self.queue_info = False
-
         
+       
 ####################################################
 # Simply parses the command line
 ####################################################
 def parse_command_line(command_line_results):
-    parser = argparse.ArgumentParser(description='PCFG_Cracker: Used to generate password guesses for use in other cracking programs')
-    parser.add_argument('--rule','-r', help='The rule set to use. Default is \"Default\"',metavar='RULE_SET',required=False, default= command_line_results.rule_name)
-    parser.add_argument('--verbose','-v', help='Verbose prints. Only use for debugging otherwise it will generate junk guesses',dest='verbose', action='store_true')
-    parser.add_argument('--queue_info','-q', help='Prints the priority queue info vs guesses. Used for debugging',dest='queue_info', action='store_true')
+    parser = argparse.ArgumentParser(description='Honeyword Generator: Generates honeywords, (synthetic passwords), from a PCFG grammar')
+    parser.add_argument('--rule','-r', help='The rule set to use. Default: (%(default)s)',metavar='RULE_SET',required=False, default= command_line_results.rule_name)
+    parser.add_argument('--verbose','-v', help='Verbose prints. Only use for debugging otherwise it will make parsing the output harder',dest='verbose', action='store_true')
+    parser.add_argument(
+        '--num_honeywords',
+        '-n', 
+        help='Number of honeywords to generate. Default: (%(default)s)',
+        metavar='NUM_HONEYWORDS', 
+        required=False,
+        type=int, 
+        default=command_line_results.num_honeywords)
     try:
         args=parser.parse_args()
         command_line_results.rule_name = args.rule
         command_line_results.verbose = args.verbose
-        command_line_results.queue_info = args.queue_info
+        command_line_results.num_honeywords = args.num_honeywords
     except:
+        return RetType.COMMAND_LINE_ERROR
+
+    ##--Perform some sanity checks on the input
+    if command_line_results.num_honeywords <= 0:
+        print("Error, you need to have a value greater than 0", file=sys.stderr)
         return RetType.COMMAND_LINE_ERROR
 
     return RetType.STATUS_OK 
@@ -90,7 +95,7 @@ def parse_command_line(command_line_results):
 ###################################################################################
 def print_banner(program_details):
     print('',file=sys.stderr)
-    print ("PCFG_Cracker version " + program_details['Version'], file=sys.stderr)
+    print ("Honeyword Generator version " + program_details['Version'], file=sys.stderr)
     print ("Written by " + program_details['Author'], file=sys.stderr)
     print ("Sourcecode available at " + program_details['Source'], file=sys.stderr)
     print('',file=sys.stderr)
@@ -120,8 +125,8 @@ def main():
     
     ##--Information about this program--##
     program_details = {
-        'Program':'pcfg_manager.py',
-        'Version': '3.1 Alpha',
+        'Program':'honeyword_gen.py',
+        'Version': '3.1',
         'Author':'Matt Weir',
         'Contact':'cweir@vt.edu',
         'Source':'https://github.com/lakiw/pcfg_cracker'
@@ -147,21 +152,19 @@ def main():
         return ret_value
  
     pcfg = PcfgClass(grammar)
+
+    ##--Generate the honeywords--##
+    print("Generating Honeywords", file=sys.stderr)
+    print("--------------------------------", file=sys.stderr)
+    # First find the start index
+    start_index = pcfg.start_index()
+    if start_index == -1:
+        print("Error with the grammar, could not find the start index", file=sys.stderr)
+        return RetType.ERROR_QUIT
+    for i in range(0,command_line_results.num_honeywords):
+        parse_tree = pcfg.random_grammar_walk(start_index)
+        print(parse_tree)
     
-    ##--Initialize the priority queue--##
-    p_queue = PcfgQueue(verbose = command_line_results.verbose)
-    ret_value = p_queue.initialize(pcfg)
-    if ret_value != RetType.STATUS_OK:
-        print ("Error initalizing the priority queue, exiting",file=sys.stderr)
-        print_error()
-        return ret_value 
-    
-    ##--Setup is done, now start generating rules
-    print ("Starting to generate password guesses",file=sys.stderr)
-    print ("Press [ENTER] to display a status output",file=sys.stderr)
-    
-    current_cracking_session = CrackingSession(pcfg = pcfg, p_queue = p_queue)
-    current_cracking_session.run(print_queue_info = command_line_results.queue_info)
       
     return RetType.STATUS_OK
     
