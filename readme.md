@@ -1,19 +1,8 @@
 # Welcome to the Probabilistic Context Free Grammar Password Research Project
 
-## Python PCFG Cracker Re-Write Status:
-1. Training Program's Core Functionality: Done
-2. Training Program's Testing Status:
-  1. Windows: Initial tests done
-  2. MacOSX: Initial tests done
-  3. Linux: Not started
-3. Training Program's Documentation Status: TBD
-4. PCFG Manager Core Functionality: In Testing
-5. Core PCFG and "Next" algorithm: Done
-6. Reading in grammar and parsing it correctly: Done
-7. Allow use of user defined input dictionaries: Not Started
+## Documentation
 
-It can make guesses right now, but lacks a lot of functionality and I need to do much more testing.
-
+Please see the wiki pages of this git repo for additional documentation
 
 ## Overview
 
@@ -24,8 +13,3 @@ The main goal of this project is to see if we can assign probabilities to differ
 ## Special Thanks and Acknowledgements:
 
 The original version of the program was written Bill Glodek, another graduate student at Florida State University. The original idea for using probabilistic context free grammars to represent how people create passwords was Dr. Sudhir Aggarwal’s and Professor Breno de Medeiros’s. Basically I was lucky enough to come in at the right time to assist with the start of the program and help carry it on once Bill graduated.
-
-
-## Code Layout
-
-I'm currently in the process of restructing this git repo, but for now you can find the semi-woring code under "traditional_pcfg_cracker". I broke a lot of things when adding passphrase support so I'll probably upload an older more stable version at some point. I created a directory specifically for passphrase cracking where I expect I'll create a seperate branch of the code tailored for that use case. Finally on the defensive side, the honeyword geeration code is available under the honeywords directory.
