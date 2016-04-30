@@ -484,8 +484,24 @@ class PcfgClass:
         return parse_tree
 
 
+    ##############################################################################################################################
+    # Generates a random terminal from a parse tree
+    # Used for honeyword creation
+    ##############################################################################################################################
+    def gen_random_terminal(self,pt):
+        #First grab a list of all the pre_terminals. It'll take the form of nested linked lists.
+        #For example expantTerminals will return something like [['cat','hat','dog'],[1,2]].
+        #-TODO: this can be made a whole lot more effecient by only grabbing one value
+        # Right now just lazy and re-using the cracking functions
+        guess_combos = self.expand_terminals(pt,working_value=[])
 
-    
+        #--Now pick a random guess from the combos
+        final_terminal = ""
+        for x in guess_combos:
+            final_terminal = final_terminal + random.choice(x)
+        return final_terminal
+
+
     #=================================================================================================================================================#
     # The following functoins are not currently being used but I'm keeping them around since they may be useful in the future for
     # debugging or development
