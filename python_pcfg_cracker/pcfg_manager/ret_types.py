@@ -42,6 +42,9 @@ class RetType(enum.IntEnum):
     ## No more children for this particula node
     NO_MORE_CHILDREN                    = 8
     
+    ## Broken output pipe, (the password cracker probably stopped)
+    BROKEN_PIPE                         = 9
+    
     ## Debug results
     DEBUG                               = 97
     

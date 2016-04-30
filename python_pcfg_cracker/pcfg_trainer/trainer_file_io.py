@@ -150,6 +150,9 @@ def is_jtr_pot(training_file, num_to_test, verbose = False, file_encoding = 'utf
                         return RetType.IS_FALSE
         # It looks a lot like a POT file
         print("Treating input file as a John the Ripper POT file")
+        print("!!!! Warning, the generated grammars are much less effective if duplicate passwords are not included in the training set")
+        print("!!!! Reading passwords directly form POT files was added more for testing and development purposes")
+        print("!!!! If possible it will likely be better to train on the output from JtR's '-show' command")
         print()
         return RetType.IS_TRUE
     ##--An error occured trying ot open the file--##
