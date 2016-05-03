@@ -13,7 +13,7 @@
 import sys
 import time
 import threading ##--Used only for the "check for user input" threads
-from multiprocessing import Process, Queue
+from multiprocessing import Process, Queue, Pipe
 
 from pcfg_manager.core_grammar import PcfgClass, print_grammar
 from pcfg_manager.priority_queue import PcfgQueue
@@ -51,10 +51,10 @@ class CrackingSession:
         
         #-Create a queue to send data back to the main process, (this one)
         #-In the future, may change it to a pipe for performance reasons, but starting out with queue since it is easier
-        queue_item_list = Queue(maxsize=100)
+        parent_conn, child_conn = Pipe()
         
         #-Spawn a child process to start generating the pre-terminals
-        priority_queue_process = Process(target=spawn_pqueue_thread, args=(self.pcfg, queue_item_list, self.verbose))
+        priority_queue_process = Process(target=spawn_pqueue_thread, args=(self.pcfg, child_conn, self.verbose))
         priority_queue_process.daemon = True
         priority_queue_process.start()
         
@@ -68,7 +68,7 @@ class CrackingSession:
         self.p_queue_start_time = time.perf_counter()
         
         #-Get the first item from the child priority_queue process
-        queue_item = queue_item_list.get()
+        queue_item = parent_conn.recv()
         
         #-If the value None is encountered the queue is either empty or an error occured so stopped
         if queue_item is None:
@@ -133,7 +133,7 @@ class CrackingSession:
             ##--Generate more parse trees from the priority queue
             self.p_queue_start_time = time.perf_counter()
             
-            queue_item = queue_item_list.get()
+            queue_item = parent_conn.recv()
         
             #-If the value None is encountered the queue is either empty or an error occured so stopped
             if queue_item is None:
@@ -172,7 +172,7 @@ def keypress(user_input_ref):
 # send to the parent process
 # The parse trees will be sent back to the parent process in priority order
 ###############################################################################################
-def spawn_pqueue_thread(pcfg, results_queue, verbose):
+def spawn_pqueue_thread(pcfg, child_conn, verbose):
     ##--Initialize the priority queue--##
     p_queue = PcfgQueue(verbose = verbose)
     ret_value = p_queue.initialize(pcfg)
@@ -186,7 +186,7 @@ def spawn_pqueue_thread(pcfg, results_queue, verbose):
     
     while ret_value == RetType.STATUS_OK:
         for i in queue_item_list:
-            results_queue.put(i)
+            child_conn.send(i)
         queue_item_list = []
         ret_value = p_queue.next_function(pcfg, queue_item_list)
         
