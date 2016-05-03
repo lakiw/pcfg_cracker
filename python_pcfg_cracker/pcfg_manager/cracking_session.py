@@ -28,8 +28,7 @@ class CrackingSession:
     ############################################################################
     # Basic initialization function
     ############################################################################
-    def __init__(self, pcfg = None, p_queue = None):
-        self.p_queue = p_queue
+    def __init__(self, pcfg = None, verbose = False):
         self.pcfg = pcfg
         
         ##--Debugging and Performance Monitoring Variables--##
@@ -41,6 +40,7 @@ class CrackingSession:
         self.guess_stop_time = 0      #-Stop time of generating the actual guesses
         self.running_queue_time = 0   #-Total time running the "Next" algorithm to get a new pre-terminal
         self.running_guess_time = 0   #-Total time spent generaing guesses from pre-terminals and printing them out
+        self.verbose = verbose
 
     ##############################################################################
     # Starts the cracking session and starts generating guesses
@@ -55,23 +55,31 @@ class CrackingSession:
         #-Start the clock
         self.total_time_start = time.perf_counter()
         
-        #-Generate the first parse tree to process
-        self.p_queue_start_time = time.perf_counter()
-        queue_item_list = []
-        #-This is the function that does all the work
-        ret_value = self.p_queue.next_function(self.pcfg, queue_item_list)
+        #-Create a queue to send data back to the main process, (this one)
+        #-In the future, may change it to a pipe for performance reasons, but starting out with queue since it is easier
+        queue_item_list = Queue(maxsize=100)
         
-        #-Currently there is only one item returned at a time, this may change in the future
-        if len(queue_item_list) > 0:
-            queue_item = queue_item_list[0]
-        else:
-            return ret_value
-            
+        #-Spawn a child process to start generating the pre-terminals
+        priority_queue_process = Process(target=spawn_pqueue_thread, args=(self.pcfg, queue_item_list, self.verbose))
+        priority_queue_process.daemon = True
+        priority_queue_process.start()
+                
+        self.p_queue_start_time = time.perf_counter()
+        
+        #-Get the first item from the child priority_queue process
+        queue_item = queue_item_list.get()
+        
+        #-If the value None is encountered the queue is either empty or an error occured so stopped
+        if queue_item is None:
+            print("Finished processing items from the priority queue", file=sys.stderr)
+            priority_queue_process.join()
+            return RetType.QUEUE_EMPTY
+                    
         self.p_queue_stop_time = time.perf_counter() - self.p_queue_start_time
         self.running_queue_time = self.running_queue_time + self.p_queue_stop_time
         
         ##--Keep running while the p_queue.next_function still has items in it
-        while ret_value == RetType.STATUS_OK:
+        while True:
             
             ##--Expand the guesses from the parse tree
             self.guess_start_time = time.perf_counter()
@@ -86,8 +94,8 @@ class CrackingSession:
             if print_queue_info == True:     
                 
                 if self.num_parse_trees % 10000 == 0:
-                    print ("PQueue:" + str(len(self.p_queue.p_queue)),file=sys.stderr)
-                    print ("Backup storage list:" + str(len(self.p_queue.storage_list)),file=sys.stderr)
+                    #print ("PQueue:" + str(len(self.p_queue.p_queue)),file=sys.stderr)
+                    #print ("Backup storage list:" + str(len(self.p_queue.storage_list)),file=sys.stderr)
                     print ("Total number of Parse Trees: " + str (self.num_parse_trees),file=sys.stderr)
                     print ("PQueueTime " + str(self.running_queue_time),file=sys.stderr)
                     print ("Guesses:" + str(self.num_guesses),file=sys.stderr)
@@ -95,7 +103,7 @@ class CrackingSession:
                     print ("Average num of guesses per parse-tree: " + str(self.num_guesses // self.num_parse_trees),file=sys.stderr)
                     print ("Total Time " + str(time.perf_counter() - self.total_time_start),file=sys.stderr)
                     print ("Number of guesses a second: " + str(self.num_guesses // (time.perf_counter() - self.total_time_start)),file=sys.stderr)
-                    print ("Current probability: " + str(self.p_queue.max_probability),file=sys.stderr)
+                    #print ("Current probability: " + str(self.p_queue.max_probability),file=sys.stderr)
                     print ()
 
             ##--This is if you are actually trying to generate guesses
@@ -123,10 +131,15 @@ class CrackingSession:
                     
             ##--Generate more parse trees from the priority queue
             self.p_queue_start_time = time.perf_counter()
-            queue_item_list = []        
-            ret_value = self.p_queue.next_function(self.pcfg, queue_item_list)
-            if len(queue_item_list) > 0:
-                queue_item = queue_item_list[0]
+            
+            queue_item = queue_item_list.get()
+        
+            #-If the value None is encountered the queue is either empty or an error occured so stopped
+            if queue_item is None:
+                print("Finished processing items from the priority queue", file=sys.stderr)
+                priority_queue_process.join()
+                return RetType.QUEUE_EMPTY
+                
             self.p_queue_stop_time = time.perf_counter() - self.p_queue_start_time
             self.running_queue_time = self.running_queue_time + self.p_queue_stop_time         
                 
@@ -150,4 +163,30 @@ class CrackingSession:
 # --Simply check user_input_char to see if it is not none
 ###########################################################################################
 def keypress(user_input_ref):
-    user_input_ref[0] = input()   
+    user_input_ref[0] = input()
+
+
+###############################################################################################
+# The child process that is spawned off to run the priority queue and generate parse trees to
+# send to the parent process
+# The parse trees will be sent back to the parent process in priority order
+###############################################################################################
+def spawn_pqueue_thread(pcfg, results_queue, verbose):
+    ##--Initialize the priority queue--##
+    p_queue = PcfgQueue(verbose = verbose)
+    ret_value = p_queue.initialize(pcfg)
+    if ret_value != RetType.STATUS_OK:
+        print ("Error initalizing the priority queue, exiting",file=sys.stderr)
+        return ret_value 
+        
+    ##--Now start generating parse trees to send back to the main process
+    queue_item_list = []
+    ret_value = p_queue.next_function(pcfg, queue_item_list)
+    
+    while ret_value == RetType.STATUS_OK:
+        for i in queue_item_list:
+            results_queue.put(i)
+        queue_item_list = []
+        ret_value = p_queue.next_function(pcfg, queue_item_list)
+        
+    return ret_value
