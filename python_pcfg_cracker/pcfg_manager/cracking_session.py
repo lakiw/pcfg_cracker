@@ -46,12 +46,6 @@ class CrackingSession:
     # Starts the cracking session and starts generating guesses
     ##############################################################################
     def run(self, print_queue_info = False):
-        ##--Setup the check to see if a user is pressing a button--#
-        user_input = [None]
-        user_thread = threading.Thread(target=keypress, args=(user_input,))
-        user_thread.daemon = True  # thread dies when main thread (only non-daemon thread) exits.
-        user_thread.start()
-    
         #-Start the clock
         self.total_time_start = time.perf_counter()
         
@@ -63,6 +57,13 @@ class CrackingSession:
         priority_queue_process = Process(target=spawn_pqueue_thread, args=(self.pcfg, queue_item_list, self.verbose))
         priority_queue_process.daemon = True
         priority_queue_process.start()
+        
+        ##--Setup the check to see if a user is pressing a button--#
+        user_input = [None]
+        user_thread = threading.Thread(target=keypress, args=(user_input,))
+        user_thread.daemon = True  # thread dies when main thread (only non-daemon thread) exits.
+        user_thread.start()
+        
                 
         self.p_queue_start_time = time.perf_counter()
         
