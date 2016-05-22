@@ -205,14 +205,22 @@ class PcfgQueue:
     # low probability as it is running and then rebuild the queue later to bring them back in
     # if the session runs long enough
     #
-    # Dev notes: I tried a couple of implimentations of this in the past, but with
-    #            the grammar supporting recursion I really struggled with coming up with
-    #            and effecient algorithm that was easier than "Run the full session again, (with all the popping, pushing, and
-    #            using the next algorithm" until hitting the desired probability threshold
     ###############################################################################
     def rebuild_queue_from_max(self,pcfg):
         print("Functionality to rebuild the priority queue from a previous max probability not implimented yet", file=sys.stderr)
+        
+        ##--set the floor of the probability to 0. This will be dynamically updated if needed--##
         self.min_probability = 0
+        
+        ##--Find the START index into the grammar--##
+        index = pcfg.start_index()
+        if index == -1:
+            print("Could not find starting position for the pcfg", file=sys.stderr)
+            return RetType.GRAMMAR_ERROR
+        
+        options = {'max_probability':self.max_probability, 'min_probability':self.min_probability, 'max_return_size':self.max_queue_size + self.self.max_queue_size}
+        #self.p_queue = pcfg.walk_pcfg_with_limit(index,pos=0, [], options = options)
+       
         return RetType.STATUS_OK
 
 

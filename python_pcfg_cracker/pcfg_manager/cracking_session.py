@@ -54,7 +54,7 @@ class CrackingSession:
         parent_conn, child_conn = Pipe()
         
         #-Spawn a child process to start generating the pre-terminals
-        priority_queue_process = Process(target=spawn_pqueue_thread, args=(self.pcfg, child_conn, self.verbose))
+        priority_queue_process = Process(target=spawn_pqueue_thread, args=(self.pcfg, child_conn, self.verbose, print_queue_info))
         priority_queue_process.daemon = True
         priority_queue_process.start()
         
@@ -95,9 +95,6 @@ class CrackingSession:
             if print_queue_info == True:     
                 
                 if self.num_parse_trees % 10000 == 0:
-                    #print ("PQueue:" + str(len(self.p_queue.p_queue)),file=sys.stderr)
-                    #print ("Backup storage list:" + str(len(self.p_queue.storage_list)),file=sys.stderr)
-                    print ("Total number of Parse Trees: " + str (self.num_parse_trees),file=sys.stderr)
                     print ("PQueueTime " + str(self.running_queue_time),file=sys.stderr)
                     print ("Guesses:" + str(self.num_guesses),file=sys.stderr)
                     print ("GuessTime " + str(self.running_guess_time),file=sys.stderr)
@@ -172,7 +169,7 @@ def keypress(user_input_ref):
 # send to the parent process
 # The parse trees will be sent back to the parent process in priority order
 ###############################################################################################
-def spawn_pqueue_thread(pcfg, child_conn, verbose):
+def spawn_pqueue_thread(pcfg, child_conn, verbose, print_queue_info):
     ##--Initialize the priority queue--##
     p_queue = PcfgQueue(verbose = verbose)
     ret_value = p_queue.initialize(pcfg)
@@ -181,12 +178,22 @@ def spawn_pqueue_thread(pcfg, child_conn, verbose):
         return ret_value 
         
     ##--Now start generating parse trees to send back to the main process
+    num_parse_trees = 0
     queue_item_list = []
     ret_value = p_queue.next_function(pcfg, queue_item_list)
     
     while ret_value == RetType.STATUS_OK:
         for i in queue_item_list:
             child_conn.send(i)
+            num_parse_trees = num_parse_trees + 1
+            
+            ##--Print out debugging info if requested
+            if print_queue_info == True:
+                if num_parse_trees % 10000 == 0:
+                    print ("Total number of Parse Trees: " + str (num_parse_trees),file=sys.stderr)
+                    print ("PQueue:" + str(len(p_queue.p_queue)),file=sys.stderr)
+                    print ("Backup storage list:" + str(len(p_queue.storage_list)),file=sys.stderr)
+            
         queue_item_list = []
         ret_value = p_queue.next_function(pcfg, queue_item_list)
         
