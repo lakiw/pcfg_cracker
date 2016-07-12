@@ -17,6 +17,7 @@ from multiprocessing import Process, Queue, Pipe
 
 from pcfg_manager.core_grammar import PcfgClass, print_grammar
 from pcfg_manager.priority_queue import PcfgQueue
+from pcfg_manager.queue_storage import QueueStorage
 from pcfg_manager.ret_types import RetType
 
 
@@ -53,8 +54,20 @@ class CrackingSession:
         #-In the future, may change it to a pipe for performance reasons, but starting out with queue since it is easier
         parent_conn, child_conn = Pipe()
         
+        ##--Spawn a child process to handle backup storage as the list gets too big for the main priority queue
+        #-Initialize the data structures
+        backup_storage = QueueStorage(verbose = self.verbose)
+        #-At least from my testing, queue while slower in general was signifincatly faster than pipes for transfering a lot of data
+        #-in a non-blocking way
+        backup_save_comm = Queue()
+        backup_restore_comm = Queue()
+        #-Now create and start the process
+        backup_storage_process = Process(target=backup_storage.start_process, args=(backup_save_comm, backup_restore_comm))
+        backup_storage_process.daemon = True
+        backup_storage_process.start()
+        
         #-Spawn a child process to start generating the pre-terminals
-        priority_queue_process = Process(target=spawn_pqueue_thread, args=(self.pcfg, child_conn, self.verbose, print_queue_info))
+        priority_queue_process = Process(target=spawn_pqueue_thread, args=(self.pcfg, child_conn, self.verbose, print_queue_info, backup_save_comm, backup_restore_comm))
         priority_queue_process.daemon = True
         priority_queue_process.start()
         
@@ -169,9 +182,10 @@ def keypress(user_input_ref):
 # send to the parent process
 # The parse trees will be sent back to the parent process in priority order
 ###############################################################################################
-def spawn_pqueue_thread(pcfg, child_conn, verbose, print_queue_info):
+def spawn_pqueue_thread(pcfg, child_conn, verbose, print_queue_info, backup_save_comm, backup_restore_comm):
+        
     ##--Initialize the priority queue--##
-    p_queue = PcfgQueue(verbose = verbose)
+    p_queue = PcfgQueue(backup_save_comm, backup_restore_comm, verbose = verbose)
     ret_value = p_queue.initialize(pcfg)
     if ret_value != RetType.STATUS_OK:
         print ("Error initalizing the priority queue, exiting",file=sys.stderr)

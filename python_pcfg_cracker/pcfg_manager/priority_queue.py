@@ -90,7 +90,7 @@ class PcfgQueue:
     ############################################################################
     # Basic initialization function
     ############################################################################
-    def __init__(self, verbose = False):
+    def __init__(self, backup_save_comm, backup_restore_comm, verbose = False):
         self.p_queue = []  ##--The actual priority queue
         self.max_probability = 1.0 #--The current highest priority item in the queue. Used for memory management and restoring sessions
         self.min_probability = 0.0 #--The lowest prioirty item is allowed to be in order to be pushed in the queue. Used for memory management
@@ -101,6 +101,8 @@ class PcfgQueue:
         self.storage_min_probability = 0.0 #-- The lowest probability item allowed into the storage list. Anything lower than this is discarded
         self.storage_size = 5000000 #--The maximum size to save in the storage list before we start discarding items
         self.backup_reduction_size = self.storage_size - self.storage_size // 4
+        self.backup_save_comm = backup_save_comm
+        self.backup_restore_comm = backup_restore_comm
          
         ##--sanity checks for the data structures for when people edit the above default values
         if self.storage_size < self.max_queue_size:
@@ -181,6 +183,7 @@ class PcfgQueue:
         
         ##--Save the items off into the storage list
         self.storage_list.extend(self.p_queue[divider+1:])
+        self.backup_save_comm.put({'Command':'Save','Value':self.p_queue[divider+1:]})
             
         ##--Delete the entries from the p_queue
         del(self.p_queue[divider+1:])
@@ -199,6 +202,8 @@ class PcfgQueue:
         
      
     ###############################################################################
+    # **CURRENTLY NOT IMPLIMENTED**
+    #
     # Used to add items to the priority queue from a previous max probability state
     # End goal is to allow easy rebuilidng and continuation from a previous session
     # This can also be used for memory management so the pqueue can discard nodes that are too
@@ -217,10 +222,7 @@ class PcfgQueue:
         if index == -1:
             print("Could not find starting position for the pcfg", file=sys.stderr)
             return RetType.GRAMMAR_ERROR
-        
-        options = {'max_probability':self.max_probability, 'min_probability':self.min_probability, 'max_return_size':self.max_queue_size + self.self.max_queue_size}
-        #self.p_queue = pcfg.walk_pcfg_with_limit(index,pos=0, [], options = options)
-       
+         
         return RetType.STATUS_OK
 
 
@@ -277,6 +279,7 @@ class PcfgQueue:
         ##--Insert the item
         if queue_item.probability >= self.storage_min_probability:
             self.storage_list.append(queue_item)
+            self.backup_save_comm.put({'Command':'Save','Value':[queue_item]})
     
         ##--Check if the backup storage has grown too large
         if len(self.storage_list) >= self.storage_size:

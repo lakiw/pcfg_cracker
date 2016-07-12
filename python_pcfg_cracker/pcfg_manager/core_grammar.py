@@ -386,7 +386,6 @@ class PcfgClass:
         return True
     
     
-    
     ####################################################################################################################################
     # Used to see if a parent of the current node is in the queue or not using the deadbeat dad algorithm
     # Slightly less computationally expensive then running the full deadbead dad next function
@@ -419,51 +418,6 @@ class PcfgClass:
                 cur_node[2] = temp_holder
         
         return False
-
-
-    ###################################################################################################################################################
-    # Returns a list of all the parse trees that fall within the max and min probabilities specified in the options
-    # WARNING, THIS FUNCTION IS VERY GRAMMAR SPECIFIC. WILL NOT WORK WITH A GENERIC PCFG
-    # --The max probability is static and will be honored
-    # --The min probability is dynamic and can be increased if to many items are created
-    #
-    # options - A dictionary containing the following items (required)
-    # -- min_probability: The minimum probabilty, no parse trees will be generated below this
-    # -- max_probability: The maximum probability, no parse trees will be generated above this
-    # -- max_return_size: The maximum number of parse trees to return
-    #
-    # index - The index into the PCFG to start building the list of parse trees from
-    #
-    # pos - The position/transition in that index to expand upon
-    #
-    # is_final - If True, then return the final list of parse trees. If False send intermediate values used for this recusive function
-    ######################################################################################################################################################
-    def walk_pcfg_with_limit(self, index, options, is_final = True):    
-        ##-The list of items to return
-        ret_value = []
-        
-        ##--Loop through all of the base structures
-        for cur_base in self.grammar[index]['replacements']:
-            ##-get a list of all the transisions
-            all_replacements = []
-            for i in cur_base['pos']:
-                temp_rep = []
-                ##---It is a terminal, don't need to create combinations
-                if self.grammar[i][0].is_terminal:
-                    for x in self.grammar[i]:
-                        temp_rep.append([i,x,[]])
-                ##---It is a capitalizatoin mangling rule
-                else:
-                    for x in self.grammar[i]:
-                        temp_rep.append( list(list(item) for item in itertools.product(list1, list2)) )
-        
-        
-            
-        
-        
-        
-        
-        return []
         
      
     #=================================================================================================================================================#
