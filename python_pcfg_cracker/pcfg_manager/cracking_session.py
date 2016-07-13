@@ -206,7 +206,11 @@ def spawn_pqueue_thread(pcfg, child_conn, verbose, print_queue_info, backup_save
                 if num_parse_trees % 10000 == 0:
                     print ("Total number of Parse Trees: " + str (num_parse_trees),file=sys.stderr)
                     print ("PQueue:" + str(len(p_queue.p_queue)),file=sys.stderr)
-                    print ("Backup storage list:" + str(len(p_queue.storage_list)),file=sys.stderr)
+                    
+                    ##--Request and get the size of the backup storage list
+                    backup_save_comm.put({"Command":"Status"})
+                    result = backup_restore_comm.get()
+                    print ("Backup storage list:" + str(result['Size']),file=sys.stderr)
             
         queue_item_list = []
         ret_value = p_queue.next_function(pcfg, queue_item_list)
