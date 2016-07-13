@@ -94,19 +94,11 @@ class PcfgQueue:
         self.p_queue = []  ##--The actual priority queue
         self.max_probability = 1.0 #--The current highest priority item in the queue. Used for memory management and restoring sessions
         self.min_probability = 0.0 #--The lowest prioirty item is allowed to be in order to be pushed in the queue. Used for memory management
-        self.max_queue_size = 500000 #--Used for memory management. The maximum number of items before triming the queue. (Note, the queue can temporarially be larger than this)
+        self.max_queue_size = 50000 #--Used for memory management. The maximum number of items before triming the queue. (Note, the queue can temporarially be larger than this)
         self.reduction_size = self.max_queue_size - self.max_queue_size // 4  #--Target size for the p_queue when it is reduced for memory management
         
-        self.storage_list = [] #--Used to store low probability nodes to keep the size of p_queue down
-        self.storage_min_probability = 0.0 #-- The lowest probability item allowed into the storage list. Anything lower than this is discarded
-        self.storage_size = 5000000 #--The maximum size to save in the storage list before we start discarding items
-        self.backup_reduction_size = self.storage_size - self.storage_size // 4
         self.backup_save_comm = backup_save_comm
-        self.backup_restore_comm = backup_restore_comm
-         
-        ##--sanity checks for the data structures for when people edit the above default values
-        if self.storage_size < self.max_queue_size:
-            raise Exception
+        self.backup_restore_comm = backup_restore_comm         
         
         self.verbose = verbose
         
@@ -182,7 +174,6 @@ class PcfgQueue:
             print("min prob: " + str(self.min_probability), file=sys.stderr)
         
         ##--Save the items off into the storage list
-        self.storage_list.extend(self.p_queue[divider+1:])
         self.backup_save_comm.put({'Command':'Save','Value':self.p_queue[divider+1:]})
             
         ##--Delete the entries from the p_queue
@@ -200,31 +191,6 @@ class PcfgQueue:
         
         return RetType.STATUS_OK
         
-     
-    ###############################################################################
-    # **CURRENTLY NOT IMPLIMENTED**
-    #
-    # Used to add items to the priority queue from a previous max probability state
-    # End goal is to allow easy rebuilidng and continuation from a previous session
-    # This can also be used for memory management so the pqueue can discard nodes that are too
-    # low probability as it is running and then rebuild the queue later to bring them back in
-    # if the session runs long enough
-    #
-    ###############################################################################
-    def rebuild_queue_from_max(self,pcfg):
-        print("Functionality to rebuild the priority queue from a previous max probability not implimented yet", file=sys.stderr)
-        
-        ##--set the floor of the probability to 0. This will be dynamically updated if needed--##
-        self.min_probability = 0
-        
-        ##--Find the START index into the grammar--##
-        index = pcfg.start_index()
-        if index == -1:
-            print("Could not find starting position for the pcfg", file=sys.stderr)
-            return RetType.GRAMMAR_ERROR
-         
-        return RetType.STATUS_OK
-
 
     ###############################################################################
     # Rebuild the priority queue when it becomes empty
@@ -237,28 +203,15 @@ class PcfgQueue:
         self.min_probability = 0
         self.p_queue = []
         
-        ##--If there are no items in the storage list--##
-        if len(self.storage_list) == 0:
-            return self.rebuild_queue_from_max(pcfg)
-            
-        ##--Sort the storage list so only the top items go into the priority queue
-        self.storage_list.sort()
+        ##--Get values from the backup storage queue
+        #-Send request for data
+        self.backup_save_comm.put({'Command':'Send'})
+        #-Grab data from the queue once it's placed there
+        backup_data = self.backup_restore_comm.get()
         
-        ##--If we can copy the entire storage list into the priority queue
-        if len(self.storage_list) <= self.reduction_size:
-            self.p_queue.extend(self.storage_list)
-            self.storage_list = []
-            self.min_probability = self.storage_min_probability
-            
-        else:
-            divider = self.reduction_size
-            self.min_probability = self.storage_list[divider].probability
-            while (divider < len(self.storage_list)-1) and (self.storage_list[divider].probability == self.storage_list[divider + 1].probability):
-                divider = divider + 1
-            
-            self.p_queue.extend(self.storage_list[:divider+1])
-            del(self.storage_list[:divider+1])
-            
+        self.p_queue = backup_data['Value']
+        self.min_probability = backup_data['Min_Prob']
+   
         #--Now re-hepify the priority_queue
         heapq.heapify(self.p_queue)
         
@@ -277,24 +230,7 @@ class PcfgQueue:
     #####################################################################################################################
     def insert_into_backup_storage(self,queue_item):
         ##--Insert the item
-        if queue_item.probability >= self.storage_min_probability:
-            self.storage_list.append(queue_item)
-            self.backup_save_comm.put({'Command':'Save','Value':[queue_item]})
-    
-        ##--Check if the backup storage has grown too large
-        if len(self.storage_list) >= self.storage_size:
-            ##--Find the point at where we want to trim the storage_list
-            divider =  self.find_list_delete_point(self.storage_list, self.backup_reduction_size)
-             
-            ##--Delete the entries from the list
-            del(self.storage_list[divider+1:])
-            self.storage_min_probability = self.storage_list[-1].probability
-            ##--This can happen if the queue is full of items all of the same probability
-            if len(self.storage_list) == self.storage_size:
-                return RetType.QUEUE_FULL_ERROR
-            ##--Not an immediate problem but this state will cause issues with resuming sessions. For now report an error state
-            if self.min_probability == self.max_probability:
-                return RetType.QUEUE_FULL_ERROR
+        self.backup_save_comm.put({'Command':'Save','Value':[queue_item]})
       
         return RetType.STATUS_OK
     
