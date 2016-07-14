@@ -30,7 +30,7 @@ class QueueStorage:
         self.storage_min_probability = 0.0 #-- The lowest probability item allowed into the storage list. Anything lower than this is discarded
         self.storage_size = 5000000 #--The maximum size to save in the storage list before we start discarding items
         self.backup_reduction_size = self.storage_size - self.storage_size // 4
-        self.restore_size = 50000
+        self.restore_size = 50000 #--Size of data to send back when requested. May want to change this to be set somewhere else
         self.verbose = verbose
         
         
@@ -42,6 +42,7 @@ class QueueStorage:
     def start_process(self, backup_save_comm, backup_restore_comm):
         while True:
             command = backup_save_comm.get()
+            
             ##--If we need to save/process extra values
             if command["Command"] == "Save":
                 self.insert_into_backup_storage(command["Value"])
@@ -113,10 +114,7 @@ class QueueStorage:
             ##--This can happen if the queue is full of items all of the same probability
             if len(self.storage_list) == self.storage_size:
                 return RetType.QUEUE_FULL_ERROR
-            ##--Not an immediate problem but this state will cause issues with resuming sessions. For now report an error state
-            if self.min_probability == self.max_probability:
-                return RetType.QUEUE_FULL_ERROR
-      
+
         return RetType.STATUS_OK    
 
     #####################################################################################################################
