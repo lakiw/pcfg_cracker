@@ -121,7 +121,7 @@ def main():
     ##--Information about this program--##
     program_details = {
         'Program':'pcfg_manager.py',
-        'Version': '3.1 Alpha',
+        'Version': '3.1.3 Beta',
         'Author':'Matt Weir',
         'Contact':'cweir@vt.edu',
         'Source':'https://github.com/lakiw/pcfg_cracker'
@@ -148,19 +148,11 @@ def main():
  
     pcfg = PcfgClass(grammar)
     
-    ##--Initialize the priority queue--##
-    p_queue = PcfgQueue(verbose = command_line_results.verbose)
-    ret_value = p_queue.initialize(pcfg)
-    if ret_value != RetType.STATUS_OK:
-        print ("Error initalizing the priority queue, exiting",file=sys.stderr)
-        print_error()
-        return ret_value 
-    
     ##--Setup is done, now start generating rules
     print ("Starting to generate password guesses",file=sys.stderr)
     print ("Press [ENTER] to display a status output",file=sys.stderr)
     
-    current_cracking_session = CrackingSession(pcfg = pcfg, p_queue = p_queue)
+    current_cracking_session = CrackingSession(pcfg = pcfg, verbose = command_line_results.verbose)
     current_cracking_session.run(print_queue_info = command_line_results.queue_info)
       
     return RetType.STATUS_OK

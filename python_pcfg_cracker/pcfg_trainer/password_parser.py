@@ -35,7 +35,7 @@ class PasswordParser:
         self.MIN_KEYBOARD_RUN = 4
         
         ## List of all context sensitive replacements
-        self.CONTEXT_SENSITIVE_REPLACEMENTS=["<3",";p",":p","*0*", "#1", "#11"]
+        self.CONTEXT_SENSITIVE_REPLACEMENTS=["<3",";p",":p","*0*", "#1"]
         
     
     #########################################################################################

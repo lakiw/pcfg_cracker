@@ -10,6 +10,7 @@
 
 import sys   #--Used for printing to stderr
 import random  #--Used for generating honeywords
+import itertools #--Used for walking a pcfg
 
 
 ##########################################################################################
@@ -385,7 +386,6 @@ class PcfgClass:
         return True
     
     
-    
     ####################################################################################################################################
     # Used to see if a parent of the current node is in the queue or not using the deadbeat dad algorithm
     # Slightly less computationally expensive then running the full deadbead dad next function
@@ -418,8 +418,8 @@ class PcfgClass:
                 cur_node[2] = temp_holder
         
         return False
-
-
+        
+     
     #=================================================================================================================================================#
     # The following functions are to support honeyword operations
     #=================================================================================================================================================#
