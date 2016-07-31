@@ -1,0 +1,16 @@
+qwertyuiop[]	0.2
+1q2w3e4r5t6y	0.16
+QWERTYUIOP[]	0.08
+123456789***	0.08
+][poiuytrewq	0.04
+1q1q1q2w2w2w	0.04
+tgbhujmmkol.	0.04
+!1234567890)	0.04
+123456y7u8i9	0.04
+!Q@W#E4r5t6y	0.04
+123e456y789o	0.04
+1234567890-=	0.04
+123ewqasdcxz	0.04
+asdfghjkl;';	0.04
+1234567890pl	0.04
+1qazXSW@3edc	0.04
