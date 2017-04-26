@@ -172,22 +172,24 @@ class DataList:
     #####################################################
     def update_probabilties(self,precision=7):
         ##--Set the precision--##
+        ##--Updating the precision using localcontext so that will apply to the Decimal math
         with localcontext() as ctx:
             ctx.prec = precision
-            ##--Walk the main top level dictionary
+            ##--Walk the main top level dictionary and assign probabilities to each item
             for main_key, main_item in self.main_dic.items():
                 ##--Now walk each list
                 for list_key, list_item in main_item['lists'].items():
                     ##--Calculate the probability
                     list_item['probability'] = Decimal(list_item['num']) / Decimal(main_item['total_size'])
-        
+                
         return RetType.STATUS_OK
         
         
     #########################################################################
     # Creates a dictionary of sorted lists of all the main_dic (name,probability) tuples
+    # Probability smoothing takes place here to to combine items of similar enough probabilty
     ## Dictionary for saving the sorted output of the values
-    ##-- The dicrionary takes the format of
+    ##-- The dictionary takes the format of
     ##      {0:[sorted list of index lists into the main_dic]
     ##
     ##-- For example consider the following main_dic
@@ -211,7 +213,7 @@ class DataList:
     ##      {3:[('abc',Decimal(0.5)),('xyz',Decimal(0.4)),('edf',Decimal(0.1))]}
     ##
     #########################################################################
-    def get_sorted_results(self, sorted_results):
+    def get_sorted_results(self, sorted_results, precision = 7, smoothing = 0):
         try:
             ##Loop through the main indexes and sort the results of each sub dictionary
             for index in self.main_dic:
@@ -240,6 +242,62 @@ class DataList:
                 for sorted_item in sorted(self.main_dic[index]['lists'], key = lambda x: (self.main_dic[index]['lists'][x]['probability']), reverse = True):
                     ##--Now save the data in the sorted_results list
                     sorted_results[key].append((sorted_item,self.main_dic[index]['lists'][sorted_item]['probability']))
+                
+                ##--Now apply probability smoothing
+                ##--Only do this if probabilty smoothing is enabled and there is more than one item
+                if (smoothing != 0) and (len(sorted_results[key]) > 1):
+                    
+                    ##--set the precision
+                    with localcontext() as ctx:
+                        ctx.prec = precision
+                        
+                        ##--The probability of the most recent item (for debuging)
+                        top_probability = sorted_results[key][0][1]  
+                        
+                        ##--The probability that the item has to equal or exceed for smoothing to work
+                        match_probability = top_probability - (top_probability * Decimal(smoothing))
+                        
+                        ##--The index of the top probabilty for smoothing
+                        top_index = 0
+                        
+                        ##--The combined (added) probablity of all items being smoothed
+                        ##--Used for recalulating their new probability
+                        combined_prob_total = top_probability
+
+                        ##--Probably makeing it too complicated, but starting at the second item in the list
+                        ##--so the initialization of this loop is handled above this
+                        for index, value in enumerate(sorted_results[key][1:], start = 1):  
+                            ##--This item is not going to be smoothed with the previous item
+                            if value[1] < match_probability: 
+                                
+                                ##--There was a previous run going on
+                                ##--Close it up and save the results
+                                if top_index != index - 1:
+                                    ##--Find the probability to assign all the items
+                                    new_probability = combined_prob_total / Decimal(index - top_index)
+                                    
+                                    ##--Now smooth out the probabilty for every item in the set
+                                    for fixup_index in range(top_index, index):
+                                        sorted_results[key][fixup_index] = (sorted_results[key][fixup_index][0],new_probability)                               
+                                    
+                                ###--Set up new run    
+                                top_index = index
+                                top_probability = value[1]
+                                combined_prob_total = value[1]
+                                match_probability = top_probability - (top_probability * Decimal(smoothing))
+                            
+                            ##--This is part of a run
+                            else:
+                                combined_prob_total += value[1]
+                                
+                        ##--Now need to cover if the last item was a part of a run
+                        if top_index != len(sorted_results[key]) -1:
+                            new_probability = combined_prob_total / Decimal(len(sorted_results[key]) - top_index)     
+                            ##--Now smooth out the probabilty for every item in the set
+                            for fixup_index in range(top_index, len(sorted_results[key])):
+                                sorted_results[key][fixup_index] = (sorted_results[key][fixup_index][0],new_probability)    
+                                
+                    
         except KeyError as error:
             print("Error: " + str(error))
             return RetType.GENERIC_ERROR

@@ -324,13 +324,13 @@ class TrainingData:
         ###########################################################################
         
         # Doing this a bit overboard to match it with all the other parsing
-        # Also this provides a nice sanity check to make sure no errors creaped in somewhere
+        # Also this provides a nice sanity check to make sure no errors creeped in somewhere
         items = []
         ret_value = cur_pass.parse_base(items)
         if ret_value != RetType.STATUS_OK:
             print("Error parsing a password. There were sections that were not processed")
             return ret_value
-        ##--Now update the special character combo list
+        ##--Now update the base structure list
         ret_value = self.base_structure.insert_list(items)
         if ret_value != RetType.STATUS_OK:
             print("Error inserting a base structure object")
@@ -346,7 +346,7 @@ class TrainingData:
     # Note, this currently can create final values with a precision 1 more than the current setting
     # Setting default to 7, (will measure 1 in a million)
     ############################################################################################
-    def finalize_data(self, precision=7):
+    def finalize_data(self, precision=7, smoothing=0.01):
         for current_structure in self.master_data_list:
             ##--Calculate probabilities --##
             ret_value = current_structure.update_probabilties(precision = precision)
@@ -373,10 +373,12 @@ class TrainingData:
     ########################################################################################
     # Saves the data to file
     # The precision value is the precision to store the values
+    # The smoothing is the amount that individual nodes should be different probabilities to actually
+    #    be assigned different probabilities
     # The encoding is what encoding to use to save the files
     # The directory is the base directory to save the data
     #########################################################################################
-    def save_results(self, directory='.', encoding='ASCII', precision=7):
+    def save_results(self, directory='.', encoding='ASCII', precision=7, smoothing=0.01):
 
         ##--First finalize the probabilities so we can sort the data
         ret_value = self.finalize_data(precision)
@@ -386,7 +388,7 @@ class TrainingData:
         ##--now save results to disk
         for current_structure in self.master_data_list:
             sorted_results = {}    
-            ret_value = current_structure.get_sorted_results(sorted_results)
+            ret_value = current_structure.get_sorted_results(sorted_results, precision = precision, smoothing =smoothing)
             for filename, items in sorted_results.items():
                 ret_value = self.write_data_to_disk(directory, current_structure.config_data['Directory'] ,filename, encoding, items)
             if ret_value != RetType.STATUS_OK:

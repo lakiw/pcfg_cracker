@@ -106,10 +106,10 @@ def print_banner():
     print('''         /    \  )    ~~~." / `/"~ / \.__/l_  | |    | |____| |   | |__| | ''' ) 
     print('''\    _.-"      ~-{__     l  :  l._Z~-.___.--~ |_|_____\_____|_|    \_____| '''  )
     print(''' ~--~           /   ~~"---\_  ' __[>          |__   __|      (_)            ''')
-    print('''             _.^   ___     _>-y~                 | |_ __ __ _ _ _ __   ___ _ _''') 
-    print('''   .      .-~   .-~   ~>--"  /                   | | '__/ _` | | '_ \ / _ \ '__|''')
-    print('''\  ~-"         /     ./  _.-'                    | | | | (_| | | | | |  __/ | ''' ) 
-    print(''' "-.,__.,  _.-~\     _.-~                        |_|_|  \__,_|_|_| |_|\___|_| ''')
+    print('''             _.^   ___     _>-y~                 | |_ __ __ _ _ _ __   ___ _ __''') 
+    print('''   .      .-~   .-~   ~>--"  /                   | | '__/ _` | | '_ \ / _ \ '_/''')
+    print('''\  ~-"         /     ./  _.-'                    | | | | (_| | | | | |  __/ |''' ) 
+    print(''' "-.,__.,  _.-~\     _.-~                        |_|_|  \__,_|_|_| |_|\___|_|''')
     print('''        ~~     (   _}       ''')
     print('''               `. ~(''')
     print('''                 )  \ ''')
@@ -158,7 +158,7 @@ def parse_command_line(command_line_results):
         command_line_results.rule_name = args.output
         command_line_results.training_file = args.training
         command_line_results.encoding = args.encoding
-    #    command_line_results.smoothing = args.smoothing
+        command_line_results.smoothing = args.smoothing
 
         if args.verbose:
             command_line_results.verbose = True
@@ -175,7 +175,7 @@ def main():
     ##--Information about this program--##
     program_details = {
         'Program':'pcfg_trainer.py',
-        'Version': '3.1',
+        'Version': '3.2',
         'Author':'Matt Weir',
         'Contact':'cweir@vt.edu'
     }
@@ -312,7 +312,8 @@ def main():
         return 
      
     ##--Now finalize the data and save it to disk--##
-    ret_value = training_results.save_results(directory = absolute_base_directory, encoding = command_line_results.encoding, precision = 7)
+    ret_value = training_results.save_results(directory = absolute_base_directory, 
+        encoding = command_line_results.encoding, precision = 7, smoothing = command_line_results.smoothing)
     if ret_value != RetType.STATUS_OK:
         ascii_fail()
         print("Exiting...")
