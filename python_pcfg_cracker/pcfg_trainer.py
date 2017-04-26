@@ -150,9 +150,9 @@ def parse_command_line(command_line_results):
     parser.add_argument('--training','-t', help='The training set of passwords to train from',metavar='TRAINING_SET',required=True)
     parser.add_argument('--encoding','-e', help='File encoding to read the input training set. If not specified autodetect is used', metavar='ENCODING', required=False)
     parser.add_argument('--verbose','-v', help='Turns on verbose output', required=False, action="store_true")
-    parser.add_argument('--smoothing', '-s', 
-        help='The amount of probability smoothing to apply to the generated grammar. For example, if it is 0.01 then items with a prob difference of 1%% will be given the same prob. A setting of 0 will turn this off. Default: (%(default)s)',
-        required=False, default=command_line_results.smoothing)
+    #parser.add_argument('--smoothing', '-s', 
+    #    help='The amount of probability smoothing to apply to the generated grammar. For example, if it is 0.01 then items with a prob difference of 1%% will be given the same prob. A setting of 0 will turn this off. Default: (%(default)s)',
+    #    required=False, default=command_line_results.smoothing)
     try:
         args=parser.parse_args()
         command_line_results.rule_name = args.output

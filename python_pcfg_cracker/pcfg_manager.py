@@ -121,7 +121,7 @@ def main():
     ##--Information about this program--##
     program_details = {
         'Program':'pcfg_manager.py',
-        'Version': '3.1.2 Alpha',
+        'Version': '3.1.3 Beta',
         'Author':'Matt Weir',
         'Contact':'cweir@vt.edu',
         'Source':'https://github.com/lakiw/pcfg_cracker'
