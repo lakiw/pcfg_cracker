@@ -106,10 +106,10 @@ def print_banner():
     print('''         /    \  )    ~~~." / `/"~ / \.__/l_  | |    | |____| |   | |__| | ''' ) 
     print('''\    _.-"      ~-{__     l  :  l._Z~-.___.--~ |_|_____\_____|_|    \_____| '''  )
     print(''' ~--~           /   ~~"---\_  ' __[>          |__   __|      (_)            ''')
-    print('''             _.^   ___     _>-y~                 | |_ __ __ _ _ _ __   ___ _ _''') 
-    print('''   .      .-~   .-~   ~>--"  /                   | | '__/ _` | | '_ \ / _ \ '__|''')
-    print('''\  ~-"         /     ./  _.-'                    | | | | (_| | | | | |  __/ | ''' ) 
-    print(''' "-.,__.,  _.-~\     _.-~                        |_|_|  \__,_|_|_| |_|\___|_| ''')
+    print('''             _.^   ___     _>-y~                 | |_ __ __ _ _ _ __   ___ _ __''') 
+    print('''   .      .-~   .-~   ~>--"  /                   | | '__/ _` | | '_ \ / _ \ '_/''')
+    print('''\  ~-"         /     ./  _.-'                    | | | | (_| | | | | |  __/ |''' ) 
+    print(''' "-.,__.,  _.-~\     _.-~                        |_|_|  \__,_|_|_| |_|\___|_|''')
     print('''        ~~     (   _}       ''')
     print('''               `. ~(''')
     print('''                 )  \ ''')
@@ -124,17 +124,17 @@ def print_banner():
 # ASCII art for when program fails
 ###################################################################################
 def ascii_fail():
-    print("                                         __ ")
-    print("                                     _  |  |")
-    print("                 Yye                |_| |--|")
-    print("              .---.  e           AA | | |  ")
-    print("             /.--./\  e        A")
-    print("            // || \/\  e      ")
-    print("           //|/|| |\/\   aa a    |\o/ o/--")
-    print("          ///|\|| | \/\ .       ~o \.'\.o'")
-    print("         //|\|/|| | |\/\ .      /.` \o'")
-    print("        //\|/|\|| | | \/\ ( (  . \o'")
-    print("__ __ _//|/|\|/|| | | |\/`--' '")
+    print("                                          __ ")
+    print("                                      _  |  |")
+    print("                  Yye                |_| |--|")
+    print("               .---.  e           AA | | |  |")
+    print("              /.--./\  e        A")
+    print("             // || \/\  e      ")
+    print("            //|/|| |\/\   aa a    |\o/ o/--")
+    print("           ///|\|| | \/\ .       ~o \.'\.o'")
+    print("          //|\|/|| | |\/\ .      /.` \o'")
+    print("         //\|/|\|| | | \/\ ( (  . \o'")
+    print("___ __ _//|/|\|/|| | | |\/`--' '")
     print("__/__/__//|\|/|\|| | | | `--'")
     print("|\|/|\|/|\|/|\|/|| | | | |")
     print()
@@ -150,19 +150,19 @@ def parse_command_line(command_line_results):
     parser.add_argument('--training','-t', help='The training set of passwords to train from',metavar='TRAINING_SET',required=True)
     parser.add_argument('--encoding','-e', help='File encoding to read the input training set. If not specified autodetect is used', metavar='ENCODING', required=False)
     parser.add_argument('--verbose','-v', help='Turns on verbose output', required=False, action="store_true")
-    #parser.add_argument('--smoothing', '-s', 
-    #    help='The amount of probability smoothing to apply to the generated grammar. For example, if it is 0.01 then items with a prob difference of 1%% will be given the same prob. A setting of 0 will turn this off. Default: (%(default)s)',
-    #    required=False, default=command_line_results.smoothing)
+    parser.add_argument('--smoothing', '-s', 
+        help='The amount of probability smoothing to apply to the generated grammar. For example, if it is 0.01 then items with a prob difference of 1%% will be given the same prob. A setting of 0 will turn this off. Default: (%(default)s)',
+        required=False, default=command_line_results.smoothing)
     try:
         args=parser.parse_args()
         command_line_results.rule_name = args.output
         command_line_results.training_file = args.training
         command_line_results.encoding = args.encoding
-    #    command_line_results.smoothing = args.smoothing
+        command_line_results.smoothing = args.smoothing
 
         if args.verbose:
             command_line_results.verbose = True
-    except:
+    except Exception as msg:
         return RetType.COMMAND_LINE_ERROR
 
     return RetType.STATUS_OK   
@@ -175,7 +175,7 @@ def main():
     ##--Information about this program--##
     program_details = {
         'Program':'pcfg_trainer.py',
-        'Version': '3.1',
+        'Version': '3.2',
         'Author':'Matt Weir',
         'Contact':'cweir@vt.edu'
     }
@@ -259,7 +259,9 @@ def main():
             print("Exiting...")
             return
         progress_bar.update_status()
-        
+    
+    print("\nParsing is done. Now calculating probabilities, applying smoothing, and saving the results")
+    print("This may take a few minutes depending on your training list size")
     ##--Save the data to disk------------------###
     ##--Get the base directory to save all the data to
     ##  Don't want to use the relative path since who knows where someone is invoking this script from
@@ -312,7 +314,8 @@ def main():
         return 
      
     ##--Now finalize the data and save it to disk--##
-    ret_value = training_results.save_results(directory = absolute_base_directory, encoding = command_line_results.encoding, precision = 7)
+    ret_value = training_results.save_results(directory = absolute_base_directory, 
+        encoding = command_line_results.encoding, precision = 7, smoothing = command_line_results.smoothing)
     if ret_value != RetType.STATUS_OK:
         ascii_fail()
         print("Exiting...")

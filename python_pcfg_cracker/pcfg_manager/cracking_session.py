@@ -196,6 +196,11 @@ def spawn_pqueue_thread(pcfg, child_conn, verbose, print_queue_info, backup_save
     queue_item_list = []
     ret_value = p_queue.next_function(pcfg, queue_item_list)
     
+    ##--There are no more items to use in the queue, let the parent know we are done
+    if ret_value == RetType.QUEUE_EMPTY:
+        child_con.send(None)
+        return ret_value
+    
     while ret_value == RetType.STATUS_OK:
         for i in queue_item_list:
             child_conn.send(i)
@@ -214,5 +219,9 @@ def spawn_pqueue_thread(pcfg, child_conn, verbose, print_queue_info, backup_save
             
         queue_item_list = []
         ret_value = p_queue.next_function(pcfg, queue_item_list)
+        ##--There are no more items to use in the queue, let the parent know we are done
+        if ret_value == RetType.QUEUE_EMPTY:
+            child_conn.send(None)
+            return ret_value
         
     return ret_value

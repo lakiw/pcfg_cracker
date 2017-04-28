@@ -172,22 +172,24 @@ class DataList:
     #####################################################
     def update_probabilties(self,precision=7):
         ##--Set the precision--##
+        ##--Updating the precision using localcontext so that will apply to the Decimal math
         with localcontext() as ctx:
             ctx.prec = precision
-            ##--Walk the main top level dictionary
+            ##--Walk the main top level dictionary and assign probabilities to each item
             for main_key, main_item in self.main_dic.items():
                 ##--Now walk each list
                 for list_key, list_item in main_item['lists'].items():
                     ##--Calculate the probability
                     list_item['probability'] = Decimal(list_item['num']) / Decimal(main_item['total_size'])
-        
+                
         return RetType.STATUS_OK
         
         
     #########################################################################
     # Creates a dictionary of sorted lists of all the main_dic (name,probability) tuples
+    # Probability smoothing takes place here to to combine items of similar enough probabilty
     ## Dictionary for saving the sorted output of the values
-    ##-- The dicrionary takes the format of
+    ##-- The dictionary takes the format of
     ##      {0:[sorted list of index lists into the main_dic]
     ##
     ##-- For example consider the following main_dic
@@ -211,7 +213,7 @@ class DataList:
     ##      {3:[('abc',Decimal(0.5)),('xyz',Decimal(0.4)),('edf',Decimal(0.1))]}
     ##
     #########################################################################
-    def get_sorted_results(self, sorted_results):
+    def get_sorted_results(self, sorted_results, precision = 7, smoothing = 0):
         try:
             ##Loop through the main indexes and sort the results of each sub dictionary
             for index in self.main_dic:
@@ -240,7 +242,101 @@ class DataList:
                 for sorted_item in sorted(self.main_dic[index]['lists'], key = lambda x: (self.main_dic[index]['lists'][x]['probability']), reverse = True):
                     ##--Now save the data in the sorted_results list
                     sorted_results[key].append((sorted_item,self.main_dic[index]['lists'][sorted_item]['probability']))
+                
+                ##--Now apply probability smoothing
+                ##--Only do this if probabilty smoothing is enabled and there is more than one item
+                if (smoothing != 0) and (len(sorted_results[key]) > 1):
+                    self.__smooth_probabilities(sorted_results[key] , precision, smoothing)
+                    
+                                
+                    
         except KeyError as error:
             print("Error: " + str(error))
             return RetType.GENERIC_ERROR
         return RetType.STATUS_OK
+    
+    
+    ##############################################################################################
+    # Applies probability smoothing to the "sorted_list"
+    # 
+    # Currently creates "runs" of all items that are within smoothing * "prob first item in run"
+    # When an item falls outside the run, the run resets with that item being the new head of a run
+    # When a run of two or more items occur, their probabilty is set to (sum of all items probabilities)/(number of items)
+    # This way the top item's probability is reduced while other items potentially gain a higher probability
+    # In short, it "smooths" the probability of similar items
+    #
+    # Example: [(a,0.5), (b,0.3), (c,0.1), (d,0.099), (e,0.001)], smoothing = 0.02 (which is a 2% smoothing)
+    #
+    # 1) For a run starting with (a,0.5), the minimum prob to continue the run would be
+    #  --- 0.5 - (0.5 * 0.02) = 0.49
+    # 2) b is too low so it forms the start of a new run. The minimum prob to continue would be
+    #  --- 0.3 - (0.3 * 0.02) = 0.294
+    # 3) c is too low so it forms the start of a new run. The minimum prob to continue would be
+    #  --- 0.1 - (0.1 * 0.02) = 0.098
+    # 4) d matches it so the run continues
+    # 5) e does not match it so the run ends. e is the last item so no more runs occur
+    # 6) At the same time to finish up the previous run, the probability of c and d is set to be the same smoothed prob between them
+    #  --- (0.1 + 0.099) / 2 = 0.0995
+    #    the list then look like
+    #    [(a,0.5), (b,0.3), (c,0.0995), (d,0.0995), (e,0.001)]
+    # 
+    #
+    # Note, there are a lot of other ways to do this and there can be some counter-intutive results from this approach
+    # For example, two items might be near to the same prob but fall into different runs since the 2nd item is past the threshold
+    # to match with the first run.
+    #
+    # The reason I choose this method was because it's fairly straight forward, all the probabilities will still add up to 100% at the end
+    # and a couple other options I considered had worse side effects. Still, looking for a better smoothing algorithm as it could potentially
+    # add a lot of value in the future
+    #######################################################################################################
+    def __smooth_probabilities(self, sorted_list , precision = 7, smoothing = 0):
+        ##--set the precision. That way the smoothed probabilities will fall into what the user specified for maximum precision
+        with localcontext() as ctx:
+            ctx.prec = precision
+            
+            ##--The probability of the most recent item (for debuging)
+            top_probability = sorted_list[0][1]  
+            
+            ##--The probability that the item has to equal or exceed for it to be part of a run and smoothing to be applied 
+            match_probability = top_probability - (top_probability * Decimal(smoothing))
+            
+            ##--The index of the top item in the run so we know how far to go back to apply smoothing
+            top_index = 0
+            
+            ##--The combined (added) probablity of all items being smoothed
+            ##--Used for recalulating their new probability
+            combined_prob_total = top_probability
+
+            ##--Starting at the second item in the list
+            ##--so the initialization of this loop is handled above this
+            for index, value in enumerate(sorted_list[1:], start = 1):  
+                ##--This item is not going to be smoothed with the previous item
+                if value[1] < match_probability: 
+                    
+                    ##--There was a previous run going on
+                    ##--Close it up and save the results
+                    if top_index != index - 1:
+                        ##--Find the probability to assign all the items
+                        new_probability = combined_prob_total / Decimal(index - top_index)
+                        
+                        ##--Now smooth out the probabilty for every item in the set
+                        for fixup_index in range(top_index, index):
+                            sorted_list[fixup_index] = (sorted_list[fixup_index][0],new_probability)                               
+                        
+                    ###--Set up new run    
+                    top_index = index
+                    top_probability = value[1]
+                    combined_prob_total = value[1]
+                    match_probability = top_probability - (top_probability * Decimal(smoothing))
+                
+                ##--This is part of a run
+                else:
+                    combined_prob_total += value[1]
+  
+            ##--Now need to cover if the last item was a part of a run
+            if top_index != len(sorted_list) -1:
+                ##--Find the probability to assign all the items
+                new_probability = combined_prob_total / Decimal(len(sorted_list) - top_index)     
+                ##--Now smooth out the probabilty for every item in the set
+                for fixup_index in range(top_index, len(sorted_list)):
+                    sorted_list[fixup_index] = (sorted_list[fixup_index][0],new_probability)    
