@@ -81,10 +81,10 @@ class CrackingSession:
         self.p_queue_start_time = time.perf_counter()
         
         #-Get the first item from the child priority_queue process
-        queue_item = parent_conn.recv()
+        queue_items = parent_conn.recv()
         
         #-If the value None is encountered the queue is either empty or an error occured so stopped
-        if queue_item is None:
+        if queue_items is None:
             print("Finished processing items from the priority queue", file=sys.stderr)
             priority_queue_process.join()
             return RetType.QUEUE_EMPTY
@@ -97,39 +97,42 @@ class CrackingSession:
             
             ##--Expand the guesses from the parse tree
             self.guess_start_time = time.perf_counter()
-            current_guesses = self.pcfg.list_terminals(queue_item.parse_tree) 
+            
+            for terminal in queue_items:
+                current_guesses = self.pcfg.list_terminals(terminal.parse_tree) 
+                self.num_guesses = self.num_guesses + len(current_guesses)
+                self.num_parse_trees = self.num_parse_trees + 1
+                
+                ##--Print_Queue_Info says if we are running this session for debugging and performance improvements vs actually cracking passwords
+                if print_queue_info == True:     
+                    
+                    if self.num_parse_trees % 10000 == 0:
+                        print ("PQueueTime " + str(self.running_queue_time),file=sys.stderr)
+                        print ("Guesses:" + str(self.num_guesses),file=sys.stderr)
+                        print ("GuessTime " + str(self.running_guess_time),file=sys.stderr)
+                        print ("Average num of guesses per parse-tree: " + str(self.num_guesses // self.num_parse_trees),file=sys.stderr)
+                        print ("Total Time " + str(time.perf_counter() - self.total_time_start),file=sys.stderr)
+                        print ("Number of guesses a second: " + str(self.num_guesses // (time.perf_counter() - self.total_time_start)),file=sys.stderr)
+                        #print ("Current probability: " + str(self.p_queue.max_probability),file=sys.stderr)
+                        print ()
+
+                ##--This is if you are actually trying to generate guesses
+                else:
+                    for guess in current_guesses:
+                        try:
+                            print(guess)
+                        ##--While I could silently replace/ignore the Unicode character for now I want to know if this is happening
+                        except UnicodeEncodeError as msg:
+                            #print("UNICODE_ERROR: " + str(msg),file=sys.stderr) 
+                            pass                            
+                        except IOError:
+                            print("Consumer, (probably the password cracker), stopped accepting input.",file=sys.stderr)
+                            print("Halting guess generation and exiting",file=sys.stderr)
+                            return RetType.BROKEN_PIPE
+                        
             self.guess_stop_time = time.perf_counter() - self.guess_start_time
             self.running_guess_time = self.running_guess_time + self.guess_stop_time
-            
-            self.num_parse_trees = self.num_parse_trees +1
-            self.num_guesses = self.num_guesses + len(current_guesses) 
-            
-            ##--Print_Queue_Info says if we are running this session for debugging and performance improvements vs actually cracking passwords
-            if print_queue_info == True:     
-                
-                if self.num_parse_trees % 10000 == 0:
-                    print ("PQueueTime " + str(self.running_queue_time),file=sys.stderr)
-                    print ("Guesses:" + str(self.num_guesses),file=sys.stderr)
-                    print ("GuessTime " + str(self.running_guess_time),file=sys.stderr)
-                    print ("Average num of guesses per parse-tree: " + str(self.num_guesses // self.num_parse_trees),file=sys.stderr)
-                    print ("Total Time " + str(time.perf_counter() - self.total_time_start),file=sys.stderr)
-                    print ("Number of guesses a second: " + str(self.num_guesses // (time.perf_counter() - self.total_time_start)),file=sys.stderr)
-                    #print ("Current probability: " + str(self.p_queue.max_probability),file=sys.stderr)
-                    print ()
-
-            ##--This is if you are actually trying to generate guesses
-            else:
-                for guess in current_guesses:
-                    try:
-                        print(guess)
-                    ##--While I could silently replace/ignore the Unicode character for now I want to know if this is happening
-                    except UnicodeEncodeError:
-                        print("UNICODE_ERROR",file=sys.stderr)       
-                    except IOError:
-                        print("Consumer, (probably the password cracker), stopped accepting input.",file=sys.stderr)
-                        print("Halting guess generation and exiting",file=sys.stderr)
-                        return RetType.BROKEN_PIPE
-            
+                              
             ##--Check for user requested status output--##
             if user_input[0] is not None:          
                 self.display_status(guess_list = current_guesses)
@@ -143,10 +146,10 @@ class CrackingSession:
             ##--Generate more parse trees from the priority queue
             self.p_queue_start_time = time.perf_counter()
             
-            queue_item = parent_conn.recv()
+            queue_items = parent_conn.recv()
         
             #-If the value None is encountered the queue is either empty or an error occured so stopped
-            if queue_item is None:
+            if queue_items is None:
                 print("Finished processing items from the priority queue", file=sys.stderr)
                 priority_queue_process.join()
                 return RetType.QUEUE_EMPTY
@@ -183,7 +186,11 @@ def keypress(user_input_ref):
 # The parse trees will be sent back to the parent process in priority order
 ###############################################################################################
 def spawn_pqueue_thread(pcfg, child_conn, verbose, print_queue_info, backup_save_comm, backup_restore_comm):
-        
+      
+    ##--Block size is the number of items to send back at once--##
+    ##--Not making this configurable in the command line since it would just confuse users--##
+    block_size = 10
+    
     ##--Initialize the priority queue--##
     p_queue = PcfgQueue(backup_save_comm, backup_restore_comm, verbose = verbose)
     ret_value = p_queue.initialize(pcfg)
@@ -194,7 +201,7 @@ def spawn_pqueue_thread(pcfg, child_conn, verbose, print_queue_info, backup_save
     ##--Now start generating parse trees to send back to the main process
     num_parse_trees = 0
     queue_item_list = []
-    ret_value = p_queue.next_function(pcfg, queue_item_list)
+    ret_value = p_queue.next_function(pcfg, queue_item_list, block_size)
     
     ##--There are no more items to use in the queue, let the parent know we are done
     if ret_value == RetType.QUEUE_EMPTY:
@@ -202,23 +209,24 @@ def spawn_pqueue_thread(pcfg, child_conn, verbose, print_queue_info, backup_save
         return ret_value
     
     while ret_value == RetType.STATUS_OK:
-        for i in queue_item_list:
-            child_conn.send(i)
-            num_parse_trees = num_parse_trees + 1
-            
-            ##--Print out debugging info if requested
-            if print_queue_info == True:
-                if num_parse_trees % 10000 == 0:
-                    print ("Total number of Parse Trees: " + str (num_parse_trees),file=sys.stderr)
-                    print ("PQueue:" + str(len(p_queue.p_queue)),file=sys.stderr)
-                    
-                    ##--Request and get the size of the backup storage list
-                    backup_save_comm.put({"Command":"Status"})
-                    result = backup_restore_comm.get()
-                    print ("Backup storage list:" + str(result['Size']),file=sys.stderr)
+        child_conn.send(queue_item_list)
+        num_parse_trees = num_parse_trees + len(queue_item_list)
+        
+        ##--Print out debugging info if requested
+        ##--Note, if blocksize is changed to something where the mod calc below would be skipped then
+        ##--will need to update this debugging code
+        if print_queue_info == True:
+            if num_parse_trees % 10000 == 0:
+                print ("Total number of Parse Trees: " + str (num_parse_trees),file=sys.stderr)
+                print ("PQueue:" + str(len(p_queue.p_queue)),file=sys.stderr)
+                
+                ##--Request and get the size of the backup storage list
+                backup_save_comm.put({"Command":"Status"})
+                result = backup_restore_comm.get()
+                print ("Backup storage list:" + str(result['Size']),file=sys.stderr)
             
         queue_item_list = []
-        ret_value = p_queue.next_function(pcfg, queue_item_list)
+        ret_value = p_queue.next_function(pcfg, queue_item_list, block_size)
         ##--There are no more items to use in the queue, let the parent know we are done
         if ret_value == RetType.QUEUE_EMPTY:
             child_conn.send(None)

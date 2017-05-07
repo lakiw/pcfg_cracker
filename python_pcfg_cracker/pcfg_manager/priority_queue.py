@@ -238,8 +238,13 @@ class PcfgQueue:
     ###############################################################################
     # Pops the top value off the queue and then inserts any children of that node
     # back in the queue
+    #
+    # Args:
+    #   pcfg = the grammar to use
+    #   queue_item_list = The list of terminals to return. 
+    #   block_size = The number of terminals to return if possible
     ###############################################################################
-    def next_function(self,pcfg, queue_item_list = []):
+    def next_function(self,pcfg, queue_item_list = [], block_size = 1):
         
         ##--Only return terminal structures. Don't need to return parse trees that don't actually generate guesses 
         while True:
@@ -250,7 +255,12 @@ class PcfgQueue:
                     self.rebuild_queue(pcfg)
                 ##--The grammar has been exhaused, exit---##
                 else:
-                    return RetType.QUEUE_EMPTY
+                    ##--Splitting up the return value on if there were any items returne or not
+                    ##--The next call will cause a RetType.QUEUE_EMPTY regardless though
+                    if len(queue_item_list) == 0:
+                        return RetType.QUEUE_EMPTY
+                    else:
+                        return RetType.STATUS_OK
                 
             ##--Pop the top value off the stack
             queue_item = heapq.heappop(self.p_queue)
@@ -267,7 +277,8 @@ class PcfgQueue:
             ##--If it is a terminal structure break and return it
             if queue_item.is_terminal == True:
                 queue_item_list.append(queue_item)
-                break
+                if len(queue_item_list) >= block_size:
+                    break
 
         return RetType.STATUS_OK
 

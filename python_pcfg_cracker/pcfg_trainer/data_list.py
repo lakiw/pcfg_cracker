@@ -81,8 +81,7 @@ class DataList:
             self.config_data['File_type'] = 'Flat'
         elif self.type == ListType.LENGTH:
             self.config_data['File_type'] = 'Length'
-         
-        
+           
         
     ##################################################
     # Returns a config file for saving to disk

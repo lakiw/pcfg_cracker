@@ -152,17 +152,23 @@ def parse_command_line(command_line_results):
     parser.add_argument('--verbose','-v', help='Turns on verbose output', required=False, action="store_true")
     parser.add_argument('--smoothing', '-s', 
         help='The amount of probability smoothing to apply to the generated grammar. For example, if it is 0.01 then items with a prob difference of 1%% will be given the same prob. A setting of 0 will turn this off. Default: (%(default)s)',
-        required=False, default=command_line_results.smoothing)
+        required=False, default=command_line_results.smoothing, type = float)
     try:
         args=parser.parse_args()
         command_line_results.rule_name = args.output
         command_line_results.training_file = args.training
         command_line_results.encoding = args.encoding
         command_line_results.smoothing = args.smoothing
-
+        
+        ##--Check to make sure smothing makes sense--##
+        if command_line_results.smoothing < 0 or command_line_results.smoothing > 0.9:
+            print("Error, smoothing must be a value between 0.9 and 0")
+            return RetType.COMMAND_LINE_ERROR
+            
         if args.verbose:
             command_line_results.verbose = True
     except Exception as msg:
+        print(msg)
         return RetType.COMMAND_LINE_ERROR
 
     return RetType.STATUS_OK   
@@ -260,6 +266,14 @@ def main():
             return
         progress_bar.update_status()
     
+    print("\nCalculating overall Markov probabilities")
+    training_results.markov.calculate_probabilities() 
+    
+    print("\nGoing through and looking at password distribution in regards to Markov Probabilities")
+    for password in master_password_list:
+        if password[1] == "DATA":
+            training_results.find_markov_rank(password[0])
+    
     print("\nParsing is done. Now calculating probabilities, applying smoothing, and saving the results")
     print("This may take a few minutes depending on your training list size")
     ##--Save the data to disk------------------###
@@ -297,7 +311,8 @@ def main():
     config['TRAINING_DATASET_DETAILS'] = {
         'Filename':command_line_results.training_file,
         'Comments':'None',
-        'Encoding':command_line_results.encoding
+        'Encoding':command_line_results.encoding,
+        'Smoothing':command_line_results.smoothing
     }
     ##--Gather info from the training set
     ret_value = training_results.update_config(config)

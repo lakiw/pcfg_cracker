@@ -18,6 +18,7 @@ import json
 from pcfg_trainer.ret_types import RetType
 from pcfg_trainer.password_parser import PasswordParser
 from pcfg_trainer.data_list import ListType, DataList
+from pcfg_trainer.markov import Markov
         
 ############################################################################
 # Holds the data that we'll be saving for the grammar
@@ -28,6 +29,9 @@ class TrainingData:
         
         ##--Holds all of the individual DataList objects for iterating though them when it comes time to save the data
         self.master_data_list = []
+        
+        ##--Brute force data
+        self.markov = Markov()
         
         ######################################################
         ##Init Base Structures
@@ -46,6 +50,7 @@ class TrainingData:
                 {'Transition_id':'O','Config_id':'BASE_O'},
                 {'Transition_id':'K','Config_id':'BASE_K'},
                 {'Transition_id':'X','Config_id':'BASE_X'},
+                {'Transition_id':'M','Config_id':'BASE_M'},
             ]),
         }     
         self.base_structure = DataList(type= ListType.FLAT, config_name= 'START', config_data = config)
@@ -144,6 +149,24 @@ class TrainingData:
         self.context_structure = DataList(type= ListType.LENGTH, config_name = 'BASE_X', config_data = config)
         self.master_data_list.append(self.context_structure)
         
+        ############################################################
+        ##Init Markov brute force smoothing
+        ##--Note, currently doing this flat, (will create chains length 1 to MAX)
+        ##--May in the future want to do it differently, AKA brute force length 4 characters
+        ############################################################
+        config = {
+            'Name':'M',
+            'Comments':'Markov based brute force of a string. Currently based on John the Rippers Markov mode',
+            'Directory':'Markov',
+            'Filenames':'markov_stats.txt',
+            'Inject_type':'Markov',
+            'Function':'Markov',
+            'Is_terminal':'True',
+        }
+        self.markov_structure = DataList(type= ListType.FLAT, config_name = 'BASE_M', config_data = config)
+        self.master_data_list.append(self.markov_structure)
+        
+        ##--Hackish way to create the Markov probability threshold--##
         
         ##Number of passwords that were rejected
         ##Used for record keeping and debugging
@@ -152,6 +175,7 @@ class TrainingData:
         ##Number of valid passwords trained on
         ##Used for record keeping and debugging
         self.valid_passwords = 0
+    
     
     ###################################################################################
     # Returns a list of all the directories that need to be created to save the data
@@ -165,6 +189,7 @@ class TrainingData:
                 print("Error with the config for " + data.config_name)
                 return RetType.GENERIC_ERROR 
         return RetType.STATUS_OK
+    
     
     ####################################################################################
     # Updates the config of the saved grammar with all of the various DataList structures
@@ -183,6 +208,7 @@ class TrainingData:
             config[data.config_name] = data_config
             
         return RetType.STATUS_OK
+    
     
     ###################################################################################
     # Checks to see if the input password is valid for this training program
@@ -217,6 +243,7 @@ class TrainingData:
             return RetType.IS_FALSE
         return RetType.IS_TRUE
     
+    
     ###################################################################################
     # Actually do the work of parsing a password and inserting it into the grammar
     # Variable Types:
@@ -240,6 +267,11 @@ class TrainingData:
             
         ##-Initialize the PasswordParser for this particular password
         cur_pass = PasswordParser(input_password)
+        
+        #################################################################
+        ##--Save the brute force (MARKOV) data for this password
+        #################################################################
+        self.markov.parse_password(input_password)
         
         #################################################################
         ##--Parse out all the keyboard combinations
@@ -338,6 +370,31 @@ class TrainingData:
             
         return RetType.STATUS_OK
     
+    
+    ######################################################################################
+    # Once you have all the counts, calculate the actual probabilities associated with 
+    # the Markov grammar
+    #######################################################################################
+    def calc_markov_stats(self):
+        ret_value = self.check_valid(input_password)
+        ##-If the password isn't valid for the training data
+        if ret_value != RetType.IS_TRUE:
+            return ret_value
+        ##--Calculate Markov probabilities
+        self.markov.calculate_probabilities()
+
+    
+    #######################################################################################
+    # Finds the Markov rank of a password
+    #######################################################################################    
+    def find_markov_rank(self, input_password):        
+        ret_value = self.check_valid(input_password)
+        ##-If the password isn't valid for the training data
+        if ret_value != RetType.IS_TRUE:
+            return ret_value
+            
+        rank = self.markov.evaulate_ranking(input_password)
+        
     ###########################################################################################
     # Finalizes the grammar and gets it ready to saved
     # The precision value is the precision to store the values
@@ -353,8 +410,9 @@ class TrainingData:
             if ret_value != RetType.STATUS_OK:
                 print("Error finalizing the data")
                 return ret_value
-               
+         
         return RetType.STATUS_OK
+    
     
     #############################################################################################
     # Actually writes the data to disk
@@ -369,6 +427,7 @@ class TrainingData:
             print ("Error opening file " + str(os.path.join(base_directory,section_directory,filename)))
             return RetType.FILE_IO_ERROR
         return RetType.STATUS_OK
+    
     
     ########################################################################################
     # Saves the data to file
@@ -393,5 +452,8 @@ class TrainingData:
                 ret_value = self.write_data_to_disk(directory, current_structure.config_data['Directory'] ,filename, encoding, items)
             if ret_value != RetType.STATUS_OK:
                 return ret_value
+        
+        ##--Save the Markov results to disk
+        self.markov.save_results(os.path.join(directory,'Markov'))
         
         return RetType.STATUS_OK
