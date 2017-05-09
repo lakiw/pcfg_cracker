@@ -391,10 +391,12 @@ class TrainingData:
         ret_value = self.check_valid(input_password)
         ##-If the password isn't valid for the training data
         if ret_value != RetType.IS_TRUE:
-            return ret_value
+            return None
             
         rank = self.markov.evaulate_ranking(input_password)
-        
+        return rank
+          
+           
     ###########################################################################################
     # Finalizes the grammar and gets it ready to saved
     # The precision value is the precision to store the values
@@ -403,10 +405,17 @@ class TrainingData:
     # Note, this currently can create final values with a precision 1 more than the current setting
     # Setting default to 7, (will measure 1 in a million)
     ############################################################################################
-    def finalize_data(self, precision=7, smoothing=0.01):
+    def finalize_data(self, precision=7, smoothing=0.01, coverage=1.0):
         for current_structure in self.master_data_list:
             ##--Calculate probabilities --##
-            ret_value = current_structure.update_probabilties(precision = precision)
+            ##--Adding Markov into the base structure so we need to change the prob of what we saw
+            if current_structure.config_name == 'START':
+                ret_value = current_structure.update_probabilties(precision = precision, coverage= coverage)
+                ##--Manually insert the new 'M' Markov into it
+                if coverage != 1.0:
+                    current_structure.manual_insert('M', precision = precision, probability = 1-coverage)
+            else:    
+                ret_value = current_structure.update_probabilties(precision = precision)
             if ret_value != RetType.STATUS_OK:
                 print("Error finalizing the data")
                 return ret_value
@@ -437,10 +446,10 @@ class TrainingData:
     # The encoding is what encoding to use to save the files
     # The directory is the base directory to save the data
     #########################################################################################
-    def save_results(self, directory='.', encoding='ASCII', precision=7, smoothing=0.01):
+    def save_results(self, directory='.', encoding='ASCII', precision=7, smoothing=0.01, coverage = 1.0):
 
         ##--First finalize the probabilities so we can sort the data
-        ret_value = self.finalize_data(precision)
+        ret_value = self.finalize_data(precision, coverage = coverage)
         if ret_value != RetType.STATUS_OK:
             return ret_value
         

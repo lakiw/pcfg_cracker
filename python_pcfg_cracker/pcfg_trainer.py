@@ -270,9 +270,15 @@ def main():
     training_results.markov.calculate_probabilities() 
     
     print("\nGoing through and looking at password distribution in regards to Markov Probabilities")
+    threshold = 124
+    num_password_below_threshold = 0
     for password in master_password_list:
         if password[1] == "DATA":
-            training_results.find_markov_rank(password[0])
+            rank = training_results.find_markov_rank(password[0]) 
+            if rank != None and rank <= threshold:
+                num_password_below_threshold = num_password_below_threshold + 1
+    
+    print("Number of passwords below Markov threshold = " + str(num_password_below_threshold))
     
     print("\nParsing is done. Now calculating probabilities, applying smoothing, and saving the results")
     print("This may take a few minutes depending on your training list size")
@@ -330,7 +336,7 @@ def main():
      
     ##--Now finalize the data and save it to disk--##
     ret_value = training_results.save_results(directory = absolute_base_directory, 
-        encoding = command_line_results.encoding, precision = 7, smoothing = command_line_results.smoothing)
+        encoding = command_line_results.encoding, precision = 7, smoothing = command_line_results.smoothing, coverage = 0.6)
     if ret_value != RetType.STATUS_OK:
         ascii_fail()
         print("Exiting...")

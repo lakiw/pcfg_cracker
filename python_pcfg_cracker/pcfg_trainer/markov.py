@@ -39,6 +39,9 @@ class Markov:
         
         # The total number of letters processed
         self.num_letters = 0
+        
+        # Holds the keysize for all of the ranks
+        self.rank_results = []
     
     
     ###############################################################################
@@ -103,6 +106,7 @@ class Markov:
             if item['probability'] == 0:
                 item['probability'] = 1
         
+        self.calculate_keysize(max_rank=300,  max_length=16, max_keyspace=1000000000000)
         return True
     
     ################################################################################################
@@ -160,5 +164,95 @@ class Markov:
             return 1000
         
         #print(input_password + " : " + str(ranking))
+        #print(ranking)
         
         return ranking
+        
+        
+    #####################################################################################################################
+    # Calculates the key size of a given Markov Range
+    # IMPORTANT: Should only be used after the base Markov grammar is trained
+    #####################################################################################################################
+    def calculate_keysize(self, max_rank=1000,  max_length=12, max_keyspace = None):
+        
+        #######################################################################
+        # Holds the probability of follow up letters with a specific rank left
+        # {
+        #     'LENGTH_LEFT': {
+        #         'RANK': {
+        #             'PREV_LETTER':COUNT,
+        #             ...,
+        #         },
+        #         ...,
+        #     }
+        #     ...,
+        # }
+        # 
+        # Example:
+        # {
+        #     8:{
+        #         '10':{
+        #             'a':101,
+        #             'b':52,
+        #         },
+        #         '11':{
+        #             'a':151,
+        #             'b':53
+        #         },
+        #     }
+        # }
+        ########################################################################
+        scratch_ranks = {}
+        
+        ##--Holds the results for all the ranks
+        self.rank_results = []
+
+        #print("Markov Key Sizes")
+        
+        ##--Loop through all the ranks--##
+        for i in range(0,max_rank):
+            num_passwords = 0
+            ##--Handle the zero order markov probs
+            for index, item in self.probability_map.items():
+                if item['probability'] <= max_rank:                    
+                    num_passwords += 1 + self.__recursive_calc_keysize(scratch_ranks, max_rank = (i - item['probability']), max_length = max_length - 1, prev_letter=index)
+            self.rank_results.append(num_passwords)
+            
+            ##--Exit early if we hit the max keysize
+            if max_keyspace != None and num_passwords > max_keyspace:
+                break
+                
+            #print(str(i) + ":" + str(num_passwords))
+     
+     
+    ############################################################################################
+    # Recursivly goes through the first order Markov probabilities and helps calculate the keysize
+    # for a given maximum rank and maximum length
+    # Note, it saves the work in scratch_ranks since a lot of it is repeated over and over
+    ############################################################################################    
+    def __recursive_calc_keysize(self, scratch_ranks, prev_letter, max_rank=1000, max_length=8):
+        
+        ##--Exit if too long--##
+        if max_length == 0:
+            return 0
+            
+        ##--Check to see if the work has already been done or not--##
+        if max_length not in scratch_ranks:
+            scratch_ranks[max_length] = {}
+        if max_rank in scratch_ranks[max_length]:
+            if prev_letter in scratch_ranks[max_length][max_rank]:
+                return scratch_ranks[max_length][max_rank][prev_letter]
+        
+        ##--Initialize max rank if needed
+        else:
+            scratch_ranks[max_length][max_rank] = {}
+            
+        ##--Now caluclulate the scratch_ranks[max_rank][prev_letter] value  
+        num_passwords = 0        
+        for index, item in self.probability_map[prev_letter]['following_letters'].items():
+            if item['probability'] <= max_rank:
+                num_passwords += 1 + self.__recursive_calc_keysize(scratch_ranks, prev_letter=index, max_rank = (max_rank - item['probability']), max_length = max_length - 1)
+        
+        scratch_ranks[max_length][max_rank][prev_letter] = num_passwords  
+        
+        return num_passwords
