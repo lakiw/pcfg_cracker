@@ -376,10 +376,6 @@ class TrainingData:
     # the Markov grammar
     #######################################################################################
     def calc_markov_stats(self):
-        ret_value = self.check_valid(input_password)
-        ##-If the password isn't valid for the training data
-        if ret_value != RetType.IS_TRUE:
-            return ret_value
         ##--Calculate Markov probabilities
         self.markov.calculate_probabilities()
 

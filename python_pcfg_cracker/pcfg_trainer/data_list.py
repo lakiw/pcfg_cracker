@@ -124,7 +124,6 @@ class DataList:
             ctx.prec = precision
             ##--Doing this weird by multiplying by Decimal(1.0) to have the precision be applied properly
             working_dictionary['lists']['M'] = {'probability':Decimal(probability) * Decimal(1.0)}
-            print("prob = " + str(working_dictionary['lists']['M']))
             
     
     ##################################################

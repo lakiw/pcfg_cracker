@@ -267,21 +267,18 @@ def main():
         progress_bar.update_status()
     
     print("\nCalculating overall Markov probabilities")
-    training_results.markov.calculate_probabilities() 
+    training_results.calc_markov_stats() 
     
     print("\nGoing through and looking at password distribution in regards to Markov Probabilities")
-    threshold = 124
-    num_password_below_threshold = 0
     for password in master_password_list:
         if password[1] == "DATA":
             rank = training_results.find_markov_rank(password[0]) 
-            if rank != None and rank <= threshold:
-                num_password_below_threshold = num_password_below_threshold + 1
-    
-    print("Number of passwords below Markov threshold = " + str(num_password_below_threshold))
     
     print("\nParsing is done. Now calculating probabilities, applying smoothing, and saving the results")
     print("This may take a few minutes depending on your training list size")
+    
+    training_results.markov.final_sorted_ranks()
+    
     ##--Save the data to disk------------------###
     ##--Get the base directory to save all the data to
     ##  Don't want to use the relative path since who knows where someone is invoking this script from
