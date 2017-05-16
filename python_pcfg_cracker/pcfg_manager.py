@@ -51,6 +51,7 @@ from pcfg_manager.core_grammar import PcfgClass, print_grammar
 from pcfg_manager.priority_queue import PcfgQueue
 from pcfg_manager.ret_types import RetType
 from pcfg_manager.cracking_session import CrackingSession
+from pcfg_manager.markov_cracker import load_markov_stats
 
 
 #########################################################################################
@@ -145,8 +146,11 @@ def main():
         print ("Error loading the PCFG grammar, exiting",file=sys.stderr)
         print_error()
         return ret_value
+
+    ##--Load the Markov stats file--##
+    markov_stats = load_markov_stats(rule_directory)
  
-    pcfg = PcfgClass(grammar)
+    pcfg = PcfgClass(grammar, markov_stats)
     
     ##--Setup is done, now start generating rules
     print ("Starting to generate password guesses",file=sys.stderr)

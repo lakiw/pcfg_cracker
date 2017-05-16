@@ -56,7 +56,7 @@ class PcfgClass:
     ########################################################
     # Initialize the class, not really doing anything here
     ########################################################
-    def __init__(self, grammar=[]):
+    def __init__(self, grammar=[], markov_stats = {}):
         ###---The actual grammar. It'll be loaded up later
         self.grammar = grammar
     
@@ -153,6 +153,10 @@ class PcfgClass:
         elif cur_dic['function']=='Transparent':
             for rule in cur_section[2]:
                 cur_combo.append(self.expand_terminals(rule))
+        ##--Add Markov expansion. Currently using the same logic as JtR's --Markov Mode. Will print out all terminals
+        ##--falling below the min prob rank and max prob rank
+        elif cur_dic['function']=='Markov':
+            print (cur_section)
         ##---Error parsing the grammar. No rule corresponds to the current transition function        
         else:
             print("Error parsing the grammar. No rule corresponds to the transition function " + str(cur_dic['function']))

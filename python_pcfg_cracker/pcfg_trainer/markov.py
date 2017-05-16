@@ -349,7 +349,7 @@ class Markov:
         
         ##--Save the Markov stats file (ranking) --##
         ##--This is the same as the stats file John the Ripper --Markov mode uses--##
-        with open(os.path.join(base_directory,'markov_stats'), 'w') as datafile:
+        with open(os.path.join(base_directory,'markov_stats.txt'), 'w') as datafile:
             for index, item in self.probability_map.items():
                 ##-Write out the zero order Markov stats
                 datafile.write('%d=proba1[%d]\n' % (item['probability'], ord(index)))
@@ -366,8 +366,8 @@ class Markov:
     # This is what is used in the actual PCFG to generate pre-terminals
     ###########################################################################################################
     def __save_probabilities_file(self, base_directory):
-        with open(os.path.join(base_directory,'markov_prob'), 'w') as datafile:
+        with open(os.path.join(base_directory,'markov_prob.txt'), 'w') as datafile:
             for item in self.prob_distributed_ranks:
-                datafile.write(str(item['min_rank']) + '\t' + str(item['max_rank']) + '\t' + str(item['final_prob']) + '\n')
+                datafile.write(str(item['min_rank']) + ':' + str(item['max_rank']) + '\t' + str(item['final_prob']) + '\n')
                 
         return True

@@ -30,6 +30,7 @@ def extract_probability(master_list = []):
         
         ##--If there wasn't probability info encoded, then error out
         if len(master_list[position]) != 2:
+            print(master_list[position])
             print("Error parsing the probabilities from the training file",file=sys.stderr)
             return RetType.CONFIG_ERROR
 
@@ -87,10 +88,19 @@ def parse_base_structure(unformated_base,grammar_mapping, pos = []):
 
     ##--Split up the unformated base by value + length--##
     working_list = [''.join(g) for _, g in groupby(unformated_base, str.isalpha)]
+
+    ##--Handle loading Markov probabilities--##
+    if unformated_base == 'M':
+        try:
+            pos.append(grammar_mapping['M']['markov_prob'])
+            return RetType.STATUS_OK
+        except KeyError as msg:
+            print("Error occured parsing the links in the Markov base structure: " + str(msg),file=sys.stderr)
+            return RetType.CONFIG_ERROR
     
     ##--Do a quick sanity check to make sure there are proper pairing of value digits
     if len(working_list) % 2 != 0:
-        print("Error parsing base structure: " + str(unformatted_base))
+        print("Error parsing base structure: " + str(unformated_base))
         return RetType.CONFIG_ERROR
     
     ##--Now calculate the replacement mapping
@@ -143,7 +153,7 @@ def insert_terminal(config, grammar, rule_directory, encoding, section_type, gra
                 
         ##--Need to add the replacements
         ##--If it is a Capitalization, Copy, or Shadow replacement, (they are all read in basically the same way)
-        if function == 'Capitalization' or function == 'Copy' or function == 'Shadow':
+        if function == 'Capitalization' or function == 'Copy' or function == 'Shadow' or function == 'Markov':
             ##--multiple replacements can share the same structure, (to limit the amount of list pushing and popping, (this is a performance tweak)
             ##--therefore initialize the structure and then loop through the rest of the values seeing if they can be instereted in this replacement
             ##--or if they have a different probability so they need their own

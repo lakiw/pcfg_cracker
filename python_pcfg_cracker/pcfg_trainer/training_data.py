@@ -158,7 +158,7 @@ class TrainingData:
             'Name':'M',
             'Comments':'Markov based brute force of a string. Currently based on John the Rippers Markov mode',
             'Directory':'Markov',
-            'Filenames':'markov_stats.txt',
+            'Filenames':'markov_prob.txt',
             'Inject_type':'Markov',
             'Function':'Markov',
             'Is_terminal':'True',
