@@ -149,6 +149,10 @@ def main():
 
     ##--Load the Markov stats file--##
     markov_stats = load_markov_stats(rule_directory)
+    if markov_stats == None:
+        print ("Error loading the Markov stats file for the ruleset, exiting",file=sys.stderr)
+        print_error()
+        return ret_value
  
     pcfg = PcfgClass(grammar, markov_stats)
     

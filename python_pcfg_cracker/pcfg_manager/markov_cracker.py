@@ -16,12 +16,10 @@ import os
 # The stats file is a dictionary lookup for zero order and first order Markov items
 # Takes the form of
 #   'a':{
-#       'count':5, 
-#       'probability':5,
-#       'num_children':4,        
+#       'probability':5,     
 #       'following_letters':{
-#           'b':{'count':2, 'probability':10},
-#           'c':{'count':2, 'probability':10},
+#           'b':{'probability':10},
+#           'c':{'probability':10},
 #       }
 ######################################################################################
 def load_markov_stats(rule_directory):
@@ -45,9 +43,31 @@ def load_markov_stats(rule_directory):
         #    83=proba2[97*256+100]          //'d' given 'a' has a probability of 83
         with open(filename, 'r') as file:
             for line in file:
-                if 'proba1' in line:
-                    results = line.strip().split("=proba1")
-                    print (results)
+                ##--Handle the 0 order Markov
+                if '=proba1' in line:
+                    ##--Yes this parsing is a bit hackish. It would be easy if I saved
+                    ##--the data in a different format but I want to maintian compatability with
+                    ##--JtR's stat file format
+                    results = line.strip().split("=proba1[")
+                    results[1] = results[1][:-1]
+                    letter = chr(int(results[1]))
+                    prob = int(results[0])
+                    
+                    ##--Save the result in the dictionary
+                    markov_stats[letter] = {'probability':prob, 'following_letters':{}}
+                
+                elif '=proba2' in line:
+                    results = line.strip().split("=proba2[")
+                    prob = int(results[0])
+                    results = results[1].split('*256+')
+                    letter1 = chr(int(results[0]))
+                    letter2 = chr(int(results[1][:-1]))
+                    markov_stats[letter1]['following_letters'][letter2] = {'probability':prob}
+                         
+                else:
+                    print('Invalid line in Markov stats file')
+                    print(line)
+                    return None
 
     except Exception as msg:
         print (msg,file=sys.stderr)
@@ -55,3 +75,47 @@ def load_markov_stats(rule_directory):
         return None
 
     return markov_stats
+
+    
+################################################################################
+# Generate password guesses using Markov thresholds
+# Currently returns them as a list
+# Will want to change that in the future in case the list grows too bit, (it will)
+# Returns the guesses generated
+#################################################################################
+def generate_markov_guesses(markov_stats, min_level = 0, max_level = 1000):
+    ##--handle the zero order markov level--##
+    guesses = []
+    for index, item in markov_stats.items():
+        if item['probability'] <= max_level:
+            ##--If it is above min level, generate a guess of just the first letter
+            if item['probability'] >= min_level:
+                guesses.append(index)
+
+            ##--Now do the the 1st order markov transitions
+            guesses.extend(__recursive_markov_guesses(markov_stats, min_level = min_level, max_level = max_level, 
+                cur_level= item['probability'], prev_string = index ))
+            
+    return guesses
+    
+    
+########################################################################################
+# Recursivly loops through the 1st order Markov transitions and generates guesses
+# Should only be called from generate_markov_guesses
+#########################################################################################
+def __recursive_markov_guesses(markov_stats, min_level = 0, max_level = 1000, 
+    cur_level= 0, prev_string = 'a'):
+    
+    guesses = []
+    for index, item in markov_stats[prev_string[-1]]['following_letters'].items():
+        combined_rank = cur_level + item['probability']
+        if combined_rank <= max_level:
+            ##--If it is above min level, generate a guess
+            if combined_rank >= min_level:
+                guesses.append(prev_string + index)
+           
+            ##--Now do additional 1st order markov transitions
+            guesses.extend(__recursive_markov_guesses(markov_stats, min_level = min_level, max_level = max_level, 
+                cur_level= combined_rank, prev_string = (prev_string + index) ))
+    
+    return guesses

@@ -53,6 +53,11 @@ class CommandLineVars:
         ##  takes a large amount of time in a password cracking attack, the grammar becomes "faster".
         self.smoothing = 0.01
         
+        ##--The amount to trust the generated grammar
+        ##  The resulting value is used to figure out how much to perform brute force guesses instead
+        ##  Brute force = 1 - coverage
+        self.coverage = 0.6
+        
 #############################################################################
 # Used to print out the status of a current measurement
 # I know, yet another class that could have been taken care of with a couple
@@ -70,7 +75,7 @@ class MeasurementStatus:
         if self.step_size == 0:
             self.step_size = 1
         ##--If true, show a periodic status update. Will be false if debugging is going on
-        self.display_status = display_status
+        self.display_status = display_status   
     
     
     ##########################################################################
@@ -146,16 +151,19 @@ def ascii_fail():
 ####################################################
 def parse_command_line(command_line_results):
     parser = argparse.ArgumentParser(description='Generates PCFG Grammar From Password Training Set')
-    parser.add_argument('--output','-o', help='Name of generated ruleset. Default is \"Default\"',metavar='RULESET_NAME',required=False,default=command_line_results.rule_name)
+    parser.add_argument('--rule','-r', help='Name of generated ruleset. Default is \"Default\"',metavar='RULESET_NAME',required=False,default=command_line_results.rule_name)
     parser.add_argument('--training','-t', help='The training set of passwords to train from',metavar='TRAINING_SET',required=True)
     parser.add_argument('--encoding','-e', help='File encoding to read the input training set. If not specified autodetect is used', metavar='ENCODING', required=False)
     parser.add_argument('--verbose','-v', help='Turns on verbose output', required=False, action="store_true")
     parser.add_argument('--smoothing', '-s', 
-        help='The amount of probability smoothing to apply to the generated grammar. For example, if it is 0.01 then items with a prob difference of 1%% will be given the same prob. A setting of 0 will turn this off. Default: (%(default)s)',
+        help='<ADVANCED> The amount of probability smoothing to apply to the generated grammar. For example, if it is 0.01 then items with a prob difference of 1%% will be given the same prob. A setting of 0 will turn this off. Default: (%(default)s)',
         required=False, default=command_line_results.smoothing, type = float)
+    parser.add_argument('--coverage', '-c', 
+        help='<ADVANCED> The percentage to trust the trained grammar. 1 - coverage = persentage of grammar to devote to brute force guesses. Range: Between 1.0 and 0.0. Default: (%(default)s)',
+        required=False, default=command_line_results.coverage, type = float)
     try:
         args=parser.parse_args()
-        command_line_results.rule_name = args.output
+        command_line_results.rule_name = args.rule
         command_line_results.training_file = args.training
         command_line_results.encoding = args.encoding
         command_line_results.smoothing = args.smoothing
@@ -164,6 +172,12 @@ def parse_command_line(command_line_results):
         if command_line_results.smoothing < 0 or command_line_results.smoothing > 0.9:
             print("Error, smoothing must be a value between 0.9 and 0")
             return RetType.COMMAND_LINE_ERROR
+            
+        command_line_results.coverage = args.coverage    
+        ##--Check to make sure coverage makes sense--##
+        if command_line_results.coverage < 0 or command_line_results.coverage > 1.0:
+            print("Error, smoothing must be a value between 0.9 and 0")
+            return RetType.COMMAND_LINE_ERROR  
             
         if args.verbose:
             command_line_results.verbose = True
@@ -333,7 +347,7 @@ def main():
      
     ##--Now finalize the data and save it to disk--##
     ret_value = training_results.save_results(directory = absolute_base_directory, 
-        encoding = command_line_results.encoding, precision = 7, smoothing = command_line_results.smoothing, coverage = 0.6)
+        encoding = command_line_results.encoding, precision = 7, smoothing = command_line_results.smoothing, coverage = command_line_results.coverage)
     if ret_value != RetType.STATUS_OK:
         ascii_fail()
         print("Exiting...")

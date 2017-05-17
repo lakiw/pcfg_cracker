@@ -115,11 +115,11 @@ class Markov:
             #--Calculate all the first order probabilities with this character as the starting point
             for child in item['following_letters'].values():
                 child['probability'] = round(-10 * math.log10(child['count'] / item['num_children']))
-            
-            ##--Handle edge case so no probabilities are 0--##
-            ##--This is to prevent infinate loops so adding another character increases the count
-            if item['probability'] == 0:
-                item['probability'] = 1
+                
+                ##--Handle edge case so no probabilities are 0--##
+                ##--This is to prevent infinate loops so adding another character increases the count
+                if child['probability'] == 0:
+                    child['probability'] = 1
         
         ##--Now calculate the keysize of the different ranks
         ##--This is used later to figure out the probability of them, (and ultimatly when to use them in the PCFG)

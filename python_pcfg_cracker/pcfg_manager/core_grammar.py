@@ -12,6 +12,8 @@ import sys   #--Used for printing to stderr
 import random  #--Used for generating honeywords
 import itertools #--Used for walking a pcfg
 
+from .markov_cracker import generate_markov_guesses
+
 
 ##########################################################################################
 # Main class of this program as it represents the central grammar of the pcfg cracker
@@ -59,6 +61,7 @@ class PcfgClass:
     def __init__(self, grammar=[], markov_stats = {}):
         ###---The actual grammar. It'll be loaded up later
         self.grammar = grammar
+        self.markov_stats = markov_stats
     
     
     ##############################################################################
@@ -156,7 +159,10 @@ class PcfgClass:
         ##--Add Markov expansion. Currently using the same logic as JtR's --Markov Mode. Will print out all terminals
         ##--falling below the min prob rank and max prob rank
         elif cur_dic['function']=='Markov':
-            print (cur_section)
+            for item in cur_dic['values']:
+                levels = item.split(":")
+                cur_combo = generate_markov_guesses(self.markov_stats, min_level = int(levels[0]), max_level = int(levels[1]))
+
         ##---Error parsing the grammar. No rule corresponds to the current transition function        
         else:
             print("Error parsing the grammar. No rule corresponds to the transition function " + str(cur_dic['function']))
