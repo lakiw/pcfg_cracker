@@ -76,8 +76,7 @@ class CrackingSession:
         user_thread = threading.Thread(target=keypress, args=(user_input,))
         user_thread.daemon = True  # thread dies when main thread (only non-daemon thread) exits.
         user_thread.start()
-        
-                
+                 
         self.p_queue_start_time = time.perf_counter()
         
         #-Get the first item from the child priority_queue process
@@ -87,7 +86,7 @@ class CrackingSession:
         if queue_items is None:
             print("Finished processing items from the priority queue", file=sys.stderr)
             priority_queue_process.join()
-            return RetType.QUEUE_EMPTY
+            return
                     
         self.p_queue_stop_time = time.perf_counter() - self.p_queue_start_time
         self.running_queue_time = self.running_queue_time + self.p_queue_stop_time
@@ -152,12 +151,12 @@ class CrackingSession:
             if queue_items is None:
                 print("Finished processing items from the priority queue", file=sys.stderr)
                 priority_queue_process.join()
-                return RetType.QUEUE_EMPTY
+                return
                 
             self.p_queue_stop_time = time.perf_counter() - self.p_queue_start_time
             self.running_queue_time = self.running_queue_time + self.p_queue_stop_time         
                 
-        return RetType.STATUS_OK
+        return
     
 
     ######################################################################################################
@@ -168,7 +167,6 @@ class CrackingSession:
         if len(guess_list) != 0:
             print ("Currently generating guesses from " + str(guess_list[0]) + " to " + str(guess_list[-1]),file=sys.stderr)
         print("",file=sys.stderr)
-        return RetType.STATUS_OK
    
 
 ###########################################################################################

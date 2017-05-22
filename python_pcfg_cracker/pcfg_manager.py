@@ -48,9 +48,7 @@ from distutils.version import LooseVersion  #--Compare the trainer version used 
 
 #Custom modules
 from pcfg_manager.file_io import load_grammar
-from pcfg_manager.core_grammar import PcfgClass, print_grammar
-from pcfg_manager.priority_queue import PcfgQueue
-from pcfg_manager.ret_types import RetType
+from pcfg_manager.core_grammar import PcfgClass
 from pcfg_manager.cracking_session import CrackingSession
 from pcfg_manager.markov_cracker import load_markov_stats
 
@@ -64,7 +62,7 @@ def parse_command_line(runtime_options):
     parser.add_argument('--rule','-r', help='The rule set to use. Default is \"Default\"',
         metavar='RULE_SET',required=False, default= runtime_options['rule_name'])
     parser.add_argument('--queue_info','-q', help='Prints the priority queue info vs guesses. Used for debugging',
-        dest='queue_info', default= runtime_options['queue_info'])
+        dest='queue_info', action='store_const', const= not runtime_options['queue_info'])
     try:
         args=parser.parse_args()
         runtime_options['rule_name'] = args.rule
@@ -120,9 +118,8 @@ def main():
         ##--Runtime specific values, can be overriden via command line options
         'runtime_options':{
             'rule_name':'Default',
-            #Debugging printouts of the queue behavior instead of cracking guesses
-            'queue_info':False
-        
+            #Debugging printouts of the queue behavior instead of generating cracking guesses
+            'queue_info':False  
         }
     }  
     
@@ -140,8 +137,7 @@ def main():
     ##--Initialize the grammar--##
     grammar = []
     config_details = {}
-    ret_value = load_grammar(rule_directory, grammar, config_details)
-    if ret_value != RetType.STATUS_OK:
+    if load_grammar(rule_directory, grammar, config_details) != True:
         print ("Error loading the PCFG grammar, exiting",file=sys.stderr)
         print_error()
         return

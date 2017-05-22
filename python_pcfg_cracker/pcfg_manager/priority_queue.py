@@ -228,8 +228,6 @@ class PcfgQueue:
     def insert_into_backup_storage(self,queue_item):
         ##--Insert the item
         self.backup_save_comm.put({'Command':'Save','Value':[queue_item]})
-      
-        return RetType.STATUS_OK
     
     
     ###############################################################################
@@ -302,5 +300,3 @@ class PcfgQueue:
                     self.insert_into_backup_storage(child_node)
             else:
                 print("Hmmm, trying to push a parent and not a child on the list", file=sys.stderr)
-
-        return RetType.STATUS_OK   
