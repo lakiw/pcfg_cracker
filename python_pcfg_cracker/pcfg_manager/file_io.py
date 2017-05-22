@@ -308,7 +308,7 @@ def build_grammar(config, grammar, rule_directory, encoding, section_type, found
 ##############################################################
 # Loads the grammar from a ruleset
 ##############################################################
-def load_grammar(rule_directory, grammar):
+def load_grammar(rule_directory, grammar, config_details = {}):
     print("Loading the rules file",file=sys.stderr)
     
     ##--First start by setting up, reading, and parsing the config file for the ruleset--
@@ -319,6 +319,7 @@ def load_grammar(rule_directory, grammar):
         config.readfp(open(os.path.join(rule_directory,"config.ini")))
         ##--Find the encoding for the config file--##
         encoding = config.get('TRAINING_DATASET_DETAILS','encoding')
+        config_details['version'] = config.get('TRAINING_PROGRAM_DETAILS','version')
         
     except IOError as msg:
         print("Could not open the config file for the ruleset specified. The rule directory may not exist",file=sys.stderr)

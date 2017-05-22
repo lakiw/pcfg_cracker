@@ -90,7 +90,7 @@ class PcfgQueue:
     ############################################################################
     # Basic initialization function
     ############################################################################
-    def __init__(self, backup_save_comm, backup_restore_comm, verbose = False):
+    def __init__(self, backup_save_comm, backup_restore_comm):
         self.p_queue = []  ##--The actual priority queue
         self.max_probability = 1.0 #--The current highest priority item in the queue. Used for memory management and restoring sessions
         self.min_probability = 0.0 #--The lowest prioirty item is allowed to be in order to be pushed in the queue. Used for memory management
@@ -99,8 +99,7 @@ class PcfgQueue:
         
         self.backup_save_comm = backup_save_comm
         self.backup_restore_comm = backup_restore_comm         
-        
-        self.verbose = verbose
+
         
     #############################################################################
     # Push the first value into the priority queue
@@ -170,8 +169,6 @@ class PcfgQueue:
         
         ##--Assign the min probabilty to the item currently in the divider of the queue--##
         self.min_probability = self.p_queue[divider].probability
-        if self.verbose:
-            print("min prob: " + str(self.min_probability), file=sys.stderr)
         
         ##--Save the items off into the storage list
         self.backup_save_comm.put({'Command':'Save','Value':self.p_queue[divider+1:]})

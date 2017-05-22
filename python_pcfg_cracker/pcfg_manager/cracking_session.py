@@ -29,7 +29,7 @@ class CrackingSession:
     ############################################################################
     # Basic initialization function
     ############################################################################
-    def __init__(self, pcfg = None, verbose = False):
+    def __init__(self, pcfg = None):
         self.pcfg = pcfg
         
         ##--Debugging and Performance Monitoring Variables--##
@@ -41,8 +41,8 @@ class CrackingSession:
         self.guess_stop_time = 0      #-Stop time of generating the actual guesses
         self.running_queue_time = 0   #-Total time running the "Next" algorithm to get a new pre-terminal
         self.running_guess_time = 0   #-Total time spent generaing guesses from pre-terminals and printing them out
-        self.verbose = verbose
 
+        
     ##############################################################################
     # Starts the cracking session and starts generating guesses
     ##############################################################################
@@ -56,7 +56,7 @@ class CrackingSession:
         
         ##--Spawn a child process to handle backup storage as the list gets too big for the main priority queue
         #-Initialize the data structures
-        backup_storage = QueueStorage(verbose = self.verbose)
+        backup_storage = QueueStorage()
         #-At least from my testing, queue while slower in general was signifincatly faster than pipes for transfering a lot of data
         #-in a non-blocking way
         backup_save_comm = Queue()
@@ -67,7 +67,7 @@ class CrackingSession:
         backup_storage_process.start()
         
         #-Spawn a child process to start generating the pre-terminals
-        priority_queue_process = Process(target=spawn_pqueue_thread, args=(self.pcfg, child_conn, self.verbose, print_queue_info, backup_save_comm, backup_restore_comm))
+        priority_queue_process = Process(target=spawn_pqueue_thread, args=(self.pcfg, child_conn, print_queue_info, backup_save_comm, backup_restore_comm))
         priority_queue_process.daemon = True
         priority_queue_process.start()
         
@@ -185,14 +185,14 @@ def keypress(user_input_ref):
 # send to the parent process
 # The parse trees will be sent back to the parent process in priority order
 ###############################################################################################
-def spawn_pqueue_thread(pcfg, child_conn, verbose, print_queue_info, backup_save_comm, backup_restore_comm):
+def spawn_pqueue_thread(pcfg, child_conn, print_queue_info, backup_save_comm, backup_restore_comm):
       
     ##--Block size is the number of items to send back at once--##
     ##--Not making this configurable in the command line since it would just confuse users--##
     block_size = 10
     
     ##--Initialize the priority queue--##
-    p_queue = PcfgQueue(backup_save_comm, backup_restore_comm, verbose = verbose)
+    p_queue = PcfgQueue(backup_save_comm, backup_restore_comm)
     ret_value = p_queue.initialize(pcfg)
     if ret_value != RetType.STATUS_OK:
         print ("Error initalizing the priority queue, exiting",file=sys.stderr)

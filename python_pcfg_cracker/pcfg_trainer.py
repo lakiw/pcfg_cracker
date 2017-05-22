@@ -195,7 +195,7 @@ def main():
     ##--Information about this program--##
     program_details = {
         'Program':'pcfg_trainer.py',
-        'Version': '3.2',
+        'Version': '3.3',
         'Author':'Matt Weir',
         'Contact':'cweir@vt.edu'
     }
