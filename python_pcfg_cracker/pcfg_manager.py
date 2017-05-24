@@ -50,7 +50,7 @@ from distutils.version import LooseVersion  #--Compare the trainer version used 
 from pcfg_manager.file_io import load_grammar
 from pcfg_manager.core_grammar import PcfgClass
 from pcfg_manager.cracking_session import CrackingSession
-from pcfg_manager.markov_cracker import load_markov_stats
+from pcfg_manager.markov_cracker import MarkovCracker
 
        
 ####################################################
@@ -145,15 +145,16 @@ def main():
     ##--Load the Markov stats file--##
     ##--Only do this on newer grammars to ensure backwards compatability--##
     if LooseVersion(config_details['version']) >= LooseVersion("3.3"):
-        markov_stats = load_markov_stats(rule_directory)
-        if markov_stats == None:
+        try:
+            markov_cracker = MarkovCracker(rule_directory)
+        except:
             print ("Error loading the Markov stats file for the ruleset, exiting",file=sys.stderr)
             print_error()
             return
     else:
-        markov_stats = {}
+        markov_cracker = MarkovCracker()
  
-    pcfg = PcfgClass(grammar, markov_stats)
+    pcfg = PcfgClass(grammar, markov_cracker)
     
     ##--Setup is done, now start generating rules
     print ("Starting to generate password guesses",file=sys.stderr)

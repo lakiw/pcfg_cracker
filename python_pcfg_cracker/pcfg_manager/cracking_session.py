@@ -98,8 +98,8 @@ class CrackingSession:
             self.guess_start_time = time.perf_counter()
             
             for terminal in queue_items:
-                current_guesses = self.pcfg.list_terminals(terminal.parse_tree) 
-                self.num_guesses = self.num_guesses + len(current_guesses)
+                number_of_terminal_guesses, current_guesses = self.pcfg.list_terminals(terminal.parse_tree, print_output = not print_queue_info)
+                self.num_guesses += number_of_terminal_guesses
                 self.num_parse_trees = self.num_parse_trees + 1
                 
                 ##--Print_Queue_Info says if we are running this session for debugging and performance improvements vs actually cracking passwords
@@ -114,20 +114,6 @@ class CrackingSession:
                         print ("Number of guesses a second: " + str(self.num_guesses // (time.perf_counter() - self.total_time_start)),file=sys.stderr)
                         #print ("Current probability: " + str(self.p_queue.max_probability),file=sys.stderr)
                         print ()
-
-                ##--This is if you are actually trying to generate guesses
-                else:
-                    for guess in current_guesses:
-                        try:
-                            print(guess)
-                        ##--While I could silently replace/ignore the Unicode character for now I want to know if this is happening
-                        except UnicodeEncodeError as msg:
-                            #print("UNICODE_ERROR: " + str(msg),file=sys.stderr) 
-                            pass                            
-                        except IOError:
-                            print("Consumer, (probably the password cracker), stopped accepting input.",file=sys.stderr)
-                            print("Halting guess generation and exiting",file=sys.stderr)
-                            return RetType.BROKEN_PIPE
                         
             self.guess_stop_time = time.perf_counter() - self.guess_start_time
             self.running_guess_time = self.running_guess_time + self.guess_stop_time

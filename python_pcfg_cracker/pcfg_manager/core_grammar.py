@@ -12,7 +12,7 @@ import sys   #--Used for printing to stderr
 import random  #--Used for generating honeywords
 import itertools #--Used for walking a pcfg
 
-from .markov_cracker import generate_markov_guesses
+from .markov_cracker import MarkovCracker
 
 
 ##########################################################################################
@@ -58,10 +58,10 @@ class PcfgClass:
     ########################################################
     # Initialize the class, not really doing anything here
     ########################################################
-    def __init__(self, grammar=[], markov_stats = {}):
+    def __init__(self, grammar=[], markov_cracker = None):
         ###---The actual grammar. It'll be loaded up later
         self.grammar = grammar
-        self.markov_stats = markov_stats
+        self.markov_cracker = markov_cracker
     
     
     ##############################################################################
@@ -91,14 +91,27 @@ class PcfgClass:
     # Top level function used to return all the terminals / password guesses
     # associated with the pre_terminal passed it
     ##############################################################################
-    def list_terminals(self,pre_terminal):
+    def list_terminals(self,pre_terminal, print_output=True):
         terminal_list = []
         #First grab a list of all the pre_terminals. It'll take the form of nested linked lists.
         #For example expantTerminals will return something like [['cat','hat','dog'],[1,2]].
-        guess_combos = self.expand_terminals(pre_terminal,working_value=[])
+        guess_combos = self.expand_terminals(pre_terminal, working_value=[], print_output=print_output)
         #Now take the combos and generate guesses. Following the above example, create the guesses cat1,hat1,dog1,cat2,hat2,dog2
         terminal_list = self.expand_final_string(guess_combos)
-        return terminal_list
+        
+        ##--Moving the printing of the guesses into this function--##
+        ##--  I'm not entirely happy putting this in the core grammar but passing them
+        ##--  back as a list doesn't work for pre_terminals that generate millions of guesses
+        ##--  This current structure of generating the terminal list and then printing guesses is a transition
+        ##--  change until I can code up a "next" function for all the guesses and get rid of the full list completly
+
+        for guess in terminal_list:
+            self.print_guess(guess, print_output)
+                
+        if len(terminal_list) > 0:
+            return len(terminal_list), [terminal_list[0], terminal_list[-1]]
+        else:
+            return len(terminal_list), []
     
     
     ##############################################################################
@@ -124,7 +137,7 @@ class PcfgClass:
     # just be strings that can be combined together. All complex transforms need to be done
     # in this function. For example it needs to apply all capitalization mangling rules.
     ########################################################################################
-    def expand_terminals(self,cur_section,working_value=[]):
+    def expand_terminals(self,cur_section,working_value=[], print_output = True):
         cur_combo = working_value
         ##--Overly complicated to read, I know, but it just parses the grammar and grabs the parts we care about for this section, (replacements)
         ##--Some of the craziness is I'm using the values in cur_section[0,1] to represent pointers into the grammar
@@ -138,7 +151,7 @@ class PcfgClass:
         ##----If you are copying over values that aren't terminals. For example L3=>['cat','hat']. They are not terminals since you still need to apply capitalization rules to them
         elif cur_dic['function']=='Shadow':
             ##--Pass the value to the next replacement to take care of
-            cur_combo =  self.expand_terminals(cur_section[2][0],cur_dic['values'])
+            cur_combo =  self.expand_terminals(cur_section[2][0],cur_dic['values'], print_output)
         ##----Capitalize the value passed in from the previous section----
         elif cur_dic['function']=='Capitalization':
             temp_combo=[]
@@ -155,20 +168,44 @@ class PcfgClass:
         ##---Potentially adding a new replacement. aka S->ABC. This is more of a traditional PCFG "non-terminal"
         elif cur_dic['function']=='Transparent':
             for rule in cur_section[2]:
-                cur_combo.append(self.expand_terminals(rule))
+                cur_combo.append(self.expand_terminals(rule, print_output=print_output))
         ##--Add Markov expansion. Currently using the same logic as JtR's --Markov Mode. Will print out all terminals
         ##--falling below the min prob rank and max prob rank
         elif cur_dic['function']=='Markov':
             for item in cur_dic['values']:
                 levels = item.split(":")
-                cur_combo = generate_markov_guesses(self.markov_stats, min_level = int(levels[0]), max_level = int(levels[1]))
+                self.markov_cracker.initialize_cracking_session(min_level = int(levels[0]), max_level = int(levels[1]))
+                guess = self.markov_cracker.next_guess()
+                while guess != None:
+                    self.print_guess(guess, print_output)
+                    guess = self.markov_cracker.next_guess()
+                cur_combo = []
+                cur_combo = self.markov_cracker.generate_markov_guesses(min_level = int(levels[0]), max_level = int(levels[1]))
 
         ##---Error parsing the grammar. No rule corresponds to the current transition function        
         else:
             print("Error parsing the grammar. No rule corresponds to the transition function " + str(cur_dic['function']))
             raise Exception
         return cur_combo
-     
+    
+
+    ###############################################################################################
+    # General code to print out a guess to stdout
+    # Need to have error handling and want to centerlize all the calls to this so I don't\t
+    # accidently forget some printout somewhere else
+    ###############################################################################################
+    def print_guess(self, guess, print_output = True):
+        if print_output == True:
+            try:
+                print(guess)
+            ##--While I could silently replace/ignore the Unicode character for now I want to know if this is happening
+            except UnicodeEncodeError as msg:
+                #print("UNICODE_ERROR: " + str(msg),file=sys.stderr) 
+                pass                            
+            except IOError:
+                print("Consumer, (probably the password cracker), stopped accepting input.",file=sys.stderr)
+                print("Halting guess generation and exiting",file=sys.stderr)
+                raise
      
     ##############################################################################################
     # Used to find the probability of a parse tree in the graph
@@ -503,7 +540,7 @@ class PcfgClass:
         #For example expantTerminals will return something like [['cat','hat','dog'],[1,2]].
         #-TODO: this can be made a whole lot more effecient by only grabbing one value
         # Right now just lazy and re-using the cracking functions
-        guess_combos = self.expand_terminals(pt,working_value=[])
+        guess_combos = self.expand_terminals(pt,working_value=[], print_output=True)
 
         #--Now pick a random guess from the combos
         final_terminal = ""
