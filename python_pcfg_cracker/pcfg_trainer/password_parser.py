@@ -190,11 +190,11 @@ class PasswordParser:
                         ##--Now update the mask for the current run
                         section_list.append((''.join(cur_combo),"K"+str(len(cur_combo))))
                         ##--If not the last section, go recursive and call it with what's remaining--##
-                        if index != (len(input_section) - 1):
-                            ret_value = self.parse_keyboard_section(items, input_section[index:], section_list)
-                            ##-- Sanity error return check --##
-                            if ret_value != RetType.STATUS_OK:
-                                return ret_value
+                        ## if index != (len(input_section) - 1):
+                        ret_value = self.parse_keyboard_section(items, input_section[index:], section_list)
+                        ##-- Sanity error return check --##
+                        if ret_value != RetType.STATUS_OK:
+                            return ret_value
                                 
                         ##-- Ok, thanks the the recursive checking of the rest of it we are done processing this section so break
                         return RetType.STATUS_OK
@@ -369,11 +369,11 @@ class PasswordParser:
                     ##--Now update the mask for the current run
                     section_list.append((''.join(cur_combo),"D"+str(len(cur_combo))))
                     ##--If not the last section, go recursive and call it with what's remaining--##
-                    if index != (len(input_section) - 1):
-                        ret_value = self.parse_digits_section(items, input_section[index:], section_list)
-                        ##-- Sanity error return check --##
-                        if ret_value != RetType.STATUS_OK:
-                            return ret_value
+                    ##if index != (len(input_section) - 1):
+                    ret_value = self.parse_digits_section(items, input_section[index:], section_list)
+                    ##-- Sanity error return check --##
+                    if ret_value != RetType.STATUS_OK:
+                        return ret_value
                                 
                     ##-- Ok, thanks the the recursive checking of the rest of it we are done processing this section so break
                     return RetType.STATUS_OK                             
@@ -487,11 +487,11 @@ class PasswordParser:
                     ##--Update the capitalization mask as well
                     self.parse_capitalization_mask(cap_items, cur_combo)
                     ##--If not the last section, go recursive and call it with what's remaining--##
-                    if index != (len(input_section) - 1):
-                        ret_value = self.parse_letters_section(alpha_items, cap_items, input_section[index:], section_list)
-                        ##-- Sanity error return check --##
-                        if ret_value != RetType.STATUS_OK:
-                            return ret_value
+                    ## if index != (len(input_section) - 1):
+                    ret_value = self.parse_letters_section(alpha_items, cap_items, input_section[index:], section_list)
+                    ##-- Sanity error return check --##
+                    if ret_value != RetType.STATUS_OK:
+                        return ret_value
                                 
                     ##-- Ok, thanks the the recursive checking of the rest of it we are done processing this section so break
                     return RetType.STATUS_OK                             
