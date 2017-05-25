@@ -47,3 +47,6 @@ $MD5$d41d8cd98f00b204e9800998ecf8427e:tester54test
 
 ##--capitalization test
 $MD5$d41d8cd98f00b204e9800998ecf8427e:qAsW2
+
+##--keyboard edge case
+$MD5$d41d8cd98f00b204e9800998ecf8427e:1qaz0

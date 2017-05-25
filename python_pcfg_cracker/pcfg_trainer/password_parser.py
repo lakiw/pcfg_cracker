@@ -195,7 +195,6 @@ class PasswordParser:
                             ##-- Sanity error return check --##
                             if ret_value != RetType.STATUS_OK:
                                 return ret_value
-                                
                         ##-- Ok, thanks the the recursive checking of the rest of it we are done processing this section so break
                         return RetType.STATUS_OK
                     ##--Sanity error return check
@@ -348,7 +347,6 @@ class PasswordParser:
     # section_list should return [('test',None),('123','D3'),('test',None)]
     ############################################################################
     def parse_digits_section(self, items, input_section, section_list):
-
         ##--The current digits combo--##
         cur_combo = []
         ##-Loop through each character to find the combos
@@ -374,7 +372,7 @@ class PasswordParser:
                         ##-- Sanity error return check --##
                         if ret_value != RetType.STATUS_OK:
                             return ret_value
-                                
+                        
                     ##-- Ok, thanks the the recursive checking of the rest of it we are done processing this section so break
                     return RetType.STATUS_OK                             
         ##--Update the last run if needed
@@ -492,7 +490,7 @@ class PasswordParser:
                         ##-- Sanity error return check --##
                         if ret_value != RetType.STATUS_OK:
                             return ret_value
-                                
+                    
                     ##-- Ok, thanks the the recursive checking of the rest of it we are done processing this section so break
                     return RetType.STATUS_OK                             
         ##--Update the last run if needed
