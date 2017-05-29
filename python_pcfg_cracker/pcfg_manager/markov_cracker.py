@@ -3,6 +3,21 @@
 import sys
 import os 
 
+import cProfile
+
+def do_cprofile(func):
+    def profiled_func(*args, **kwargs):
+        profile = cProfile.Profile()
+        try:
+            profile.enable()
+            result = func(*args, **kwargs)
+            profile.disable()
+            return result
+        finally:
+            pass
+            #profile.print_stats()
+    return profiled_func
+
 #########################################################################################################
 # Contains all the logic for handling Markov guess generation for the pcfg_manager
 # Based on --markov mode in John the Ripper
@@ -124,7 +139,7 @@ class MarkovCracker:
     # Currently returns them as a list
     # Will want to change that in the future in case the list grows too bit, (it will)
     # Returns the guesses generated
-    #################################################################################
+    ################################################################################# 
     def generate_markov_guesses(self, min_level = 0, max_level = 1000):
         ##--handle the zero order markov level--##
         guesses = []
@@ -172,12 +187,13 @@ class MarkovCracker:
         self.max_level = max_level
         self.guess = None
         self.guess_level = 0
-     
+         
      
     ###############################################################################################
     # Generates the "next" guess from this model
     # Will return None when no more guesses are left to be created
-    ###############################################################################################    
+    ###############################################################################################
+    #@do_cprofile
     def next_guess(self):
         
         ##--Deal with starting off the Markov chain
@@ -186,70 +202,111 @@ class MarkovCracker:
             self.guess_level = self.markov_stats[self.start_letter]['probability']
             
             if self.guess_level >= self.min_level and self.guess_level <= self.max_level:
-                return ''.join(self.guess)
-                    
+                return ''.join(self.guess)          
+        
         while True:
+
             ##--Loop through the following letter probabilities first
-            while True:
-                prev_letter = self.guess[-1]
-                cur_letter = self.markov_stats[prev_letter]['first_child']
-                self.guess_level += self.markov_stats[prev_letter]['following_letters'][cur_letter]['probability']
-                self.guess.append(cur_letter)
-                
-                if self.guess_level >= self.min_level and self.guess_level <= self.max_level:
-                    return ''.join(self.guess)
-                
-                ##--We dug too deep, went too far, unleashed the eldritch horrors                
-                elif self.guess_level > self.max_level:
-                    break
+            ret_value = self.dig_deeper()
+            if ret_value != None:
+                return ret_value
 
             ##--Now back out and try other letters at the same depth, or lower
             while True:
-                prev_letter = self.guess.pop()
+                parent_letter = self.guess[-1]
                 
                 ##--If it is the first letter in the chain
-                ##--Check it see if the list (guess) is empty
-                if not self.guess:
-                    cur_letter = self.markov_stats[prev_letter]['next']
-                    
-                    ##--If we are done with all of the letters
-                    if cur_letter == None:
-                        self.guess = None
-                        return None
-                        
-                    self.guess_level = self.markov_stats[cur_letter]['probability']
-                    self.guess.append(cur_letter)
-                    
-                    if self.guess_level >= self.min_level and self.guess_level <= self.max_level:
-                        return ''.join(self.guess)
-                    
-                    ##--Must dig deeper              
-                    elif self.guess_level < self.max_level:
+                if len(self.guess) == 1:
+                    more_work, ret_value = self.dig_wider_base(parent_letter)
+                    if more_work != True:
+                        return ret_value
+                    else:
                         break
                 
                 ##--If we are looking at the 1st Markov Order probabilities
                 else:
+                    prev_letter = self.guess[-2]
                     ##--Update the guess level to account for the missing children
-                    self.guess_level = self.guess_level - self.markov_stats[self.guess[-1]]['following_letters'][prev_letter]['probability']
+                    self.guess_level = self.guess_level - self.markov_stats[prev_letter]['following_letters'][parent_letter]['probability']
                     
-                    cur_letter = self.markov_stats[self.guess[-1]]['following_letters'][prev_letter]['next']
+                    cur_letter = self.markov_stats[prev_letter]['following_letters'][parent_letter]['next']
                     
-                    ##--No more children at this level, dig deeper
+                    ##--No more children at this level, go back up a level
                     if cur_letter == None:
+                        del self.guess[-1] 
                         continue
-                        
+
                     ##--Update the probability with the new item
-                    self.guess_level += self.markov_stats[self.guess[-1]]['following_letters'][cur_letter]['probability']
+                    cur_level = self.guess_level + self.markov_stats[prev_letter]['following_letters'][cur_letter]['probability']         
                     
-                    self.guess.append(cur_letter)
-                    
-                    if self.guess_level >= self.min_level and self.guess_level <= self.max_level:
+                    ##--This is a valid guess--##
+                    if cur_level >= self.min_level and cur_level <= self.max_level:
+                        self.guess_level = cur_level
+                        self.guess[-1] = cur_letter
                         return ''.join(self.guess)
                         
                     ##--Must dig deeper              
-                    elif self.guess_level < self.max_level:
+                    elif cur_level < self.max_level:
+                        self.guess_level = cur_level
+                        self.guess[-1] = cur_letter
                         break
             
+                    ##--No more children at this level since all of their levels are too high
+                    del self.guess[-1]
             
         return None
+    
+    #########################################################################
+    # Dig wider for the first character. Aka go from 'a' to 'b' to 'c'
+    #########################################################################
+    def dig_wider_base(self, parent_letter):
+        cur_letter = self.markov_stats[parent_letter]['next']
+                    
+        ##--If we are done with all of the letters
+        if cur_letter == None:
+            self.guess = None
+            return False, None
+            
+        self.guess_level = self.markov_stats[cur_letter]['probability']
         
+        ##--If we don't need to continue on since the level of following letters is too high
+        if self.guess_level > self.max_level:
+            self.guess = None
+            return False, None
+        
+        ##--It potentially is a valid guess
+        self.guess[-1] = cur_letter
+        
+        ##--Check to see if this is a valid guess
+        if self.guess_level >= self.min_level and self.guess_level <= self.max_level:
+            return False, ''.join(self.guess)
+        
+        ##--Must dig deeper              
+        return True, None
+            
+    
+    #########################################################################
+    # Go down the markov chain. Aka go from 'a' to 'aa' to 'aaa'
+    #########################################################################
+    def dig_deeper(self):
+        while True:
+            prev_letter = self.guess[-1]
+            cur_letter = self.markov_stats[prev_letter]['first_child']
+            if cur_letter == None:
+                return None
+            
+            cur_level = self.guess_level + self.markov_stats[prev_letter]['following_letters'][cur_letter]['probability']
+            
+            if cur_level >= self.min_level and cur_level <= self.max_level:
+                self.guess.append(cur_letter)
+                self.guess_level = cur_level
+                return ''.join(self.guess)
+            
+            ##--We dug too deep, went too far, unleashed the eldritch horrors                
+            elif cur_level > self.max_level:
+                return None
+            
+            ##--Add the letter on and keep digging
+            self.guess.append(cur_letter)
+            self.guess_level = cur_level
+            

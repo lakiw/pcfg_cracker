@@ -350,13 +350,13 @@ class Markov:
         ##--Save the Markov stats file (ranking) --##
         ##--This is the same as the stats file John the Ripper --Markov mode uses--##
         with open(os.path.join(base_directory,'markov_stats.txt'), 'w') as datafile:
-            for index, item in self.probability_map.items():
-                ##-Write out the zero order Markov stats
-                datafile.write('%d=proba1[%d]\n' % (item['probability'], ord(index)))
+            for index in sorted(self.probability_map, key=lambda x: (self.probability_map[x]['probability'])):
+                datafile.write('%d=proba1[%d]\n' % (self.probability_map[index]['probability'], ord(index)))
                 
                 ##--Write out all the first order Markov stats
-                for child_index, child in item['following_letters'].items():
-                    datafile.write('%d=proba2[%d*256+%d]\n' % (child['probability'], ord(index), ord(child_index)))
+                children = self.probability_map[index]['following_letters']
+                for child_index in sorted(children, key=lambda x: children[x]['probability']):
+                    datafile.write('%d=proba2[%d*256+%d]\n' % (children[child_index]['probability'], ord(index), ord(child_index)))
         
         return True
     

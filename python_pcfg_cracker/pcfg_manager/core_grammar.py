@@ -14,6 +14,20 @@ import itertools #--Used for walking a pcfg
 
 from .markov_cracker import MarkovCracker
 
+import cProfile
+
+def do_cprofile(func):
+    def profiled_func(*args, **kwargs):
+        profile = cProfile.Profile()
+        try:
+            profile.enable()
+            result = func(*args, **kwargs)
+            profile.disable()
+            return result
+        finally:
+            pass
+    return profiled_func
+
 
 ##########################################################################################
 # Main class of this program as it represents the central grammar of the pcfg cracker
@@ -174,19 +188,30 @@ class PcfgClass:
         elif cur_dic['function']=='Markov':
             for item in cur_dic['values']:
                 levels = item.split(":")
+                
                 self.markov_cracker.initialize_cracking_session(min_level = int(levels[0]), max_level = int(levels[1]))
-                guess = self.markov_cracker.next_guess()
-                while guess != None:
-                    self.print_guess(guess, print_output)
-                    guess = self.markov_cracker.next_guess()
+                self.generate_all_markov_guessess(print_output)
+
                 cur_combo = []
-                cur_combo = self.markov_cracker.generate_markov_guesses(min_level = int(levels[0]), max_level = int(levels[1]))
+                #cur_combo = self.markov_cracker.generate_markov_guesses(min_level = int(levels[0]), max_level = int(levels[1]))
 
         ##---Error parsing the grammar. No rule corresponds to the current transition function        
         else:
             print("Error parsing the grammar. No rule corresponds to the transition function " + str(cur_dic['function']))
             raise Exception
         return cur_combo
+    
+    
+    #############
+    # Temp profiling function
+    #############
+    @do_cprofile
+    def generate_all_markov_guessess(self, print_output):
+
+        guess = self.markov_cracker.next_guess()
+        while guess != None:
+            self.print_guess(guess, print_output)
+            guess = self.markov_cracker.next_guess()
     
 
     ###############################################################################################
@@ -202,7 +227,7 @@ class PcfgClass:
             except UnicodeEncodeError as msg:
                 #print("UNICODE_ERROR: " + str(msg),file=sys.stderr) 
                 pass                            
-            except IOError:
+            except:
                 print("Consumer, (probably the password cracker), stopped accepting input.",file=sys.stderr)
                 print("Halting guess generation and exiting",file=sys.stderr)
                 raise

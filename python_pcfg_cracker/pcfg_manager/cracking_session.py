@@ -98,7 +98,13 @@ class CrackingSession:
             self.guess_start_time = time.perf_counter()
             
             for terminal in queue_items:
-                number_of_terminal_guesses, current_guesses = self.pcfg.list_terminals(terminal.parse_tree, print_output = not print_queue_info)
+                try:
+                    number_of_terminal_guesses, current_guesses = self.pcfg.list_terminals(terminal.parse_tree, print_output = not print_queue_info)
+                ##--If we can't print out guesses anymore--##    
+                except Exception as msg:
+                    print(msg)
+                    return
+                    
                 self.num_guesses += number_of_terminal_guesses
                 self.num_parse_trees = self.num_parse_trees + 1
                 
