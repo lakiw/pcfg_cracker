@@ -26,6 +26,7 @@ def do_cprofile(func):
             return result
         finally:
             pass
+            #profile.print_stats()
     return profiled_func
 
 
