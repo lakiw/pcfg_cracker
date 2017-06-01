@@ -323,10 +323,16 @@ class Markov:
     def save_results(self, base_directory):
         ##--Save the Markov stats file (ranking) --##
         ##--This is the same as the stats file John the Ripper --Markov mode uses--##
-        self.__save_stats_file(base_directory)
+        if not self.__save_stats_file(base_directory):
+            return False
         
         ##--Now save the probabilities of the different ranks
-        self.__save_probabilities_file(base_directory)
+        if not self.__save_probabilities_file(base_directory):
+            return False
+        
+        ##--Save the keyspace info for Honeyword generation
+        if not self.__save_keysize_file(base_directory):
+            return False
         
     
     ################################################################################################
@@ -346,18 +352,21 @@ class Markov:
     #
     ################################################################################################
     def __save_stats_file(self, base_directory):
+        try:
+            ##--Save the Markov stats file (ranking) --##
+            ##--This is the same as the stats file John the Ripper --Markov mode uses--##
+            with open(os.path.join(base_directory,'markov_stats.txt'), 'w') as datafile:
+                for index in sorted(self.probability_map, key=lambda x: (self.probability_map[x]['probability'])):
+                    datafile.write('%d=proba1[%d]\n' % (self.probability_map[index]['probability'], ord(index)))
+                    
+                    ##--Write out all the first order Markov stats
+                    children = self.probability_map[index]['following_letters']
+                    for child_index in sorted(children, key=lambda x: children[x]['probability']):
+                        datafile.write('%d=proba2[%d*256+%d]\n' % (children[child_index]['probability'], ord(index), ord(child_index)))
         
-        ##--Save the Markov stats file (ranking) --##
-        ##--This is the same as the stats file John the Ripper --Markov mode uses--##
-        with open(os.path.join(base_directory,'markov_stats.txt'), 'w') as datafile:
-            for index in sorted(self.probability_map, key=lambda x: (self.probability_map[x]['probability'])):
-                datafile.write('%d=proba1[%d]\n' % (self.probability_map[index]['probability'], ord(index)))
-                
-                ##--Write out all the first order Markov stats
-                children = self.probability_map[index]['following_letters']
-                for child_index in sorted(children, key=lambda x: children[x]['probability']):
-                    datafile.write('%d=proba2[%d*256+%d]\n' % (children[child_index]['probability'], ord(index), ord(child_index)))
-        
+        except:
+            return False
+            
         return True
     
 
@@ -366,8 +375,29 @@ class Markov:
     # This is what is used in the actual PCFG to generate pre-terminals
     ###########################################################################################################
     def __save_probabilities_file(self, base_directory):
-        with open(os.path.join(base_directory,'markov_prob.txt'), 'w') as datafile:
-            for item in self.prob_distributed_ranks:
-                datafile.write(str(item['min_rank']) + ':' + str(item['max_rank']) + '\t' + str(item['final_prob']) + '\n')
-                
+        try:
+            with open(os.path.join(base_directory,'markov_prob.txt'), 'w') as datafile:
+                for item in self.prob_distributed_ranks:
+                    datafile.write(str(item['min_rank']) + ':' + str(item['max_rank']) + '\t' + str(item['final_prob']) + '\n')
+        
+        except:
+            return False
+        
+        return True
+        
+    
+    #############################################################################################################
+    # Save the keysize for each rank of the Markov grammar
+    # Used for honeyword generation and is not necessary for password guess generation
+    #############################################################################################################
+    def __save_keysize_file(self, base_directory):
+        try:
+            pass
+            with open(os.path.join(base_directory,'markov_keyspace.txt'), 'w') as datafile:
+                for item in self.prob_distributed_ranks:
+                    datafile.write(str(item['min_rank']) + ':' + str(item['max_rank']) + '\t' + str(item['keysize']) + '\n')
+        except:
+            return False
+            
+        print(self.prob_distributed_ranks )        
         return True

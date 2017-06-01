@@ -14,21 +14,6 @@ import itertools #--Used for walking a pcfg
 
 from .markov_cracker import MarkovCracker
 
-import cProfile
-
-def do_cprofile(func):
-    def profiled_func(*args, **kwargs):
-        profile = cProfile.Profile()
-        try:
-            profile.enable()
-            result = func(*args, **kwargs)
-            profile.disable()
-            return result
-        finally:
-            pass
-            #profile.print_stats()
-    return profiled_func
-
 
 ##########################################################################################
 # Main class of this program as it represents the central grammar of the pcfg cracker
@@ -63,8 +48,8 @@ def do_cprofile(func):
 #   'function':'Copy'    //Used for terminals to do a straight swap of the contents. like have a D->'1'
 #   'function':'Capitalization'  //Used to capitalize words passed in by the previous 'shadow' function
 #   'function':'Transparent'  //There is no list of words associated with this transition. Instead you are just pushing new transitions into the stack. Aka S->AB
-#   'function':'Digit_Bruteforce'  //Used to bruteforce digits. Much like shadow but instead of having a 'terminal' list it generates it via brute force
-#     ----'input':{'length':1}  ///Has additional variables influencing how it is applied. In this case, brute force all 1 digit values
+#   'function':'Markov'  //Used to bruteforce strings. Currently using the --JtR Markov mode
+#     ----'values':['1:11']  ///The range at which to create Markov guesses for
 #
 #    Considering how I'm still designing/writing this code, the above is almost certainly going to change
 #
@@ -191,28 +176,18 @@ class PcfgClass:
                 levels = item.split(":")
                 
                 self.markov_cracker.initialize_cracking_session(min_level = int(levels[0]), max_level = int(levels[1]))
-                self.generate_all_markov_guessess(print_output)
+                guess = self.markov_cracker.next_guess()
+                while guess != None:
+                    self.print_guess(guess, print_output)
+                    guess = self.markov_cracker.next_guess()
 
                 cur_combo = []
-                #cur_combo = self.markov_cracker.generate_markov_guesses(min_level = int(levels[0]), max_level = int(levels[1]))
 
         ##---Error parsing the grammar. No rule corresponds to the current transition function        
         else:
             print("Error parsing the grammar. No rule corresponds to the transition function " + str(cur_dic['function']))
             raise Exception
         return cur_combo
-    
-    
-    #############
-    # Temp profiling function
-    #############
-    @do_cprofile
-    def generate_all_markov_guessess(self, print_output):
-
-        guess = self.markov_cracker.next_guess()
-        while guess != None:
-            self.print_guess(guess, print_output)
-            guess = self.markov_cracker.next_guess()
     
 
     ###############################################################################################
