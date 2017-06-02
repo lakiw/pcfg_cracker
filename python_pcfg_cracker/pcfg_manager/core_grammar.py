@@ -188,7 +188,7 @@ class PcfgClass:
         ##--Sanity check to make sure things don't go off the rails
         if len(pt) != 3:
             print ("Error copying parse tree", file=sys.stderr)
-            print(pt)
+            print(pt, file=sys.stderr)
             return None
         
         ##--copying the first two items is easy
@@ -447,11 +447,11 @@ class PcfgClass:
 
         ##--Error check to make sure some transition was found--##
         if cur_transition == -1:
-            print(transition_prob)
-            print(random_number)
-            print(cur_index)
-            print(self.grammar[cur_index]['name'])
-            print(self.grammar[cur_index]['replacements'][0])
+            print(transition_prob,file=sys.stderr)
+            print(random_number,file=sys.stderr)
+            print(cur_index,file=sys.stderr)
+            print(self.grammar[cur_index]['name'],file=sys.stderr)
+            print(self.grammar[cur_index]['replacements'][0],file=sys.stderr)
             print("Error with random walk, the probabilities of all the transitions was less than one in the grammar",file=sys.stderr)
             return None
 

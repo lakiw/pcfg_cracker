@@ -8,15 +8,16 @@ class GuessIndex:
         self.running_index = 0
         self.markov_cracker = markov_cracker
         
-        if self.function in ['Copy', 'Shadow', 'Markov']:
-            self.guess_pointer = end_of_guess 
+        self.guess_pointer = end_of_guess 
+        #if self.function in ['Copy', 'Shadow', 'Markov']:
+        #    self.guess_pointer = end_of_guess 
             
-        elif self.function in ['Capitalization']:
-            self.guess_pointer = end_of_guess -1
+        #elif self.function in ['Capitalization']:
+        #    self.guess_pointer = end_of_guess -1
             
         ##--Error condition, should not hit--##
-        else: 
-            raise
+        #else: 
+        #    raise
           
           
     def reset(self, guess, new = False):
@@ -38,7 +39,6 @@ class GuessIndex:
             
         ##----Capitalize the value passed in from the previous section----
         elif self.function == 'Capitalization':
-            
             #--If there are no replacements
             if not self.cur_dic['values']:
                 return False
@@ -169,6 +169,10 @@ class GuessGeneration:
         
         else:
             self.structures.append(GuessIndex(cur_dic, end_of_guess, self.markov_cracker))
+            
+            ##--Need to expand the Shadow rules so case manling is applied
+            if cur_dic['function'] == 'Shadow':
+                self.__initialize(cur_section[2][0], end_of_guess)
              
         
     
@@ -186,22 +190,12 @@ class GuessGeneration:
     # Returns the "next" guess
     ###########################################################################################################
     def get_next_guess(self):
-        #if len(self.guess) > 1:
-        #    print("start: " +str(self.guess))
         for index in range(len(self.structures)-1,-1, -1):
             if self.structures[index].next(self.guess):
-                #if len(self.guess) > 1:
-                #    print("mid  : " +str(self.guess))
                 ##--Update everything after this
                 for forward_index in range(index+1, len(self.structures)):
                     self.structures[forward_index].reset(self.guess, new=False)
                 
-                #if len(self.guess) > 1:
-                #    print("end : " +str(self.guess))
-                #    value = input("test")
                 return ''.join(self.guess)
             
-            #else:
-            #    if (len(self.guess)) > 1:
-            #        print("not taken: " + str(index) + " " + str(self.guess))
         return None
