@@ -102,7 +102,7 @@ class CrackingSession:
                     number_of_terminal_guesses, current_guesses = self.pcfg.list_terminals(terminal.parse_tree, print_output = not print_queue_info)
                 ##--If we can't print out guesses anymore--##    
                 except Exception as msg:
-                    print(msg)
+                    print(msg, file=sys.stderr)
                     return
                     
                 self.num_guesses += number_of_terminal_guesses
