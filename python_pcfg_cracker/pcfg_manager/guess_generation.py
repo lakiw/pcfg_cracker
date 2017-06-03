@@ -9,15 +9,6 @@ class GuessIndex:
         self.markov_cracker = markov_cracker
         
         self.guess_pointer = end_of_guess 
-        #if self.function in ['Copy', 'Shadow', 'Markov']:
-        #    self.guess_pointer = end_of_guess 
-            
-        #elif self.function in ['Capitalization']:
-        #    self.guess_pointer = end_of_guess -1
-            
-        ##--Error condition, should not hit--##
-        #else: 
-        #    raise
           
           
     def reset(self, guess, new = False):
@@ -95,7 +86,7 @@ class GuessIndex:
             #--If there are no replacements
             if self.top_index >= len(self.cur_dic['values']):
                 return False
-            
+                
             rule = self.cur_dic['values'][self.top_index]            
             temp_string = []
             base_word = guess[self.guess_pointer]
@@ -104,10 +95,10 @@ class GuessIndex:
                 if rule[letterPos]=='U':
                     temp_string.append(base_word[letterPos].upper())
                 else:
-                    temp_string.append(base_word[letterPos])
+                    temp_string.append(base_word[letterPos].lower())
             
             guess[self.guess_pointer] = ''.join(temp_string)
-        
+
         ##--Add Markov expansion. Currently using the same logic as JtR's --Markov Mode. Will print out all terminals
         ##--falling below the min prob rank and max prob rank
         elif self.function == 'Markov':
@@ -180,7 +171,7 @@ class GuessGeneration:
     # Returns the first guess
     ######################################################################################################
     def get_first_guess(self):
-        for item in self.structures:
+        for item in self.structures: 
             if not item.reset(self.guess, new=True):
                 return None
         
