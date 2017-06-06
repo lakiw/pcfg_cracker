@@ -1,19 +1,49 @@
+######################################################################################
+# Responsible for turning a pre-terminal into a series of guesses
+# Uses a *next* function so it can be called repeatedly for each next guess
+# I did this to get away from a "generate all the guesses and return them as a list"
+# That approach worked great for a bit but as some of these pre-terminals can generate
+# millions of guesses it started to break down
+#######################################################################################
+
+
 from .markov_cracker import MarkovCracker, MarkovIndex
 
+
+########################################################################################
+# GuessIndex should only be created/manipulated by the GuessGeneration class
+# Used to keep track of the individual replacements
+# There are a *ton* of performance improvements that can be made here FYI
+# For example, pretty much all of the "if/else" statements could be removed
+#########################################################################################
 class GuessIndex:
     def __init__(self,cur_dic, end_of_guess, markov_cracker = None):
-        self.cur_dic = cur_dic
-        self.function = cur_dic['function']
-        self.top_index = 0
-        self.running_index = 0
-        self.markov_cracker = markov_cracker
         
+        ## The pre-terminal section that this represents
+        self.cur_dic = cur_dic
+        
+        ## The mangling rule being applied
+        ## Yes this is also in self.cur_dic but seperating it out makes the code easier to read
+        self.function = cur_dic['function']
+        
+        ## The current index into the replacements, for example for ['cat', 'hat', 'bat'] if 1, it means 'hat' is the current item
+        self.top_index = 0
+        
+        ## Need to have a link to all the markov probabilities if this is a Markov repacement
+        self.markov_cracker = markov_cracker  
+        
+        ## Where in the actual guess this mangling rule will be applied. Important since things like case mangling
+        ## can occur on a previous dictionary word        
         self.guess_pointer = end_of_guess 
           
-          
+    
+    ################################################################################################
+    # Start this particular mangling rule from scratch
+    # For example for ['cat', 'hat', 'bat'] go back and start from 'cat' again 
+    # The 'new' variable is if this is being called the first time, (and needs to create all the datastructures)
+    ################################################################################################    
     def reset(self, guess, new = False):
         self.top_index = 0
-        self.running_index = 0
         
         ##--Copy = It is a direct copy of values. For example instert '123456'
         ##--Shadow = If you are copying over values that aren't terminals. For example L3=>['cat','hat']. They are not terminals since you still need to apply capitalization rules to them
@@ -67,6 +97,13 @@ class GuessIndex:
         return True
         
         
+    ############################################################################################################   
+    # Modify the guess by the next mangling rule in the chain
+    # Return True if there is a "next" guess
+    # Return False if there is no more guesses to created/manipulated
+    # 
+    # For example for ['cat', 'hat', 'bat'], if the previous guess was 'cat', now create the guess 'hat'.
+    #############################################################################################################    
     def next(self, guess):
         
         ##--Copy = It is a direct copy of values. For example instert '123456'
@@ -120,8 +157,11 @@ class GuessIndex:
         
         return True
             
+            
 #########################################################################################################
 # Used to generate all the guesses for a given pre-terminal
+# The main function is the "next" function that returns the next guess
+# It will return None when there are no more guesses to create
 #########################################################################################################
 class GuessGeneration:
     
@@ -147,7 +187,9 @@ class GuessGeneration:
                 
     
     ##################################################################################################
-    # Walks through all of the transistions and buidls out the list of terminals to use
+    # Walks through all of the transistions and builds out the list of terminals to use
+    # Basically sets up all of the data structures so it is ready to start creating guesses
+    # This is a private function, no one else should call it
     ##################################################################################################    
     def __initialize(self,  cur_section, end_of_guess):
         cur_dic = self.grammar[cur_section[0]]['replacements'][cur_section[1]]
@@ -166,9 +208,10 @@ class GuessGeneration:
                 self.__initialize(cur_section[2][0], end_of_guess)
              
         
-    
     ######################################################################################################
     # Returns the first guess
+    # Seperating this out so that I don't have to check if it is the first guess every time I call the 
+    # "get_next_guess" function
     ######################################################################################################
     def get_first_guess(self):
         for item in self.structures: 
@@ -177,8 +220,11 @@ class GuessGeneration:
         
         return ''.join(self.guess)
     
+    
     ###########################################################################################################
     # Returns the "next" guess
+    # This and the get_first_guess are the core of this class
+    # Returns None if there are no more guesses to generate
     ###########################################################################################################
     def get_next_guess(self):
         for index in range(len(self.structures)-1,-1, -1):

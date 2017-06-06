@@ -40,57 +40,60 @@ if sys.version_info[0] < 3:
 import argparse
 import os  ##--Used for file path information
 import random
+from distutils.version import LooseVersion  #--Compare the trainer version used to generate the ruleset
 
 #Custom modules
 from pcfg_manager.file_io import load_grammar
-from pcfg_manager.core_grammar import PcfgClass, print_grammar
-from pcfg_manager.ret_types import RetType
+from pcfg_manager.core_grammar import PcfgClass
+from pcfg_manager.markov_cracker import MarkovCracker
 
-
-#########################################################################################
-# Holds the command line values
-# Also holds the default values if you don't want to enter them every time you run this
-#########################################################################################
-class CommandLineVars:
-    def __init__(self):
-        self.rule_name = "Default"
-        self.num_honeywords = 1
-        #Debugging printouts
-        #-They actually are initialized false under parse_command_line regardless of the value here
-        self.verbose = False  
-        
-       
+      
 ####################################################
 # Simply parses the command line
 ####################################################
-def parse_command_line(command_line_results):
-    parser = argparse.ArgumentParser(description='Honeyword Generator: Generates honeywords, (synthetic passwords), from a PCFG grammar')
-    parser.add_argument('--rule','-r', help='The rule set to use. Default: (%(default)s)',metavar='RULE_SET',required=False, default= command_line_results.rule_name)
-    parser.add_argument('--verbose','-v', help='Verbose prints. Only use for debugging otherwise it will make parsing the output harder',dest='verbose', action='store_true')
+def parse_command_line(runtime_options):
+    
+    parser = argparse.ArgumentParser(
+            description='Honeyword Generator: Generates honeywords, (synthetic passwords), from a PCFG grammar'
+        )
+        
     parser.add_argument(
-        '--num_honeywords',
-        '-n', 
-        help='Number of honeywords to generate. Default: (%(default)s)',
-        metavar='NUM_HONEYWORDS', 
-        required=False,
-        type=int, 
-        default=command_line_results.num_honeywords)
+            '--rule',
+            '-r', 
+            help='The rule set to use. Default: (%(default)s)',
+            metavar='RULE_SET',
+            required=False, 
+            default= runtime_options['rule_name']
+        )
+        
+    parser.add_argument(
+            '--num_honeywords',
+            '-n', 
+            help='Number of honeywords to generate. Default: (%(default)s)',
+            metavar='NUM_HONEYWORDS', 
+            required=False,
+            type=int, 
+            default=runtime_options['num_honeywords']
+        )
+    
     try:
         args=parser.parse_args()
-        command_line_results.rule_name = args.rule
-        command_line_results.verbose = args.verbose
-        command_line_results.num_honeywords = args.num_honeywords
-    except:
-        return RetType.COMMAND_LINE_ERROR
+        runtime_options['rule_name'] = args.rule
+        runtime_options['num_honeywords'] = args.num_honeywords
+        
+    except Exception as msg:
+        print(msg, file=sys.stderr)
+        return False
 
     ##--Perform some sanity checks on the input
-    if command_line_results.num_honeywords <= 0:
+    if runtime_options['num_honeywords'] <= 0:
         print("Error, you need to have a value greater than 0", file=sys.stderr)
-        return RetType.COMMAND_LINE_ERROR
+        return False
+        
+        
+    return True 
 
-    return RetType.STATUS_OK 
-
-    
+  
 ###################################################################################
 # Prints the startup banner when this tool is run
 ###################################################################################
@@ -100,7 +103,6 @@ def print_banner(program_details):
     print ("Written by " + program_details['Author'], file=sys.stderr)
     print ("Sourcecode available at " + program_details['Source'], file=sys.stderr)
     print('',file=sys.stderr)
-    return RetType.STATUS_OK  
 
 
 ####################################################################################
@@ -116,7 +118,6 @@ def print_error():
     print(r'  bug      bug       bug/w     dead      bug       blind      bug after',file=sys.stderr)
     print(r'         winking   hangover    bug     sleeping    bug     whatever you did',file=sys.stderr)
     print('',file=sys.stderr)
-    return RetType.STATUS_OK
 
   
 ##################################################################
@@ -125,34 +126,56 @@ def print_error():
 def main():
     
     ##--Information about this program--##
-    program_details = {
-        'Program':'honeyword_gen.py',
-        'Version': '3.1',
-        'Author':'Matt Weir',
-        'Contact':'cweir@vt.edu',
-        'Source':'https://github.com/lakiw/pcfg_cracker'
-    }
+    management_vars = {
+        ##--Information about this program--##
+        'program_details':{
+            'Program':'honeyword_gen.py',
+            ##--I know, I skipped a couple of versions but want to keep this synced with pcfg_manager
+            'Version': '3.3 Beta',
+            'Author':'Matt Weir',
+            'Contact':'cweir@vt.edu',
+            'Source':'https://github.com/lakiw/pcfg_cracker'
+        },
+        ##--Runtime specific values, can be overriden via command line options
+        'runtime_options':{
+            'rule_name':'Default',
+            #Number of honeywords to generate
+            'num_honeywords':1
+        }
+    }  
        
-     ##--Print out banner
-    print_banner(program_details)
+    ##--Print out banner
+    print_banner(management_vars['program_details'])
     
     ##--Parse the command line ---##
-    command_line_results = CommandLineVars()
-    if parse_command_line(command_line_results) != RetType.STATUS_OK:
-        return RetType.QUIT
+    if parse_command_line(management_vars['runtime_options']) != True:
+        return
    
     ##--Specify where the rule file is located
-    rule_directory = os.path.join(os.path.dirname(os.path.realpath(__file__)),'Rules', command_line_results.rule_name)   
+    rule_directory = os.path.join(os.path.dirname(os.path.realpath(__file__)),'Rules', 
+        management_vars['runtime_options']['rule_name'])    
    
     ##--Initialize the grammar--##
     grammar = []
-    ret_value = load_grammar(rule_directory, grammar)
-    if ret_value != RetType.STATUS_OK:
+    config_details = {}
+    if load_grammar(rule_directory, grammar, config_details) != True:
         print ("Error loading the PCFG grammar, exiting",file=sys.stderr)
         print_error()
-        return ret_value
+        return
+   
+    ##--Load the Markov stats file--##
+    ##--Only do this on newer grammars to ensure backwards compatability--##
+    if LooseVersion(config_details['version']) >= LooseVersion("3.3"):
+        try:
+            markov_cracker = MarkovCracker(rule_directory)
+        except:
+            print ("Error loading the Markov stats file for the ruleset, exiting",file=sys.stderr)
+            print_error()
+            return
+    else:
+        markov_cracker = MarkovCracker()
  
-    pcfg = PcfgClass(grammar)
+    pcfg = PcfgClass(grammar, markov_cracker)
 
     ##--Generate the honeywords--##
     print("Generating Honeywords", file=sys.stderr)
@@ -161,21 +184,20 @@ def main():
     start_index = pcfg.start_index()
     if start_index == -1:
         print("Error with the grammar, could not find the start index", file=sys.stderr)
-        return RetType.ERROR_QUIT
-    for i in range(0,command_line_results.num_honeywords):
+        return 
+    
+    ##--Generate each honeyword
+    for i in range(0,management_vars['runtime_options']['num_honeywords']):
         ##--Perform a weighted random walk of the grammar to get the parse tree
         parse_tree = pcfg.random_grammar_walk(start_index)
-
-        ##--get all terminals generated by this parse tree
-        ##--This could be improved to select a random terminal in the grammar, but I didn't feel the performance
-        ##--improvement was worth the extra code
-        honeyword = pcfg.gen_random_terminal(parse_tree)
+   
+        print(parse_tree)
+        #honeyword = pcfg.gen_random_terminal(parse_tree)
 
         ##--Print the results
-        print(str(honeyword))
-    
+        #print(str(honeyword))
       
-    return RetType.STATUS_OK
+    return
     
 
 if __name__ == "__main__":
