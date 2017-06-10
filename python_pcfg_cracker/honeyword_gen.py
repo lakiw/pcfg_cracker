@@ -186,17 +186,42 @@ def main():
         print("Error with the grammar, could not find the start index", file=sys.stderr)
         return 
     
+    ##--Number of honeywords left to generate
+    ##--Errors can occur that prevent a honeyword from being displayed, (char encoding is a pain)
+    ##--so this program needs to know that and then make more honeywords that can be displaced
+    honeywords_left = management_vars['runtime_options']['num_honeywords']
+    
+    ##--If errrors occured, (used for debugging and warning users of this tool)
+    errors_occured = 0
+    
     ##--Generate each honeyword
-    for i in range(0,management_vars['runtime_options']['num_honeywords']):
-        ##--Perform a weighted random walk of the grammar to get the parse tree
-        parse_tree = pcfg.random_grammar_walk(start_index)
-   
-        print(parse_tree)
-        #honeyword = pcfg.gen_random_terminal(parse_tree)
+    while honeywords_left >= 0:
+        
+        try:
+            ##--Perform a weighted random walk of the grammar to get the parse tree
+            parse_tree = pcfg.random_grammar_walk(start_index)
+            honeyword = pcfg.gen_random_terminal(parse_tree)
 
-        ##--Print the results
-        #print(str(honeyword))
-      
+            ##--Print the results
+            ##--Note, this may throw an exception if the terminal it is printing to
+            ##--doesn't support the character type. For example if a Cyrillic character
+            ##--is printed on an English language Windows Command shell
+            print(str(honeyword))
+            honeywords_left = honeywords_left - 1
+            
+        except Exception as msg:
+            errors_occured += 1
+    
+    if errors_occured != 0:
+        print()
+        if errors_occured == 1:
+            print("Warning: " + str(errors_occured) + " error occured when trying to generate your honeywords")
+        else:
+            print("Warning: " + str(errors_occured) + " errors occured when trying to generate your honeywords")
+            
+        print("This is usually caused by your terminal not supporting the character encoding of a specific honeyword")
+        print("For example, the honeyword may have contained a letter in a language your terminal doesn't support")
+   
     return
     
 

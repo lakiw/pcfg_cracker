@@ -67,6 +67,10 @@ class Markov:
         for index, c in enumerate(input_password):
 
             ##--Take care of the zero order Markov items
+            ##--Note, I had a version that only trained on the actual first character for the zero order markov items
+            ##--aka with 'abc' it would only assign a value to 'a' for the 0 order Markov.
+            ##--That version did *worse* then the current one that assigns a 0 order value to every character, aka 'a', 'b', 'c'
+            ##--Overtraining is a real problem to keep in mind.
             self.num_letters += 1
             
             ##--If we haven't seen that character before
@@ -163,9 +167,7 @@ class Markov:
         scratch_ranks = {}
         
         ##--Holds the results for all the ranks
-        self.rank_results = []
-
-        #print("Markov Key Sizes")        
+        self.rank_results = []    
       
         ##--Loop through all the ranks--##
         for cur_rank in range(1,max_rank+1):
@@ -180,8 +182,6 @@ class Markov:
             ##--Exit early if we hit the max keysize
             if max_keyspace != None and num_passwords > max_keyspace:
                 break
-                
-            #print(str(i) + ":" + str(num_passwords))
      
         self.max_rank = len(self.rank_results)
      
@@ -246,9 +246,6 @@ class Markov:
         if ranking > 1000:
             return 1000
         
-        #print(input_password + " : " + str(ranking))
-        #print(ranking)
-        
         return ranking
         
         
@@ -312,8 +309,6 @@ class Markov:
         ##--Now sort it
         self.prob_distributed_ranks = sorted(scratch_list, key = lambda item: item['final_prob'], reverse = True)         
         
-        #for item in self.prob_distributed_ranks:
-        #    print (item)
         return True
         
     
@@ -398,6 +393,5 @@ class Markov:
                     datafile.write(str(item['min_rank']) + ':' + str(item['max_rank']) + '\t' + str(item['keysize']) + '\n')
         except:
             return False
-            
-        print(self.prob_distributed_ranks )        
+                  
         return True

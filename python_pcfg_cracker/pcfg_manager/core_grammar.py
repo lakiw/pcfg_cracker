@@ -435,8 +435,12 @@ class PcfgClass:
         transition_prob = 0
         for i in range(0,len(self.grammar[cur_index]['replacements'])):
             #-The probability of the current transition
+            #-Markov is weird since we need to look up the keyspace parameter for it vs looking in the values field
+            if self.grammar[cur_index]['replacements'][i]['function'] == 'Markov':
+                for item in self.grammar[cur_index]['replacements'][i]['values']:
+                    transition_prob += self.grammar[cur_index]['replacements'][i]['prob'] * float(self.markov_cracker.keyspace[item])
             #-Need to calculate it differently if it has values or not, (multiple repalcements packed in the same index)
-            if 'values' in self.grammar[cur_index]['replacements'][i]:
+            elif 'values' in self.grammar[cur_index]['replacements'][i]:
                 transition_prob = transition_prob + (self.grammar[cur_index]['replacements'][i]['prob'] * len(self.grammar[cur_index]['replacements'][i]['values']))
             else:
                 transition_prob = transition_prob + self.grammar[cur_index]['replacements'][i]['prob']
@@ -447,13 +451,20 @@ class PcfgClass:
 
         ##--Error check to make sure some transition was found--##
         if cur_transition == -1:
-            print(transition_prob,file=sys.stderr)
-            print(random_number,file=sys.stderr)
-            print(cur_index,file=sys.stderr)
-            print(self.grammar[cur_index]['name'],file=sys.stderr)
-            print(self.grammar[cur_index]['replacements'][0],file=sys.stderr)
-            print("Error with random walk, the probabilities of all the transitions was less than one in the grammar",file=sys.stderr)
-            return None
+            ##--Due to rounding errors this can occur, if it looks like a rounding error, just set it to the first value--##
+            if random_number > 0.999:
+                cur_transition = 0
+            ##--This is outside the bounds I'd expect a rounding error. Print details so I can track it down
+            else:
+                print("transition prob:" + str(transition_prob),file=sys.stderr)
+                print("random number:" + str(random_number),file=sys.stderr)
+                print("cur_index:" + str(cur_index),file=sys.stderr)
+                print(self.grammar[cur_index]['name'],file=sys.stderr)
+                print(self.grammar[cur_index]['replacements'][0],file=sys.stderr)
+                print("Error with random walk, the probabilities of all the transitions was less than one in the grammar",file=sys.stderr)
+                print("I'd appreciate if you left a bug report on the github page with the above info")
+                value = input("Hit Enter")
+                return None
 
         ##--Create the parse tree
         parse_tree = [cur_index,cur_transition,[]]
@@ -479,17 +490,9 @@ class PcfgClass:
     # Used for honeyword creation
     ##############################################################################################################################
     def gen_random_terminal(self,pt):
-        #First grab a list of all the pre_terminals. It'll take the form of nested linked lists.
-        #For example expantTerminals will return something like [['cat','hat','dog'],[1,2]].
-        #-TODO: this can be made a whole lot more effecient by only grabbing one value
-        # Right now just lazy and re-using the cracking functions
-        guess_combos = self.expand_terminals(pt,working_value=[], print_output=True)
-
-        #--Now pick a random guess from the combos
-        final_terminal = ""
-        for x in guess_combos:
-            final_terminal = final_terminal + random.choice(x)
-        return final_terminal
+        guess_generation = GuessGeneration(self.grammar, self.markov_cracker, pt)
+        guess = guess_generation.get_random_guess()
+        return guess
 
 
     #=================================================================================================================================================#

@@ -2,7 +2,7 @@
 
 import sys
 import os 
-
+import random #--Used for honeywords
 
 #########################################################################################################
 # Contains an index into the Markov grammar
@@ -37,8 +37,19 @@ class MarkovCracker:
         self.markov_stats = {}
         self.start_letter = None
         
+        ##Used for keeping track of keyspace for honeywords
+        # Format:
+        # {range:keyspace}
+        #
+        # Example:
+        # {'11:12': 58310,
+        #  '52:52': 1393112321}
+        self.keyspace = {}
+        
         if rule_directory != None:
-            if not self.load_markov_stats(rule_directory):
+            if not self.__load_markov_stats(rule_directory):
+                raise
+            if not self.__load_markov_keyspace(rule_directory):
                 raise
         
         ##Used for guess generation
@@ -46,6 +57,41 @@ class MarkovCracker:
         self.max_level = None
         self.guess = None
         self.guess_level = 0
+    
+
+    #####################################################################################
+    # Loads the Markov keyspace file
+    # This is a file that lists the keyspace for each Markov level
+    # Only currently used for honeyword generation, not used in cracking sessions
+    #####################################################################################
+    def __load_markov_keyspace(self, rule_directory):
+
+        filename = os.path.join(rule_directory, 'Markov', 'markov_keyspace.txt')
+        
+        try:
+            # Lists keyspace for each Markov rank range
+            #
+            # Format:
+            # low_range:high_range /tab Keyspace
+            #
+            # Example:
+            #   38:38	574
+            #   45:45	2775
+            #   1:11	1
+            #   32:32	123
+            #   24:25	60
+            #
+            with open(filename, 'r') as file:
+                for line in file:
+                    values = line.strip().split('\t')
+                    self.keyspace[values[0]] = int(values[1])
+                    
+        except Exception as msg:
+            print (msg,file=sys.stderr)
+            print ("Error opening file " + filename, file=sys.stderr)
+            return None
+                    
+        return True
         
         
     #####################################################################################
@@ -64,7 +110,7 @@ class MarkovCracker:
     #           'b':{'probability':10, 'next':None},
     #       }
     ######################################################################################
-    def load_markov_stats(self, rule_directory):
+    def __load_markov_stats(self, rule_directory):
         print("Loading the Markov stats file",file=sys.stderr)
 
         filename = os.path.join(rule_directory, 'Markov', 'markov_stats.txt')
@@ -257,3 +303,57 @@ class MarkovCracker:
             markov_index.guess.append(cur_letter)
             markov_index.guess_level = cur_level
             
+    
+    #####################################################################################
+    # Does a best effort to return a random guess for a given range of Markov levels
+    # It will return a guess with a complexity at least as much as the min level
+    # and it will attempt to get close as possible to the max level
+    # 
+    # Note, the stats file for JtR's Markov mode is really poor when trying to do a random
+    # walk. May want to save the real probabilities in the future to support honeywords
+    ######################################################################################
+    def get_random(self, min_level = 1, suggested_max_level = 1):
+        guess = []
+
+        ##--Get first character--##
+        key = self.__get_weighted_random_char(self.markov_stats, self.start_letter)
+        guess.append(key)
+        cur_level = self.markov_stats[key]['probability']
+        
+        ##--Now get following characters if needed--##
+        while (cur_level < int(min_level)):
+            key = self.__get_weighted_random_char(self.markov_stats[key]['following_letters'], self.markov_stats[key]['first_child'])
+            guess.append(key)
+            cur_level += self.markov_stats[guess[-1]]['following_letters'][key]['probability']
+        
+        return ''.join(guess)
+        
+    
+    #############################################################################################
+    # Gets a random character from the list, weighted by ranking in the list
+    # Since I didn't save the probabilities and instead saved the "-10 * log10(prob)" to maintain
+    # compatability with JtR's --Markov mode, I'm taking a shortcut and basically falling back to 
+    # Zipf's law about grammar distribution
+    #
+    def __get_weighted_random_char(self, input, start):
+        ##--Base chance is the chance that the most probable character is selected
+        base_chance = 0.1
+        
+        ##--Zipf relationship between probability of items with different ranks
+        ##--The probability of the next item is multiplied by this value
+        zipf_exponent = 0.5
+        
+        ##--Bottom chance is basically a floor as to how low the probabilty of a transition can be
+        bottom_chance = 0.00001
+        
+        ##--Loop through until there is an answer
+        while True:
+            value = start
+            cur_prob_target = base_chance
+            while value!= None:
+                if random.random() < cur_prob_target:
+                    return value
+                value = input[value]['next']
+                cur_prob_target = cur_prob_target * zipf_exponent
+                if cur_prob_target < base_chance:
+                    cur_prob_target = base_chance
