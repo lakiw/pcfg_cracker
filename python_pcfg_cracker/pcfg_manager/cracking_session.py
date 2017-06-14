@@ -11,6 +11,7 @@
 #########################################################################################
 
 import sys
+import traceback
 import time
 import threading ##--Used only for the "check for user input" threads
 from multiprocessing import Process, Queue, Pipe
@@ -102,6 +103,8 @@ class CrackingSession:
                     number_of_terminal_guesses, current_guesses = self.pcfg.list_terminals(terminal.parse_tree, print_output = not print_queue_info)
                 ##--If we can't print out guesses anymore--##    
                 except Exception as msg:
+                    exc_type, exc_value, exc_traceback = sys.exc_info()
+                    traceback.print_tb(exc_traceback, limit=3, file=sys.stdout)
                     print(msg, file=sys.stderr)
                     return
                     
