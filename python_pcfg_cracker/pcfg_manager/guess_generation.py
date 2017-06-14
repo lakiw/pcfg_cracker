@@ -36,133 +36,194 @@ class GuessIndex:
         ## Where in the actual guess this mangling rule will be applied. Important since things like case mangling
         ## can occur on a previous dictionary word        
         self.guess_pointer = end_of_guess 
-          
-    
-    ################################################################################################
+        
+        ## Assign functions for the transform options here so we don't have to keep checking 'if' statements
+        ##
+        ## Reset is the function to call when reseting this GuessIndex
+        ## function takes the form 
+        ##     def reset(self, guess, new = False)
+        ##
+        ## Next is the function to call when generating the 'next' terminal for this GuessIndex
+        ## function takes the form
+        ##     def next(self, guess)
+        if self.function in ['Copy','Shadow']:
+            self.reset = self.__reset_copy_shadow
+            self.next = self.__next_copy_shadow
+        elif self.function == 'Capitalization':
+            self.reset = self.__reset_capitalization
+            self.next = self.__next_capitalization
+        elif self.function == 'Markov':
+            self.reset = self.__reset_markov
+            self.next = self.__next_markov
+        ##--This should not happen
+        else:
+            raise    
+
+     
+    ##================================================================================================================
+    # The next several functions are assigned to self.reset() depending on what the transition rule is
+    # General description of function's task:
     # Start this particular mangling rule from scratch
     # For example for ['cat', 'hat', 'bat'] go back and start from 'cat' again 
     # The 'new' variable is if this is being called the first time, (and needs to create all the datastructures)
-    ################################################################################################    
-    def reset(self, guess, new = False):
+    ##==================================================================================================================    
+    
+    #################################################################################################
+    # Mini function that replaces the parent reset function
+    # For [Copy, Shadow] transforms
+    #################################################################################################
+    def __reset_copy_shadow(self, guess, new = False):
+        self.top_index = 0
+        #--If there are no replacements
+        if not self.cur_dic['values']:
+            return False
+        
+        value = self.cur_dic['values'][0]
+        if new:
+            guess.append(value)
+        else:
+            guess[self.guess_pointer] = value
+    
+        return True
+     
+     
+    #################################################################################################
+    # Mini function that replaces the parent reset function
+    # For [Capitalization] transforms
+    #################################################################################################
+    def __reset_capitalization(self, guess, new = False):
         self.top_index = 0
         
-        ##--Copy = It is a direct copy of values. For example instert '123456'
-        ##--Shadow = If you are copying over values that aren't terminals. For example L3=>['cat','hat']. They are not terminals since you still need to apply capitalization rules to them
-        if self.function in ['Copy','Shadow']:
-            #--If there are no replacements
-            if not self.cur_dic['values']:
-                return False
-            
-            value = self.cur_dic['values'][0]
-            if new:
-                guess.append(value)
-            else:
-                guess[self.guess_pointer] = value   
-            
-        ##----Capitalize the value passed in from the previous section----
-        elif self.function == 'Capitalization':
-            #--If there are no replacements
-            if not self.cur_dic['values']:
-                return False
-            
-            rule = self.cur_dic['values'][0]            
-            temp_string = []
-            base_word = guess[self.guess_pointer]
-            
-            for letterPos in range(0,len(base_word)):
-                if rule[letterPos]=='U':
-                    temp_string.append(base_word[letterPos].upper())
-                else:
-                    temp_string.append(base_word[letterPos])
-            
-            guess[self.guess_pointer] = ''.join(temp_string)
+        #--If there are no replacements
+        if not self.cur_dic['values']:
+            return False
         
-        ##--Add Markov expansion. Currently using the same logic as JtR's --Markov Mode. Will print out all terminals
-        ##--falling below the min prob rank and max prob rank
-        elif self.function == 'Markov':
-            
-            #--If there are no replacements
-            if not self.cur_dic['values']:
-                return False
-            
-            first_range = self.cur_dic['values'][0]
-            levels = first_range.split(":")
-            self.markov_index = MarkovIndex(min_level = int(levels[0]), max_level = int(levels[1]))
-            value = self.markov_cracker.next_guess(self.markov_index)
-            
-            if new:
-                guess.append(value)
+        rule = self.cur_dic['values'][0]            
+        temp_string = []
+        base_word = guess[self.guess_pointer]
+        
+        for letterPos in range(0,len(base_word)):
+            if rule[letterPos]=='U':
+                temp_string.append(base_word[letterPos].upper())
             else:
-                guess[self.guess_pointer] = value 
+                temp_string.append(base_word[letterPos])
+        
+        guess[self.guess_pointer] = ''.join(temp_string)
         
         return True
         
+    
+    #################################################################################################
+    # Mini function that replaces the parent reset function
+    # For [Markov] transforms
+    #################################################################################################
+    def __reset_markov(self, guess, new = False):
+        self.top_index = 0
         
-    ############################################################################################################   
+        #--If there are no replacements
+        if not self.cur_dic['values']:
+            return False
+        
+        first_range = self.cur_dic['values'][0]
+        levels = first_range.split(":")
+        self.markov_index = MarkovIndex(min_level = int(levels[0]), max_level = int(levels[1]))
+        value = self.markov_cracker.next_guess(self.markov_index)
+        
+        if new:
+            guess.append(value)
+        else:
+            guess[self.guess_pointer] = value 
+        
+        return True
+               
+    
+    ##================================================================================================================
+    # The next several functions are assigned to self.next() depending on what the transition rule is
+    # General description of function's task:
     # Modify the guess by the next mangling rule in the chain
     # Return True if there is a "next" guess
     # Return False if there is no more guesses to created/manipulated
     # 
     # For example for ['cat', 'hat', 'bat'], if the previous guess was 'cat', now create the guess 'hat'.
-    #############################################################################################################    
-    def next(self, guess):
+    ##==================================================================================================================    
+    
+    #################################################################################################
+    # Mini function that replaces the parent reset function
+    # For [Guess, Shadow] transforms
+    # -Copy = It is a direct copy of values. For example instert '123456'
+    # -Shadow = If you are copying over values that aren't terminals. For example L3=>['cat','hat']. 
+    #  They are not terminals since you still need to apply capitalization rules to them
+    #################################################################################################
+    def __next_copy_shadow(self, guess):
         
-        ##--Copy = It is a direct copy of values. For example instert '123456'
-        ##--Shadow = If you are copying over values that aren't terminals. For example L3=>['cat','hat']. They are not terminals since you still need to apply capitalization rules to them
-        if self.function in ['Copy','Shadow']:
-            self.top_index += 1
-            #--If there are no replacements
-            if self.top_index >= len(self.cur_dic['values']):
-                return False
-            
-            value = self.cur_dic['values'][self.top_index]
-            guess[self.guess_pointer] = value   
-            
-        ##----Capitalize the value passed in from the previous section----
-        elif self.function == 'Capitalization':
-            self.top_index += 1
-            #--If there are no replacements
-            if self.top_index >= len(self.cur_dic['values']):
-                return False
-                
-            rule = self.cur_dic['values'][self.top_index]            
-            temp_string = []
-            base_word = guess[self.guess_pointer]
-            
-            for letterPos in range(0,len(base_word)):
-                if rule[letterPos]=='U':
-                    temp_string.append(base_word[letterPos].upper())
-                else:
-                    temp_string.append(base_word[letterPos].lower())
-            
-            guess[self.guess_pointer] = ''.join(temp_string)
-
-        ##--Add Markov expansion. Currently using the same logic as JtR's --Markov Mode. Will print out all terminals
-        ##--falling below the min prob rank and max prob rank
-        elif self.function == 'Markov':
-            
-            value = self.markov_cracker.next_guess(self.markov_index)
-
-            ##--In case there are multiple Markov ranges with the same probability in this list--##
-            ##--I don't expect this to happen. aka the first if statement will fail and return False
-            ##--but I'm adding it in for future proofing in case I ever decide to do probability smoothing
-            ##--on those Markov ranges
-            while value == None:
-                self.top_index += 1
-                #--If there are no replacements
-                if self.top_index >= len(self.cur_dic['values']):
-                    return False
+        self.top_index += 1
+        #--If there are no replacements
+        if self.top_index >= len(self.cur_dic['values']):
+            return False
         
-                first_range = self.cur_dic['values'][0]
-                levels = first_range.split(":")
-                self.markov_index = MarkovIndex(min_level = int(levels[0]), max_level = int(levels[1]))
-                value = self.markov_cracker.next_guess(self.markov_index)
-
-            guess[self.guess_pointer] = value    
+        value = self.cur_dic['values'][self.top_index]
+        guess[self.guess_pointer] = value   
         
         return True
+            
+            
+    #################################################################################################
+    # Mini function that replaces the parent reset function
+    # For [Capitalization] transforms
+    # -Capitalize the value passed in from the previous section----
+    #################################################################################################
+    def __next_capitalization(self, guess):
         
+        self.top_index += 1
+        #--If there are no replacements
+        if self.top_index >= len(self.cur_dic['values']):
+            return False
+            
+        rule = self.cur_dic['values'][self.top_index]            
+        temp_string = []
+        base_word = guess[self.guess_pointer]
         
+        for letterPos in range(0,len(base_word)):
+            if rule[letterPos]=='U':
+                temp_string.append(base_word[letterPos].upper())
+            else:
+                temp_string.append(base_word[letterPos].lower())
+        
+        guess[self.guess_pointer] = ''.join(temp_string)       
+        
+        return True
+            
+            
+    #################################################################################################
+    # Mini function that replaces the parent reset function
+    # For [Markov] transforms
+    # -Add Markov expansion. Currently using the same logic as JtR's --Markov Mode. Will print out all terminals
+    # -falling below the min prob rank and max prob rank
+    #################################################################################################
+    def __next_markov(self, guess):
+        
+        value = self.markov_cracker.next_guess(self.markov_index)
+
+        ##--In case there are multiple Markov ranges with the same probability in this list--##
+        ##--I don't expect this to happen. aka the first if statement will fail and return False
+        ##--but I'm adding it in for future proofing in case I ever decide to do probability smoothing
+        ##--on those Markov ranges
+        while value == None:
+            self.top_index += 1
+            #--If there are no replacements
+            if self.top_index >= len(self.cur_dic['values']):
+                return False
+    
+            first_range = self.cur_dic['values'][0]
+            levels = first_range.split(":")
+            self.markov_index = MarkovIndex(min_level = int(levels[0]), max_level = int(levels[1]))
+            value = self.markov_cracker.next_guess(self.markov_index)
+
+        guess[self.guess_pointer] = value 
+         
+        return True
+
+              
     ####################################################################################################
     # Returns a random guess for this particular terminal
     # Mostly used for honeyword generation
@@ -274,10 +335,14 @@ class GuessGeneration:
     # "get_next_guess" function
     ######################################################################################################
     def get_first_guess(self):
-        for item in self.structures: 
-            if not item.reset(self.guess, new=True):
-                return None
-        
+        for item in self.structures:
+            try:
+                if not item.reset(self.guess, new=True):
+                    return None
+            except:
+                print(item)
+                print(item.function)
+                input("hit enter")
         return ''.join(self.guess)
     
     
