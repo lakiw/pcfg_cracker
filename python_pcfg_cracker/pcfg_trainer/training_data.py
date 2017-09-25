@@ -231,6 +231,9 @@ class TrainingData:
         # you would be attacking a specific e-mail vs a randomly generated one.
         # I'm not that interested in the random large set attacks, so I'm just rejecting
         # e-mails from training. And that's the long reason why I'm rejecting e-mails.
+        #
+        # A TODO for the future is to record how often e-mails occur in general so we could try
+        # specific e-mail replacements for a given target, (aka when auditing a company)
         if ".com" in input_password:
             return RetType.IS_FALSE
         if ".org" in input_password:
@@ -241,6 +244,14 @@ class TrainingData:
             return RetType.IS_FALSE
         if ".mil" in input_password:
             return RetType.IS_FALSE
+            
+        # Remove tabs from the training data
+        # This is important since when the grammar is saved to disk tabs are used as seperators
+        # Another approach is to only use the last tab as a seperator for terminals that could contain a tab
+        # but putting this placeholder here for now since tabs are unlikely to be used in passwords
+        if "\t" in input_password:
+            return RetType.IS_FALSE
+            
         return RetType.IS_TRUE
     
     
@@ -272,7 +283,7 @@ class TrainingData:
         ##--Save the brute force (MARKOV) data for this password
         #################################################################
         self.markov.parse_password(input_password)
-        
+
         #################################################################
         ##--Parse out all the keyboard combinations
         #################################################################
@@ -321,22 +332,21 @@ class TrainingData:
         #--Parse the alpha combinations
         ###################################################################    
         alpha_items = []
-        cap_items = []
+        cap_items = [] 
         ret_value = cur_pass.parse_letters(alpha_items, cap_items)
         if ret_value != RetType.STATUS_OK:
             print("Error parsing alpha combos")
-            return ret_value
+            return ret_value 
         ##--Now update the alpha combo list
         ret_value = self.letter_structure.insert_list(alpha_items)
         if ret_value != RetType.STATUS_OK:
             print("Error parsing alpha combos")
-            return ret_value   
+            return ret_value             
         ##--Now update the capitalization mask list
         ret_value = self.cap_structure.insert_list(cap_items)
         if ret_value != RetType.STATUS_OK:
             print("Error parsing capitalization masks")
             return ret_value 
-            
         #####################################################################
         #--Parse the special character combinations
         #####################################################################

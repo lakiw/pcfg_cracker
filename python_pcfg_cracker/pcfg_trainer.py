@@ -251,8 +251,8 @@ def main():
     print("Done processing the input training file")
     print("Starting to analyzing the input passwords")
     print("Passwords left to parse : " + str(len(master_password_list)))
-    if len(master_password_list) > 1000000:
-        print("PRO TIP: Past experiments have shown the value of training on a dataset larger than a million passwords is negligable. If this training program takes too long to run you may want to consider training on a smaller set of passwords")
+    if len(master_password_list) > 10000000:
+        print("DevNote: Most of my training has been with sets of 1 million passwords. I'm not sure how things will scale with bigger datasets so if problems occur please submit a bug report on the github repo and then try training on a smaller sample size")
     print()
     print("Current Status:") 
     

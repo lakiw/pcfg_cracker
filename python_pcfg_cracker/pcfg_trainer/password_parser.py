@@ -131,6 +131,28 @@ class PasswordParser:
 
         if (combo[0]=='t') and (combo[1]=='t') and (combo[2]=='y'):
             return RetType.IS_FALSE
+            
+        ##--Reject words that look like keyboard combos
+        ##--Eventually might want to read in a blacklist from a file vs hardcoding it here
+        false_positive_words = [
+            "deer",
+            "drew",
+            "kiki",
+            "tree",
+            "pollo",
+            "pool",
+            "poop",
+            "look",
+            "fred",
+            "loop",
+            "were",
+        ]
+        full_lower_word = ''.join(combo).lower()
+        
+        for item in false_positive_words:
+            if item in full_lower_word:
+                return RetType.IS_FALSE
+        
 
         #Check for complexity requirements
         alpha = 0
@@ -143,7 +165,7 @@ class PasswordParser:
                 digit=1
             else:
                 special=1
-                
+         
         ##--If it meets all the complexity requirements        
         if (alpha + special + digit) >=2:
             return RetType.IS_TRUE
@@ -190,7 +212,7 @@ class PasswordParser:
                         ##--Now update the mask for the current run
                         section_list.append((''.join(cur_combo),"K"+str(len(cur_combo))))
                         ##--If not the last section, go recursive and call it with what's remaining--##
-                        if index != (len(input_section) - 1):
+                        if index != (len(input_section)):
                             ret_value = self.parse_keyboard_section(items, input_section[index:], section_list)
                             ##-- Sanity error return check --##
                             if ret_value != RetType.STATUS_OK:
@@ -367,7 +389,7 @@ class PasswordParser:
                     ##--Now update the mask for the current run
                     section_list.append((''.join(cur_combo),"D"+str(len(cur_combo))))
                     ##--If not the last section, go recursive and call it with what's remaining--##
-                    if index != (len(input_section) - 1):
+                    if index != (len(input_section)):
                         ret_value = self.parse_digits_section(items, input_section[index:], section_list)
                         ##-- Sanity error return check --##
                         if ret_value != RetType.STATUS_OK:
@@ -485,7 +507,7 @@ class PasswordParser:
                     ##--Update the capitalization mask as well
                     self.parse_capitalization_mask(cap_items, cur_combo)
                     ##--If not the last section, go recursive and call it with what's remaining--##
-                    if index != (len(input_section) - 1):
+                    if index != (len(input_section)):
                         ret_value = self.parse_letters_section(alpha_items, cap_items, input_section[index:], section_list)
                         ##-- Sanity error return check --##
                         if ret_value != RetType.STATUS_OK:

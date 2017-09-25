@@ -200,7 +200,7 @@ class MarkovCracker:
         while True:
 
             ##--Loop through the following letter probabilities first
-            ret_value = self.dig_deeper(markov_index)
+            ret_value = self.__dig_deeper(markov_index)
             if ret_value != None:
                 return ret_value
 
@@ -210,7 +210,7 @@ class MarkovCracker:
                 
                 ##--If it is the first letter in the chain
                 if len(markov_index.guess) == 1:
-                    more_work, ret_value = self.dig_wider_base(markov_index, parent_letter)
+                    more_work, ret_value = self.__dig_wider_base(markov_index, parent_letter)
                     if more_work != True:
                         return ret_value
                     else:
@@ -252,7 +252,7 @@ class MarkovCracker:
     #########################################################################
     # Dig wider for the first character. Aka go from 'a' to 'b' to 'c'
     #########################################################################
-    def dig_wider_base(self, markov_index, parent_letter):
+    def __dig_wider_base(self, markov_index, parent_letter):
         cur_letter = self.markov_stats[parent_letter]['next']
                     
         ##--If we are done with all of the letters
@@ -281,7 +281,7 @@ class MarkovCracker:
     #########################################################################
     # Go down the markov chain. Aka go from 'a' to 'aa' to 'aaa'
     #########################################################################
-    def dig_deeper(self, markov_index):
+    def __dig_deeper(self, markov_index):
         while True:
             prev_letter = markov_index.guess[-1]
             cur_letter = self.markov_stats[prev_letter]['first_child']
