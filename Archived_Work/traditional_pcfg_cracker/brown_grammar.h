@@ -1,6 +1,7 @@
 #ifndef _BROWN_GRAMMAR_H
 #define _BROWN_GRAMMAR_H
 
+#include <algorithm>
 #include "pcfg_manager.h"
 
 
