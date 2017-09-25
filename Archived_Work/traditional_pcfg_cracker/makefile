@@ -5,7 +5,7 @@ main: pcfg_manager
 
 
 pcfg_manager: pcfg_manager.o tty.o brown_grammar.o standard_grammar.o
-	$(CC) $(CFLAG) pcfg_manager.o tty.o brown_grammar.o standard_grammar.o -03 -o pcfg_manager
+	$(CC) $(CFLAG) pcfg_manager.o tty.o brown_grammar.o standard_grammar.o -O3 -o pcfg_manager
 	
 pcfg_manager.o: pcfg_manager.cpp
 	$(CC) $(CFLAG) -c pcfg_manager.cpp
