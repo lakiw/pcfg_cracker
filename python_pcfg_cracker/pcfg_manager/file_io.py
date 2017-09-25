@@ -28,7 +28,8 @@ def extract_probability(master_list = []):
         
         ##--If there wasn't probability info encoded, then error out
         if len(master_list[position]) != 2:
-            print(master_list[position])
+            print("---Parsed line, (after being split by tabs---")
+            print(master_list[position]) 
             print("Error parsing the probabilities from the training file",file=sys.stderr)
             return False
 
@@ -144,6 +145,8 @@ def insert_terminal(config, grammar, rule_directory, encoding, section_type, gra
         ##--Parse the results and extract the probabilities--##
         ret_value = extract_probability(value_list)
         if ret_value != True:
+            print("Filename where the issue occured:")
+            print(full_file_path)
             return ret_value               
                 
         ##--Now insert the terminals into the grammar
