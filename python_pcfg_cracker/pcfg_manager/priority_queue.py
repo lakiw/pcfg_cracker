@@ -90,7 +90,7 @@ class PcfgQueue:
     ############################################################################
     # Basic initialization function
     ############################################################################
-    def __init__(self, backup_save_comm, backup_restore_comm, verbose = False):
+    def __init__(self, backup_save_comm, backup_restore_comm):
         self.p_queue = []  ##--The actual priority queue
         self.max_probability = 1.0 #--The current highest priority item in the queue. Used for memory management and restoring sessions
         self.min_probability = 0.0 #--The lowest prioirty item is allowed to be in order to be pushed in the queue. Used for memory management
@@ -99,8 +99,7 @@ class PcfgQueue:
         
         self.backup_save_comm = backup_save_comm
         self.backup_restore_comm = backup_restore_comm         
-        
-        self.verbose = verbose
+
         
     #############################################################################
     # Push the first value into the priority queue
@@ -170,8 +169,6 @@ class PcfgQueue:
         
         ##--Assign the min probabilty to the item currently in the divider of the queue--##
         self.min_probability = self.p_queue[divider].probability
-        if self.verbose:
-            print("min prob: " + str(self.min_probability), file=sys.stderr)
         
         ##--Save the items off into the storage list
         self.backup_save_comm.put({'Command':'Save','Value':self.p_queue[divider+1:]})
@@ -231,15 +228,18 @@ class PcfgQueue:
     def insert_into_backup_storage(self,queue_item):
         ##--Insert the item
         self.backup_save_comm.put({'Command':'Save','Value':[queue_item]})
-      
-        return RetType.STATUS_OK
     
     
     ###############################################################################
     # Pops the top value off the queue and then inserts any children of that node
     # back in the queue
+    #
+    # Args:
+    #   pcfg = the grammar to use
+    #   queue_item_list = The list of terminals to return. 
+    #   block_size = The number of terminals to return if possible
     ###############################################################################
-    def next_function(self,pcfg, queue_item_list = []):
+    def next_function(self,pcfg, queue_item_list = [], block_size = 1):
         
         ##--Only return terminal structures. Don't need to return parse trees that don't actually generate guesses 
         while True:
@@ -250,7 +250,12 @@ class PcfgQueue:
                     self.rebuild_queue(pcfg)
                 ##--The grammar has been exhaused, exit---##
                 else:
-                    return RetType.QUEUE_EMPTY
+                    ##--Splitting up the return value on if there were any items returne or not
+                    ##--The next call will cause a RetType.QUEUE_EMPTY regardless though
+                    if len(queue_item_list) == 0:
+                        return RetType.QUEUE_EMPTY
+                    else:
+                        return RetType.STATUS_OK
                 
             ##--Pop the top value off the stack
             queue_item = heapq.heappop(self.p_queue)
@@ -267,7 +272,8 @@ class PcfgQueue:
             ##--If it is a terminal structure break and return it
             if queue_item.is_terminal == True:
                 queue_item_list.append(queue_item)
-                break
+                if len(queue_item_list) >= block_size:
+                    break
 
         return RetType.STATUS_OK
 
@@ -294,5 +300,3 @@ class PcfgQueue:
                     self.insert_into_backup_storage(child_node)
             else:
                 print("Hmmm, trying to push a parent and not a child on the list", file=sys.stderr)
-
-        return RetType.STATUS_OK   

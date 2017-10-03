@@ -44,45 +44,35 @@ if sys.version_info[0] < 3:
     
 import argparse
 import os  ##--Used for file path information
+from distutils.version import LooseVersion  #--Compare the trainer version used to generate the ruleset
 
 #Custom modules
 from pcfg_manager.file_io import load_grammar
-from pcfg_manager.core_grammar import PcfgClass, print_grammar
-from pcfg_manager.priority_queue import PcfgQueue
-from pcfg_manager.ret_types import RetType
+from pcfg_manager.core_grammar import PcfgClass
 from pcfg_manager.cracking_session import CrackingSession
+from pcfg_manager.markov_cracker import MarkovCracker
 
-
-#########################################################################################
-# Holds the command line values
-# Also holds the default values if you don't want to enter them every time you run this
-#########################################################################################
-class CommandLineVars:
-    def __init__(self):
-        self.rule_name = "Default"
-        #Debugging printouts
-        #-They actually are initialized false under parse_command_line regardless of the value here
-        self.verbose = False  
-        self.queue_info = False
-
-        
+       
 ####################################################
 # Simply parses the command line
 ####################################################
-def parse_command_line(command_line_results):
-    parser = argparse.ArgumentParser(description='PCFG_Cracker: Used to generate password guesses for use in other cracking programs')
-    parser.add_argument('--rule','-r', help='The rule set to use. Default is \"Default\"',metavar='RULE_SET',required=False, default= command_line_results.rule_name)
-    parser.add_argument('--verbose','-v', help='Verbose prints. Only use for debugging otherwise it will generate junk guesses',dest='verbose', action='store_true')
-    parser.add_argument('--queue_info','-q', help='Prints the priority queue info vs guesses. Used for debugging',dest='queue_info', action='store_true')
+def parse_command_line(runtime_options):
+    parser = argparse.ArgumentParser(description='PCFG_Cracker: Used to generate password guesses \
+        for use in other cracking programs')
+    parser.add_argument('--rule','-r', help='The rule set to use. Default is \"Default\"',
+        metavar='RULE_SET',required=False, default= runtime_options['rule_name'])
+    parser.add_argument('--queue_info','-q', help='Prints the priority queue info vs guesses. Used for debugging',
+        dest='queue_info', action='store_const', const= not runtime_options['queue_info'])
     try:
         args=parser.parse_args()
-        command_line_results.rule_name = args.rule
-        command_line_results.verbose = args.verbose
-        command_line_results.queue_info = args.queue_info
-    except:
-        return RetType.COMMAND_LINE_ERROR
+        runtime_options['rule_name'] = args.rule
+        runtime_options['queue_info'] = args.queue_info
+        
+    except Exception as msg:
+        print(msg, file=sys.stderr)
+        return False
 
-    return RetType.STATUS_OK 
+    return True 
 
     
 ###################################################################################
@@ -93,8 +83,7 @@ def print_banner(program_details):
     print ("PCFG_Cracker version " + program_details['Version'], file=sys.stderr)
     print ("Written by " + program_details['Author'], file=sys.stderr)
     print ("Sourcecode available at " + program_details['Source'], file=sys.stderr)
-    print('',file=sys.stderr)
-    return RetType.STATUS_OK  
+    print('',file=sys.stderr)  
 
 
 ####################################################################################
@@ -110,7 +99,6 @@ def print_error():
     print(r'  bug      bug       bug/w     dead      bug       blind      bug after',file=sys.stderr)
     print(r'         winking   hangover    bug     sleeping    bug     whatever you did',file=sys.stderr)
     print('',file=sys.stderr)
-    return RetType.STATUS_OK
 
   
 ##################################################################
@@ -118,45 +106,63 @@ def print_error():
 ##################################################################
 def main():
     
-    ##--Information about this program--##
-    program_details = {
-        'Program':'pcfg_manager.py',
-        'Version': '3.1.3 Beta',
-        'Author':'Matt Weir',
-        'Contact':'cweir@vt.edu',
-        'Source':'https://github.com/lakiw/pcfg_cracker'
-    }
-       
-     ##--Print out banner
-    print_banner(program_details)
+    management_vars = {
+        ##--Information about this program--##
+        'program_details':{
+            'Program':'pcfg_manager.py',
+            'Version': '3.3 Beta',
+            'Author':'Matt Weir',
+            'Contact':'cweir@vt.edu',
+            'Source':'https://github.com/lakiw/pcfg_cracker'
+        },
+        ##--Runtime specific values, can be overriden via command line options
+        'runtime_options':{
+            'rule_name':'Default',
+            #Debugging printouts of the queue behavior instead of generating cracking guesses
+            'queue_info':False  
+        }
+    }  
+    
+    ##--Print out banner
+    print_banner(management_vars['program_details'])
     
     ##--Parse the command line ---##
-    command_line_results = CommandLineVars()
-    if parse_command_line(command_line_results) != RetType.STATUS_OK:
-        return RetType.QUIT
+    if parse_command_line(management_vars['runtime_options']) != True:
+        return
    
     ##--Specify where the rule file is located
-    rule_directory = os.path.join(os.path.dirname(os.path.realpath(__file__)),'Rules', command_line_results.rule_name)   
+    rule_directory = os.path.join(os.path.dirname(os.path.realpath(__file__)),'Rules', 
+        management_vars['runtime_options']['rule_name'])   
    
     ##--Initialize the grammar--##
     grammar = []
-    ret_value = load_grammar(rule_directory, grammar)
-    if ret_value != RetType.STATUS_OK:
+    config_details = {}
+    if load_grammar(rule_directory, grammar, config_details) != True:
         print ("Error loading the PCFG grammar, exiting",file=sys.stderr)
         print_error()
-        return ret_value
+        return
  
-    pcfg = PcfgClass(grammar)
+    ##--Load the Markov stats file--##
+    ##--Only do this on newer grammars to ensure backwards compatability--##
+    if LooseVersion(config_details['version']) >= LooseVersion("3.3"):
+        try:
+            markov_cracker = MarkovCracker(rule_directory)
+        except:
+            print ("Error loading the Markov stats file for the ruleset, exiting",file=sys.stderr)
+            print_error()
+            return
+    else:
+        markov_cracker = MarkovCracker()
+ 
+    pcfg = PcfgClass(grammar, markov_cracker)
     
     ##--Setup is done, now start generating rules
     print ("Starting to generate password guesses",file=sys.stderr)
     print ("Press [ENTER] to display a status output",file=sys.stderr)
     
-    current_cracking_session = CrackingSession(pcfg = pcfg, verbose = command_line_results.verbose)
-    current_cracking_session.run(print_queue_info = command_line_results.queue_info)
+    current_cracking_session = CrackingSession(pcfg = pcfg)
+    current_cracking_session.run(print_queue_info = management_vars['runtime_options']['queue_info'])
       
-    return RetType.STATUS_OK
     
-
 if __name__ == "__main__":
     main()

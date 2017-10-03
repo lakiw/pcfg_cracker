@@ -25,13 +25,12 @@ class QueueStorage:
 	############################################################################
     # Basic initialization function
     ############################################################################
-    def __init__(self, verbose = False):
+    def __init__(self):
         self.storage_list = [] #--Used to store low probability nodes to keep the size of p_queue down
         self.storage_min_probability = 0.0 #-- The lowest probability item allowed into the storage list. Anything lower than this is discarded
         self.storage_size = 5000000 #--The maximum size to save in the storage list before we start discarding items
         self.backup_reduction_size = self.storage_size - self.storage_size // 4
         self.restore_size = 50000 #--Size of data to send back when requested. May want to change this to be set somewhere else
-        self.verbose = verbose
         
         
     #############################################################################

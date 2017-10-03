@@ -81,8 +81,7 @@ class DataList:
             self.config_data['File_type'] = 'Flat'
         elif self.type == ListType.LENGTH:
             self.config_data['File_type'] = 'Length'
-         
-        
+           
         
     ##################################################
     # Returns a config file for saving to disk
@@ -106,7 +105,27 @@ class DataList:
             return RetType.ERROR_QUIT
             
         return RetType.STATUS_OK
+    
+
+    ##################################################
+    # Manually insert an item + probability into a list
+    # Currently only supports ListType.FLAT
+    # Really just a hack to get Markov probabilities in here
+    # Note, this totally messes with all the other stats besides
+    # probabilities so may want to clean this up in the future
+    ###################################################
+    def manual_insert(self, item, precision = 7, probability = 1.0):
+        if self.type != ListType.FLAT:
+            print("Error calling manual_insert on a non-flat list")
+            raise
         
+        working_dictionary = self.main_dic[0]
+        with localcontext() as ctx:
+            ctx.prec = precision
+            ##--Doing this weird by multiplying by Decimal(1.0) to have the precision be applied properly
+            working_dictionary['lists']['M'] = {'probability':Decimal(probability) * Decimal(1.0)}
+            
+    
     ##################################################
     # inserts an item into the list
     ##################################################
@@ -169,8 +188,12 @@ class DataList:
     # Setting default to 7, (will measure 1 in a million)
     # NOTE: Due to the way Decimal handles division, the precsion
     #       is not guarenteed to be exactly enforced
+    #
+    # Coverage is used to rebase the max amount that these items should
+    # equal. Currently adding this to add after the fact Markov into the base structure
+    # coverage = 1.0 is no change, 0.5 would represent a 50% reduction
     #####################################################
-    def update_probabilties(self,precision=7):
+    def update_probabilties(self,precision=7, coverage=1.0):
         ##--Set the precision--##
         ##--Updating the precision using localcontext so that will apply to the Decimal math
         with localcontext() as ctx:
@@ -180,11 +203,11 @@ class DataList:
                 ##--Now walk each list
                 for list_key, list_item in main_item['lists'].items():
                     ##--Calculate the probability
-                    list_item['probability'] = Decimal(list_item['num']) / Decimal(main_item['total_size'])
+                    list_item['probability'] = Decimal(coverage) * (Decimal(list_item['num']) / Decimal(main_item['total_size']))
                 
         return RetType.STATUS_OK
         
-        
+    
     #########################################################################
     # Creates a dictionary of sorted lists of all the main_dic (name,probability) tuples
     # Probability smoothing takes place here to to combine items of similar enough probabilty

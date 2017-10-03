@@ -15,8 +15,6 @@ import json
 import codecs
 from itertools import groupby
 
-from pcfg_manager.ret_types import RetType
-
 #Used for debugging
 from pcfg_manager.core_grammar import print_grammar
 
@@ -30,12 +28,14 @@ def extract_probability(master_list = []):
         
         ##--If there wasn't probability info encoded, then error out
         if len(master_list[position]) != 2:
+            print("---Parsed line, (after being split by tabs---")
+            print(master_list[position]) 
             print("Error parsing the probabilities from the training file",file=sys.stderr)
-            return RetType.CONFIG_ERROR
+            return False
 
         #convert probablity to a float
         master_list[position][1] = float(master_list[position][1])
-    return RetType.STATUS_OK
+    return True
 
 #########################################################################################
 # Reads in all of values from an individual training file
@@ -76,9 +76,9 @@ def read_input_values(training_file, master_list =[] , encoding = 'utf-8'):
     except IOError as error:
         print (error,file=sys.stderr)
         print ("Error opening file " + training_file,file=sys.stderr)
-        return RetType.FILE_IO_ERROR
+        return False
     
-    return RetType.STATUS_OK
+    return True
 
 ########################################################################################################################
 # Parses base structures and updates the grammar section for them
@@ -87,11 +87,20 @@ def parse_base_structure(unformated_base,grammar_mapping, pos = []):
 
     ##--Split up the unformated base by value + length--##
     working_list = [''.join(g) for _, g in groupby(unformated_base, str.isalpha)]
+
+    ##--Handle loading Markov probabilities--##
+    if unformated_base == 'M':
+        try:
+            pos.append(grammar_mapping['M']['markov_prob'])
+            return True
+        except KeyError as msg:
+            print("Error occured parsing the links in the Markov base structure: " + str(msg),file=sys.stderr)
+            return False
     
     ##--Do a quick sanity check to make sure there are proper pairing of value digits
     if len(working_list) % 2 != 0:
-        print("Error parsing base structure: " + str(unformatted_base))
-        return RetType.CONFIG_ERROR
+        print("Error parsing base structure: " + str(unformated_base))
+        return False
     
     ##--Now calculate the replacement mapping
     for index in range(0,len(working_list)//2):
@@ -102,9 +111,9 @@ def parse_base_structure(unformated_base,grammar_mapping, pos = []):
             pos.append(grammar_mapping[value][size])
         except KeyError as msg:
             print("Error occured parsing the links in the base structure: " + str(msg),file=sys.stderr)
-            return RetType.CONFIG_ERROR
+            return False
             
-    return RetType.STATUS_OK
+    return True
     
 ########################################################################################################################
 # Inserts a termininal replacement into the grammar
@@ -122,7 +131,7 @@ def insert_terminal(config, grammar, rule_directory, encoding, section_type, gra
     
     except configparser.Error as msg:
         print("Error occured parsing the configuration file: " + str(msg),file=sys.stderr)
-        return RetType.CONFIG_ERROR
+        return False
         
     for cur_file in filenames:
         full_file_path = os.path.join(cur_directory,cur_file)
@@ -130,12 +139,14 @@ def insert_terminal(config, grammar, rule_directory, encoding, section_type, gra
         ##--Read in the file--##
         value_list = []
         ret_value = read_input_values(full_file_path, value_list, encoding)
-        if ret_value != RetType.STATUS_OK:
+        if ret_value != True:
             return ret_value
          
         ##--Parse the results and extract the probabilities--##
         ret_value = extract_probability(value_list)
-        if ret_value != RetType.STATUS_OK:
+        if ret_value != True:
+            print("Filename where the issue occured:")
+            print(full_file_path)
             return ret_value               
                 
         ##--Now insert the terminals into the grammar
@@ -143,7 +154,7 @@ def insert_terminal(config, grammar, rule_directory, encoding, section_type, gra
                 
         ##--Need to add the replacements
         ##--If it is a Capitalization, Copy, or Shadow replacement, (they are all read in basically the same way)
-        if function == 'Capitalization' or function == 'Copy' or function == 'Shadow':
+        if function == 'Capitalization' or function == 'Copy' or function == 'Shadow' or function == 'Markov':
             ##--multiple replacements can share the same structure, (to limit the amount of list pushing and popping, (this is a performance tweak)
             ##--therefore initialize the structure and then loop through the rest of the values seeing if they can be instereted in this replacement
             ##--or if they have a different probability so they need their own
@@ -157,10 +168,10 @@ def insert_terminal(config, grammar, rule_directory, encoding, section_type, gra
                     cur_replacement['pos'] = [ grammar_mapping[replacement][cur_section['name']] ]
                 except KeyError as msg:
                     print("Error occured parsing the links in the config file: " + str(msg),file=sys.stderr)
-                    return RetType.CONFIG_ERROR
+                    return False
                 except configparser.Error as msg:
                     print("Error occured parsing the configuration file: " + str(msg),file=sys.stderr)
-                    return RetType.CONFIG_ERROR
+                    return False
             
             last_prob = value_list[0][1]
                 
@@ -187,7 +198,7 @@ def insert_terminal(config, grammar, rule_directory, encoding, section_type, gra
                 ##--Should be an error condition if the list isn't in decending probability order
                 else:
                     print("ERROR: The training file should be in decending probability order: " + str(section_type),file=sys.stderr)
-                    return RetType.CONFIG_ERROR
+                    return False
                     
             ##--Update the last replacement
             cur_section['replacements'].append(cur_replacement)
@@ -199,17 +210,17 @@ def insert_terminal(config, grammar, rule_directory, encoding, section_type, gra
             for index in range(0,len(value_list)):
                 cur_replacement = {'function':function,'is_terminal':False, 'prob':value_list[index][1], 'values':[value_list[index][0]], 'pos':[]}
                 ret_value = parse_base_structure(value_list[index][0],grammar_mapping,cur_replacement['pos'])
-                if ret_value != RetType.STATUS_OK:
+                if ret_value != True:
                     print("Error parsing base structures in grammar",file=sys.stderr)
-                    return RetType.CONFIG_ERROR
+                    return False
                 cur_section['replacements'].append(cur_replacement)
             grammar.append(cur_section)
         ##--Something weird is happeing so error out
         else:
             print("Invalid function type for grammar: " + str(function))
-            return RetType.CONFIG_ERROR
+            return False
             
-    return RetType.STATUS_OK
+    return True
     
 
 ###########################################################################################
@@ -226,13 +237,13 @@ def find_grammar_mapping(config, grammar, section_type, grammar_mapping={}):
         replacements = json.loads(config.get(section_type,'replacements'))
     except configparser.Error as msg:
         print("Error occured parsing the configuration file: " + str(msg),file=sys.stderr)
-        return RetType.CONFIG_ERROR   
+        return False   
     for cur_replace in replacements:
         grammar_mapping[cur_replace["Transition_id"]] = {}
         for index, item in enumerate(grammar):
             if cur_replace["Config_id"] == item["type"]:
                 grammar_mapping[cur_replace["Transition_id"]][item['name']] =index
-    return RetType.STATUS_OK
+    return True
 
     
 ########################################################################
@@ -245,7 +256,7 @@ def build_grammar(config, grammar, rule_directory, encoding, section_type, found
     for x in found_list:
         if x == section_type:
             print('Recursion found in grammar for section ' + str(section_type),file=sys.stderr)
-            return RetType.STATUS_OK
+            return True
      
     ##--Add this section to the found_list to avoid loops in the future--##
     found_list.append(section_type)
@@ -269,36 +280,36 @@ def build_grammar(config, grammar, rule_directory, encoding, section_type, found
             ##--Now add the replacements to the grammar before we attempt to add the links to them for this section
             for cur_replacement in replacements:
                 ret_value = build_grammar(config, grammar, rule_directory, encoding, cur_replacement['Config_id'])
-                if ret_value != RetType.STATUS_OK:
+                if ret_value != True:
                     return ret_value    
       
             ##--All replacements should be added by now so make the mapping to be used when reading in the data
             grammar_mapping = {}
             ret_value = find_grammar_mapping(config, grammar, section_type, grammar_mapping)
-            if ret_value != RetType.STATUS_OK:
+            if ret_value != True:
                 return ret_value 
             ##--Now actually add this section to the grammar--##
             ret_value = insert_terminal(config, grammar, rule_directory, encoding, section_type, grammar_mapping)
-            if ret_value != RetType.STATUS_OK:
+            if ret_value != True:
                 return ret_value            
             
         ##--If this section is a terminal replacement
         else:
             ret_value = insert_terminal(config, grammar, rule_directory, encoding, section_type)
-            if ret_value != RetType.STATUS_OK:
+            if ret_value != True:
                 return ret_value
 
     except configparser.Error as msg:
         print("Error occured parsing the configuration file: " + str(msg),file=sys.stderr)
-        return RetType.CONFIG_ERROR
-    return RetType.STATUS_OK
+        return False
+    return True
 
     
     
 ##############################################################
 # Loads the grammar from a ruleset
 ##############################################################
-def load_grammar(rule_directory, grammar):
+def load_grammar(rule_directory, grammar, config_details = {}):
     print("Loading the rules file",file=sys.stderr)
     
     ##--First start by setting up, reading, and parsing the config file for the ruleset--
@@ -309,22 +320,24 @@ def load_grammar(rule_directory, grammar):
         config.readfp(open(os.path.join(rule_directory,"config.ini")))
         ##--Find the encoding for the config file--##
         encoding = config.get('TRAINING_DATASET_DETAILS','encoding')
+        config_details['version'] = config.get('TRAINING_PROGRAM_DETAILS','version')
         
     except IOError as msg:
         print("Could not open the config file for the ruleset specified. The rule directory may not exist",file=sys.stderr)
         print("Ruleset: " + str(rule_directory))
-        return RetType.FILE_IO_ERROR
+        return False
     except configparser.Error as msg:
         print("Error occured parsing the configuration file: " + str(msg),file=sys.stderr)
-        return RetType.GENERIC_ERROR      
+        return False     
     
     ##--Now build the grammar starting with the start transition--##
     ret_value = build_grammar(config,grammar, rule_directory, encoding, "START")
 
-    if ret_value != RetType.STATUS_OK:
+    if ret_value != True:
         return ret_value
+        
     print("Rules loaded",file=sys.stderr)
     print("",file=sys.stderr)
-    return RetType.STATUS_OK
+    return True
     
 

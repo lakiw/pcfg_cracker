@@ -53,6 +53,11 @@ class CommandLineVars:
         ##  takes a large amount of time in a password cracking attack, the grammar becomes "faster".
         self.smoothing = 0.01
         
+        ##--The amount to trust the generated grammar
+        ##  The resulting value is used to figure out how much to perform brute force guesses instead
+        ##  Brute force = 1 - coverage
+        self.coverage = 0.6
+        
 #############################################################################
 # Used to print out the status of a current measurement
 # I know, yet another class that could have been taken care of with a couple
@@ -70,7 +75,7 @@ class MeasurementStatus:
         if self.step_size == 0:
             self.step_size = 1
         ##--If true, show a periodic status update. Will be false if debugging is going on
-        self.display_status = display_status
+        self.display_status = display_status   
     
     
     ##########################################################################
@@ -146,23 +151,38 @@ def ascii_fail():
 ####################################################
 def parse_command_line(command_line_results):
     parser = argparse.ArgumentParser(description='Generates PCFG Grammar From Password Training Set')
-    parser.add_argument('--output','-o', help='Name of generated ruleset. Default is \"Default\"',metavar='RULESET_NAME',required=False,default=command_line_results.rule_name)
+    parser.add_argument('--rule','-r', help='Name of generated ruleset. Default is \"Default\"',metavar='RULESET_NAME',required=False,default=command_line_results.rule_name)
     parser.add_argument('--training','-t', help='The training set of passwords to train from',metavar='TRAINING_SET',required=True)
     parser.add_argument('--encoding','-e', help='File encoding to read the input training set. If not specified autodetect is used', metavar='ENCODING', required=False)
     parser.add_argument('--verbose','-v', help='Turns on verbose output', required=False, action="store_true")
     parser.add_argument('--smoothing', '-s', 
-        help='The amount of probability smoothing to apply to the generated grammar. For example, if it is 0.01 then items with a prob difference of 1%% will be given the same prob. A setting of 0 will turn this off. Default: (%(default)s)',
-        required=False, default=command_line_results.smoothing)
+        help='<ADVANCED> The amount of probability smoothing to apply to the generated grammar. For example, if it is 0.01 then items with a prob difference of 1%% will be given the same prob. A setting of 0 will turn this off. Default: (%(default)s)',
+        required=False, default=command_line_results.smoothing, type = float)
+    parser.add_argument('--coverage', '-c', 
+        help='<ADVANCED> The percentage to trust the trained grammar. 1 - coverage = persentage of grammar to devote to brute force guesses. Range: Between 1.0 and 0.0. Default: (%(default)s)',
+        required=False, default=command_line_results.coverage, type = float)
     try:
         args=parser.parse_args()
-        command_line_results.rule_name = args.output
+        command_line_results.rule_name = args.rule
         command_line_results.training_file = args.training
         command_line_results.encoding = args.encoding
         command_line_results.smoothing = args.smoothing
-
+        
+        ##--Check to make sure smothing makes sense--##
+        if command_line_results.smoothing < 0 or command_line_results.smoothing > 0.9:
+            print("Error, smoothing must be a value between 0.9 and 0")
+            return RetType.COMMAND_LINE_ERROR
+            
+        command_line_results.coverage = args.coverage    
+        ##--Check to make sure coverage makes sense--##
+        if command_line_results.coverage < 0 or command_line_results.coverage > 1.0:
+            print("Error, smoothing must be a value between 0.9 and 0")
+            return RetType.COMMAND_LINE_ERROR  
+            
         if args.verbose:
             command_line_results.verbose = True
     except Exception as msg:
+        print(msg)
         return RetType.COMMAND_LINE_ERROR
 
     return RetType.STATUS_OK   
@@ -175,7 +195,7 @@ def main():
     ##--Information about this program--##
     program_details = {
         'Program':'pcfg_trainer.py',
-        'Version': '3.2',
+        'Version': '3.3',
         'Author':'Matt Weir',
         'Contact':'cweir@vt.edu'
     }
@@ -231,8 +251,8 @@ def main():
     print("Done processing the input training file")
     print("Starting to analyzing the input passwords")
     print("Passwords left to parse : " + str(len(master_password_list)))
-    if len(master_password_list) > 1000000:
-        print("PRO TIP: Past experiments have shown the value of training on a dataset larger than a million passwords is negligable. If this training program takes too long to run you may want to consider training on a smaller set of passwords")
+    if len(master_password_list) > 10000000:
+        print("DevNote: Most of my training has been with sets of 1 million passwords. I'm not sure how things will scale with bigger datasets so if problems occur please submit a bug report on the github repo and then try training on a smaller sample size")
     print()
     print("Current Status:") 
     
@@ -260,8 +280,19 @@ def main():
             return
         progress_bar.update_status()
     
+    print("\nCalculating overall Markov probabilities")
+    training_results.calc_markov_stats() 
+    
+    print("\nGoing through and looking at password distribution in regards to Markov Probabilities")
+    for password in master_password_list:
+        if password[1] == "DATA":
+            rank = training_results.find_markov_rank(password[0]) 
+    
     print("\nParsing is done. Now calculating probabilities, applying smoothing, and saving the results")
     print("This may take a few minutes depending on your training list size")
+    
+    training_results.markov.final_sorted_ranks()
+    
     ##--Save the data to disk------------------###
     ##--Get the base directory to save all the data to
     ##  Don't want to use the relative path since who knows where someone is invoking this script from
@@ -297,7 +328,8 @@ def main():
     config['TRAINING_DATASET_DETAILS'] = {
         'Filename':command_line_results.training_file,
         'Comments':'None',
-        'Encoding':command_line_results.encoding
+        'Encoding':command_line_results.encoding,
+        'Smoothing':command_line_results.smoothing
     }
     ##--Gather info from the training set
     ret_value = training_results.update_config(config)
@@ -315,7 +347,7 @@ def main():
      
     ##--Now finalize the data and save it to disk--##
     ret_value = training_results.save_results(directory = absolute_base_directory, 
-        encoding = command_line_results.encoding, precision = 7, smoothing = command_line_results.smoothing)
+        encoding = command_line_results.encoding, precision = 7, smoothing = command_line_results.smoothing, coverage = command_line_results.coverage)
     if ret_value != RetType.STATUS_OK:
         ascii_fail()
         print("Exiting...")
