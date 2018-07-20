@@ -58,6 +58,16 @@ class CommandLineVars:
         ##  Brute force = 1 - coverage
         self.coverage = 0.6
         
+        ##--The size of the alphabet to use for OMEN brute force
+        ##--Aka =100 would make it use the 100 most common characters for guess generation
+        ##--Yes, we could use a pre-made alphabet instead but learning on the fly is better in most cases
+        self.alphabet_size = 96
+        
+        ##--The depth that Markov models will go in their conditional probability calculations
+        ##--Ngram of 4 means that 'd' will be chosen based on the previous 'wor' in 'word'.
+        self.ngram = 4
+        
+        
 #############################################################################
 # Used to print out the status of a current measurement
 # I know, yet another class that could have been taken care of with a couple
@@ -150,17 +160,31 @@ def ascii_fail():
 # Simply parses the command line
 ####################################################
 def parse_command_line(command_line_results):
+   
+    ##--Standard options for filename, encoding, etc--##
     parser = argparse.ArgumentParser(description='Generates PCFG Grammar From Password Training Set')
     parser.add_argument('--rule','-r', help='Name of generated ruleset. Default is \"Default\"',metavar='RULESET_NAME',required=False,default=command_line_results.rule_name)
     parser.add_argument('--training','-t', help='The training set of passwords to train from',metavar='TRAINING_SET',required=True)
     parser.add_argument('--encoding','-e', help='File encoding to read the input training set. If not specified autodetect is used', metavar='ENCODING', required=False)
+    
+    ##--OMEN Options--##
+    parser.add_argument('--ngram', '-n', 
+        help='<ADVANCED> The depth to generate conditional probabilites for Markov brute force guesses. NGRAM=4 would mean "d|wor" for "word". Default: (%(default)s)',
+        required=False, default=command_line_results.ngram, type = int, metavar='INT', choices=range(2,6))
+        
+    parser.add_argument('--alphabet','-a', help='Dynamically learn the alphabet from training set for Markov brute force guesses. ' +
+        'Note, the size of alphabet will get up to the N most common characters. Higher values can slow down the cracker ' +
+        'and increase memory requirements. Default default)s)', type=int, default=command_line_results.alphabet_size, metavar='SIZE_OF_ALPHABET', required=False)
+    
+    ##--Other Advanced Options--##
     parser.add_argument('--verbose','-v', help='Turns on verbose output', required=False, action="store_true")
     parser.add_argument('--smoothing', '-s', 
         help='<ADVANCED> The amount of probability smoothing to apply to the generated grammar. For example, if it is 0.01 then items with a prob difference of 1%% will be given the same prob. A setting of 0 will turn this off. Default: (%(default)s)',
         required=False, default=command_line_results.smoothing, type = float)
     parser.add_argument('--coverage', '-c', 
-        help='<ADVANCED> The percentage to trust the trained grammar. 1 - coverage = persentage of grammar to devote to brute force guesses. Range: Between 1.0 and 0.0. Default: (%(default)s)',
+        help='<ADVANCED> The percentage to trust the trained grammar. (1 - coverage) = percentage of grammar to devote to brute force guesses. Range: Between 1.0 and 0.0. Default: (%(default)s)',
         required=False, default=command_line_results.coverage, type = float)
+        
     try:
         args=parser.parse_args()
         command_line_results.rule_name = args.rule
@@ -168,7 +192,9 @@ def parse_command_line(command_line_results):
         command_line_results.encoding = args.encoding
         command_line_results.smoothing = args.smoothing
         
-        ##--Check to make sure smothing makes sense--##
+        command_line_results.ngram = args.ngram
+        
+        ##--Check to make sure smoothing makes sense--##
         if command_line_results.smoothing < 0 or command_line_results.smoothing > 0.9:
             print("Error, smoothing must be a value between 0.9 and 0")
             return RetType.COMMAND_LINE_ERROR
@@ -178,6 +204,12 @@ def parse_command_line(command_line_results):
         if command_line_results.coverage < 0 or command_line_results.coverage > 1.0:
             print("Error, smoothing must be a value between 0.9 and 0")
             return RetType.COMMAND_LINE_ERROR  
+        
+        command_line_results.alphabet_size = args.alphabet      
+        ##--Not that I have ever accidentally not typed the second character and ended up with an alphabet of size 9         
+        if args.alphabet < 10:
+            print("Minimum alphabet size is 10 because based on past experience anything less than that is probably a typo. If this is a problem please post on the github site")
+            return RetType.COMMAND_LINE_ERROR 
             
         if args.verbose:
             command_line_results.verbose = True
@@ -195,7 +227,7 @@ def main():
     ##--Information about this program--##
     program_details = {
         'Program':'pcfg_trainer.py',
-        'Version': '3.3',
+        'Version': '3.4',
         'Author':'Matt Weir',
         'Contact':'cweir@vt.edu'
     }
@@ -246,18 +278,32 @@ def main():
         print("Exiting...")
         return
         
-    ##--Now the real work starts--
     print()
-    print("Done processing the input training file")
-    print("Starting to analyzing the input passwords")
-    print("Passwords left to parse : " + str(len(master_password_list)))
+    print("Done processing the input training file")    
     if len(master_password_list) > 10000000:
         print("DevNote: Most of my training has been with sets of 1 million passwords. I'm not sure how things will scale with bigger datasets so if problems occur please submit a bug report on the github repo and then try training on a smaller sample size")
-    print()
-    print("Current Status:") 
+        
+    ##--Now the real work starts--
     
     ##--Initialize the training results--## 
-    training_results = TrainingData()
+    training_results = TrainingData(alphabet_size = command_line_results.alphabet_size, ngram = command_line_results.ngram)
+    
+    print()
+    print("Performing pre-processing of the input passwords to learn alphabet for Markov based brute force")
+    
+    ##--Go through the password list and get frequency count for all characters --##
+    for password in master_password_list:
+        if password[1] == "DATA":
+            training_results.learn_alphabet(password[0])
+    
+    training_results.finalize_alphabet()
+    
+    print()
+    print("Starting to analysing input passwords to learn format and mangling rules")
+    print("Passwords left to parse : " + str(len(master_password_list)))
+    
+    print()
+    print("Current Status:") 
     
     ##--Now parse every password in the training set --##
     for password in master_password_list:
@@ -283,16 +329,9 @@ def main():
     print("\nCalculating overall Markov probabilities")
     training_results.calc_markov_stats() 
     
-    print("\nGoing through and looking at password distribution in regards to Markov Probabilities")
-    for password in master_password_list:
-        if password[1] == "DATA":
-            rank = training_results.find_markov_rank(password[0]) 
-    
     print("\nParsing is done. Now calculating probabilities, applying smoothing, and saving the results")
     print("This may take a few minutes depending on your training list size")
-    
-    training_results.markov.final_sorted_ranks()
-    
+        
     ##--Save the data to disk------------------###
     ##--Get the base directory to save all the data to
     ##  Don't want to use the relative path since who knows where someone is invoking this script from
