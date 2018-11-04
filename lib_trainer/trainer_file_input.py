@@ -2,7 +2,7 @@
 
 
 #########################################################################
-# Contains all the file IO for the python pcfg trainer
+# Contains all the file reading logic for the python pcfg trainer
 #
 #########################################################################
 

@@ -25,23 +25,4 @@ def print_banner():
     print(''' / / / /  / /_/ / / / / /  __/ /            ''')                           
     print('''/_/ /_/   \__,_/_/_/ /_/\___/_/       ''')
     print()
-    print()
     
-    
-## ASCII art for when program fails
-#
-def ascii_fail():
-    print("                                          __ ")
-    print("                                      _  |  |")
-    print("                  Yye                |_| |--|")
-    print("               .---.  e           AA | | |  |")
-    print("              /.--./\  e        A")
-    print("             // || \/\  e      ")
-    print("            //|/|| |\/\   aa a    |\o/ o/--")
-    print("           ///|\|| | \/\ .       ~o \.'\.o'")
-    print("          //|\|/|| | |\/\ .      /.` \o'")
-    print("         //\|/|\|| | | \/\ ( (  . \o'")
-    print("___ __ _//|/|\|/|| | | |\/`--' '")
-    print("__/__/__//|\|/|\|| | | | `--'")
-    print("|\|/|\|/|\|/|\|/|| | | | |")
-    print()

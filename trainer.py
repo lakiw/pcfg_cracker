@@ -45,11 +45,16 @@ import argparse
 import os  
 
 # Local imports
+from lib_trainer.banner_info import print_banner
 from lib_trainer.trainer_file_input import detect_file_encoding
 from lib_trainer.trainer_file_input import TrainerFileInput
 from lib_trainer.trainer_file_input import get_confirmation
 
-from lib_trainer.banner_info import print_banner
+from lib_trainer.trainer_file_output import create_rule_folders
+
+from lib_trainer.omen.alphabet_generator import AlphabetGenerator
+from lib_trainer.omen.alphabet_lookup import AlphabetLookup
+from lib_trainer.omen.omen_file_output import save_omen_rules_to_disk
 
 
 ## Parses the command line
@@ -228,10 +233,12 @@ def main():
         # OMEN Options
         'ngram': 4,
         'alphabet_size':100,
+        'alphabet':'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!.*@-_$#<?',
         
         # Advanced Options
         'smoothing': 0.01,
         'coverage':0.6,
+        'max_len':21,
     }
       
     print_banner()
@@ -261,6 +268,28 @@ def main():
         
         # Select the most likely file encoding        
         program_info['encoding'] = possible_file_encodings[0]
+        
+    ## Create Rules folder for the saved grammar
+    #
+    # Doing this before parsing the input file further since if a permission
+    # error occurs here want to fail fast vs. waiting 10 minutes to finialize
+    # parsing the data
+    
+    # Get the base directory to save all the data
+    #
+    # Don't want to use the relative path since who knows where someone is 
+    # invoking this script from
+    #
+    # Also aiming to make this OS independent/
+    #
+    base_directory = os.path.join(
+                        os.path.dirname(os.path.realpath(__file__)),
+                        'Rules',
+                        program_info['rule_name'])
+    
+    if not create_rule_folders(base_directory):
+        print("Exiting...")
+        return
     
     ## Perform the first pass of the training list
     #
@@ -275,21 +304,48 @@ def main():
     print("-------------------------------------------------")
     print("")
     
+    # Initialize the file input to read passwords from
     file_input = TrainerFileInput(
                     program_info['training_file'], 
                     program_info['encoding'])
+                    
+    # Initialize the alphabet generator to learn the alphabet
+    ag = AlphabetGenerator(program_info['alphabet_size'], program_info['ngram'])
+    
+    # Used for progress_bar
+    num_parsed_so_far = 0
+    print("Printing out status after every million passwords parsed")
+    print("------------")
  
     ## Loop until we hit the end of the file
     try:
         password = file_input.read_password()
         while password:
+        
+            # Print status indicator if needed
+            num_parsed_so_far += 1
+            if num_parsed_so_far % 1000000 == 0:
+                print(str(num_parsed_so_far//1000000) +' Million')
             
+            # Save statistics for the alphabet
+            ag.process_password(password)
+            
+            # Get the next password
             password = file_input.read_password()
             
     except Exception as msg:
         print("Exception: " + str(msg))
         print("Exiting...")
         return
+        
+    # Save the learned alphabet
+    program_info['alphabet'] = ag.get_alphabet()
+        
+    # Print some basic statistics after first loop
+    print()
+    print("Number of Valid Passwords: " + str(file_input.num_passwords))
+    print("Number of Encoding Errors Found in Training Set:" + str(file_input.num_encoding_errors))
+    print()
         
     # Perform duplicate detection and warn user if no duplicates were found
     if not file_input.duplicates_found:
@@ -302,6 +358,78 @@ def main():
         print("    info such as '123456' being more common than '629811'")
         if get_confirmation("Do you want to exit and try again with a different training set (RECOMENDED)"):
             return
+            
+    
+    ## Perform second loop through training data
+    #
+    # This pass is responsible for the following:
+    #
+    # -Learning OMEN NGRAMs
+    #
+    print("-------------------------------------------------")    
+    print("Performing second pass on the training passwords")
+    print("-------------------------------------------------")
+    print("")   
+    
+    # Re-Initialize the file input to read passwords from
+    file_input = TrainerFileInput(
+                    program_info['training_file'], 
+                    program_info['encoding'])
+                    
+    # Reset progress_bar
+    num_parsed_so_far = 0
+    print("Printing out status after every million passwords parsed")
+    print("------------")
+    
+    # Initialize OMEN lookup tables
+    omen_trainer = AlphabetLookup(
+        alphabet = program_info['alphabet'], 
+        ngram = program_info['ngram'],
+        max_length = program_info['max_len']
+        )
+                    
+    ## Loop until we hit the end of the file
+    try:
+        password = file_input.read_password()
+        while password:
+        
+            # Print status indicator if needed
+            num_parsed_so_far += 1
+            if num_parsed_so_far % 1000000 == 0:
+                print(str(num_parsed_so_far//1000000) +' Million')
+                
+            # Parse OMEN info
+            omen_trainer.parse(password)
+            
+            # Get the next password
+            password = file_input.read_password()
+            
+    except Exception as msg:
+        print("Exception: " + str(msg))
+        print("Exiting...")
+        return
+    
+    print()    
+    print("-------------------------------------------------") 
+    print("Compleated Parsing Training Data")    
+    print("Calculating Statistics")
+    print("-------------------------------------------------")
+    print()
+
+    # Calculate the OMEN level data
+    omen_trainer.apply_smoothing()
+    
+    print()    
+    print("-------------------------------------------------") 
+    print("Saving Data")   
+    print("-------------------------------------------------")
+    print()
+    
+    # Save the OMEN data
+    if not save_omen_rules_to_disk(omen_trainer, base_directory, program_info):
+        print("Error, something went wrong saving the OMEN data to disk")
+        print("The training did not compleate correctly")
+        print("Exiting...")
     
 if __name__ == "__main__":
     main()    

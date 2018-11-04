@@ -141,7 +141,6 @@ class Test_File_Input_Checks(unittest.TestCase):
             # Loop through all of the passwords
             password = file_input.read_password()
             while password:
-                print(password)
                 password = file_input.read_password()                     
             
         # Verify the number of passwords read and the raw results
