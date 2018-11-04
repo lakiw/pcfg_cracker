@@ -56,6 +56,8 @@ from lib_trainer.omen.alphabet_generator import AlphabetGenerator
 from lib_trainer.omen.alphabet_lookup import AlphabetLookup
 from lib_trainer.omen.omen_file_output import save_omen_rules_to_disk
 
+from lib_trainer.multiword_detector import MultiWordDetector
+
 
 ## Parses the command line
 #
@@ -312,6 +314,12 @@ def main():
     # Initialize the alphabet generator to learn the alphabet
     ag = AlphabetGenerator(program_info['alphabet_size'], program_info['ngram'])
     
+    # Intitialize the multi-word detector
+    multiword = MultiWordDetector(
+                    threshold = 5,
+                    min_len = 4,
+                    max_len = 21)
+    
     # Used for progress_bar
     num_parsed_so_far = 0
     print("Printing out status after every million passwords parsed")
@@ -329,6 +337,9 @@ def main():
             
             # Save statistics for the alphabet
             ag.process_password(password)
+            
+            # Train multiword detector
+            multiword.train(password)
             
             # Get the next password
             password = file_input.read_password()
@@ -387,7 +398,8 @@ def main():
         ngram = program_info['ngram'],
         max_length = program_info['max_len']
         )
-                    
+    num_single_words = 0
+    num_multi_words = 0
     ## Loop until we hit the end of the file
     try:
         password = file_input.read_password()
@@ -401,14 +413,44 @@ def main():
             # Parse OMEN info
             omen_trainer.parse(password)
             
+            # TODO: Remove this test code
+            # test multiword
+            cur_run = []
+            for x in password:
+                if x.isalpha():
+                    cur_run.append(x)
+                else:
+                    if cur_run:
+                        result = multiword.detect_multiword("".join(cur_run))
+                        if len(result) > 1:
+                            num_multi_words +=1
+                            print("Original pw: " + "".join(password))
+                            print("Multi-word : " + str(result))
+                            print()
+                        else:
+                            num_single_words +=1
+                            
+                        cur_run = []
+                        
+            if cur_run:
+                result = multiword.detect_multiword("".join(cur_run))
+                if len(result) > 1:
+                    num_multi_words +=1
+                    
+                else:
+                    num_single_words +=1
+            
             # Get the next password
             password = file_input.read_password()
-            
+                        
     except Exception as msg:
         print("Exception: " + str(msg))
         print("Exiting...")
         return
-    
+
+    print("Number on non-multiwords: " + str(num_single_words))
+    print("Number of multi-words:    " + str(num_multi_words))
+        
     print()    
     print("-------------------------------------------------") 
     print("Compleated Parsing Training Data")    
