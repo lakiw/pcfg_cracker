@@ -424,9 +424,10 @@ def main():
                         result = multiword.detect_multiword("".join(cur_run))
                         if len(result) > 1:
                             num_multi_words +=1
-                            print("Original pw: " + "".join(password))
-                            print("Multi-word : " + str(result))
-                            print()
+                            if len(result) > 2:                       
+                                print("Original pw: " + "".join(password))
+                                print("Multi-word : " + str(result))
+                                print()
                         else:
                             num_single_words +=1
                             

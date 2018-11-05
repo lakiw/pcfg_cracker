@@ -209,7 +209,8 @@ class MultiWordDetector:
                 # If results indicate a parsing for the end of the alpha_string
                 # It was a successful multi_word so return it as a list
                 if results:
-                    return results.insert(0,alpha_string[0:index])
+                    results.insert(0,alpha_string[0:index])
+                    return results
                     
         # Could not parse out multi-words
         return None
