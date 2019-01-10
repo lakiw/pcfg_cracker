@@ -4,5 +4,9 @@
 *.swp
 *.swo
 *.pyc
+# Removing Rules for now during development since this will be messy and the
+# rules themselves don't offer any value to anyone else until a release
+# version is created
 */Rules/Test*
-Archived_Work/traditional_pcfg_cracker/pcfg_manager
+*/Rules/*
+Rules/*

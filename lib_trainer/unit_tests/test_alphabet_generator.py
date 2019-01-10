@@ -28,7 +28,7 @@ from ..omen.alphabet_generator import AlphabetGenerator
 # + Test most frequent letter appears with max size = 1 in one pw
 # + Test most frequent letter appears with max size = 1 in multiple pws
 #
-class Test_File_Input_Checks(unittest.TestCase):
+class Test_Alphabet_Generator_Checks(unittest.TestCase):
 
     ## Test proper handling when found alphabet is less than max alphabet size
     #

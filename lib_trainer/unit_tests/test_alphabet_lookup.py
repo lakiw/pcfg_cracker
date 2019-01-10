@@ -27,7 +27,7 @@ from ..omen.alphabet_lookup import AlphabetLookup
 # + Test that invalid length passwords are not counted when parsed
 # + Test basic parse of two passwords
 #
-class Test_File_Input_Checks(unittest.TestCase):
+class Test_Alphabet_Lookup_Checks(unittest.TestCase):
 
     ## Test to make sure the check to see if a ngram is in an alphabet works
     #
@@ -85,7 +85,6 @@ class Test_File_Input_Checks(unittest.TestCase):
         omen_trainer.parse("abbc")
         
         # Check the IP count
-        print(omen_trainer.grammar)
         assert omen_trainer.grammar['ab']['ip_count'] == 2
         
         # Check the CP count for ab

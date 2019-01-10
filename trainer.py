@@ -43,6 +43,7 @@ if sys.version_info[0] < 3:
     
 import argparse
 import os  
+import traceback
 
 # Local imports
 from lib_trainer.banner_info import print_banner
@@ -57,6 +58,8 @@ from lib_trainer.omen.alphabet_lookup import AlphabetLookup
 from lib_trainer.omen.omen_file_output import save_omen_rules_to_disk
 
 from lib_trainer.multiword_detector import MultiWordDetector
+
+from lib_trainer.pcfg_password_parser import PCFGPasswordParser
 
 
 ## Parses the command line
@@ -315,10 +318,10 @@ def main():
     ag = AlphabetGenerator(program_info['alphabet_size'], program_info['ngram'])
     
     # Intitialize the multi-word detector
-    multiword = MultiWordDetector(
-                    threshold = 5,
-                    min_len = 4,
-                    max_len = 21)
+    multiword_detector = MultiWordDetector(
+                            threshold = 5,
+                            min_len = 4,
+                            max_len = 21)
     
     # Used for progress_bar
     num_parsed_so_far = 0
@@ -339,7 +342,7 @@ def main():
             ag.process_password(password)
             
             # Train multiword detector
-            multiword.train(password)
+            multiword_detector.train(password)
             
             # Get the next password
             password = file_input.read_password()
@@ -370,12 +373,12 @@ def main():
         if get_confirmation("Do you want to exit and try again with a different training set (RECOMENDED)"):
             return
             
-    
     ## Perform second loop through training data
     #
     # This pass is responsible for the following:
     #
     # -Learning OMEN NGRAMs
+    # -Training the PCFG grammar
     #
     print("-------------------------------------------------")    
     print("Performing second pass on the training passwords")
@@ -398,8 +401,10 @@ def main():
         ngram = program_info['ngram'],
         max_length = program_info['max_len']
         )
-    num_single_words = 0
-    num_multi_words = 0
+    
+    # Initialize the PCFG Password parse
+    pcfg_parser = PCFGPasswordParser(multiword_detector)
+    
     ## Loop until we hit the end of the file
     try:
         password = file_input.read_password()
@@ -413,45 +418,18 @@ def main():
             # Parse OMEN info
             omen_trainer.parse(password)
             
-            # TODO: Remove this test code
-            # test multiword
-            cur_run = []
-            for x in password:
-                if x.isalpha():
-                    cur_run.append(x)
-                else:
-                    if cur_run:
-                        result = multiword.detect_multiword("".join(cur_run))
-                        if len(result) > 1:
-                            num_multi_words +=1
-                            if len(result) > 2:                       
-                                print("Original pw: " + "".join(password))
-                                print("Multi-word : " + str(result))
-                                print()
-                        else:
-                            num_single_words +=1
-                            
-                        cur_run = []
-                        
-            if cur_run:
-                result = multiword.detect_multiword("".join(cur_run))
-                if len(result) > 1:
-                    num_multi_words +=1
-                    
-                else:
-                    num_single_words +=1
+            # Parse the pcfg info
+            pcfg_parser.parse(password)
             
             # Get the next password
             password = file_input.read_password()
                         
     except Exception as msg:
+        traceback.print_exc(file=sys.stdout)
         print("Exception: " + str(msg))
         print("Exiting...")
         return
-
-    print("Number on non-multiwords: " + str(num_single_words))
-    print("Number of multi-words:    " + str(num_multi_words))
-        
+    
     print()    
     print("-------------------------------------------------") 
     print("Compleated Parsing Training Data")    

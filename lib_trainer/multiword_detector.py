@@ -196,10 +196,10 @@ class MultiWordDetector:
         for index in range(max_index, self.min_len - 1, -1):
         
             # If this is a valid base word
-            if self._get_count(alpha_string[0:index]) > self.threshold:
+            if self._get_count(alpha_string[0:index]) >= self.threshold:
                 
                 # Check to see if the remainder is a valid base word
-                if self._get_count(alpha_string[index:]) > self.threshold:
+                if self._get_count(alpha_string[index:]) >= self.threshold:
                     # It was, so return the two items as a list
                     return [alpha_string[0:index], alpha_string[index:]]
             
@@ -225,32 +225,52 @@ class MultiWordDetector:
     #               Note: This can be a string OR a list of one character
     #                     items.
     #
-    # Returns:
+    # I'm overloading the multiword detector usage to also be able to detect
+    # base words as well. This can be useful for things like l33t manling.
+    #
+    # Because of that it returns two variables. The first one is a True/False
+    # of it the multiword detector could parse the word, the second is the
+    # parsing of the multiword itself.
+    #
+    # Returns 2 variables:
+    #     If_Parsed [Parsing of word]
+    #
+    #     If_Parsed = True if the parsing found a multi-word or a base word
+    #
+    #     If_Parsed = False if no parsing or base word was found                 
+    #
     #     [alpha_string]: if the alpha_string was not a multi-word
     #     [base_word,base_word,...]: List of base words making up the multi-word
     #
-    def detect_multiword(self, alpha_string):
+    def parse(self, alpha_string):
     
         # Quick bail out if the input password is too short or too long
-        if len(alpha_string) < self.min_check_len:
-            return [alpha_string]
-            
-        if len(alpha_string) > self.max_len:
-            return [alpha_string]
         
+        # Checking the base len so that we can still check if the string
+        # is a base word.
+        if len(alpha_string) < self.min_len:
+            return False, [alpha_string]
+            
+        if len(alpha_string) >= self.max_len:
+            return False, [alpha_string]
+            
         # If the alpha_string has been seen enough to not be categorized as
         # a multi-word
         if self._get_count(alpha_string) >= self.threshold:
-            return [alpha_string]
+            return True, [alpha_string]
+            
+        # Bail out if the input password is too short to be a multi-word
+        if len(alpha_string) < self.min_check_len:
+            return False, [alpha_string]    
             
         # May be a multi-word. Need to parse it for possible base strings       
         result = self._identify_multi(alpha_string)
         
         # No multiword parsing found
         if not result:
-            return [alpha_string]
+            return False, [alpha_string]
         
         # A multi-word parsing was found        
         else:
-            return result
+            return True, result
             
