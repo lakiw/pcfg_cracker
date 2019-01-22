@@ -21,6 +21,7 @@ from .year_detection import year_detection
 from .context_sensitive_detection import context_sensitive_detection
 from .alpha_detection import alpha_detection
 from .digit_detection import digit_detection
+from .other_detection import other_detection
 
 
 ## Responsible for parsing passwords to train a PCFG grammar
@@ -93,8 +94,13 @@ class PCFGPasswordParser:
         
         found_digit_strings = digit_detection(section_list)
         
-        if found_digit_strings:
-            print(str(password) + " " + str(found_digit_strings) + " : " + str(section_list))
+        found_other_strings = other_detection(section_list)
+        
+        if found_other_strings:
+            print(str(password) + " " + str(found_other_strings) + " : " + str(section_list))
+        
+        #if found_digit_strings:
+        #    print(str(password) + " " + str(found_digit_strings) + " : " + str(section_list))
         
         #if found_alpha_strings:
         #    print(str(password) + " " + str(found_alpha_strings) + " : " + str(section_list))
