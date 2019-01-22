@@ -20,6 +20,7 @@ from .website_detection import website_detection
 from .year_detection import year_detection
 from .context_sensitive_detection import context_sensitive_detection
 from .alpha_detection import alpha_detection
+from .digit_detection import digit_detection
 
 
 ## Responsible for parsing passwords to train a PCFG grammar
@@ -88,8 +89,15 @@ class PCFGPasswordParser:
         
         found_alpha_strings, found_mask_list = alpha_detection(section_list, self.multiword_detector)
         
-        if found_alpha_strings:
-            print(str(password) + " " + str(found_alpha_strings) + " : " + str(section_list))
+        # Identify pure digit strings in the dataset
+        
+        found_digit_strings = digit_detection(section_list)
+        
+        if found_digit_strings:
+            print(str(password) + " " + str(found_digit_strings) + " : " + str(section_list))
+        
+        #if found_alpha_strings:
+        #    print(str(password) + " " + str(found_alpha_strings) + " : " + str(section_list))
         
         #if found_urls:
         #    print(str(password) + " " + str(found_urls) + " : " + str(found_hosts))
@@ -97,7 +105,7 @@ class PCFGPasswordParser:
         #if found_years:
         #    print(str(password) + " " + str(found_years))
         
-        if found_context_sensitive_strings:
-            print(str(password) + " : " + str(found_context_sensitive_strings))
+        #if found_context_sensitive_strings:
+        #    print(str(password) + " : " + str(found_context_sensitive_strings))
         
         return True

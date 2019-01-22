@@ -30,7 +30,7 @@
 #    parsing: A list of the sections to return
 #             E.g. input password is '123password'
 #             parsing should return:
-#                 [('123',None),('password',Alpha)]
+#                 [('123',None),('password','A')]
 #
 #    found_strings: A list containing all the alpha strings found for a section
 #
