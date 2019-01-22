@@ -87,6 +87,9 @@ def detect_alpha(section, multiword_detector):
                 # Need to check for multiwords
                 is_multi, word_list = multiword_detector.parse(working_string[start_pos:end_pos + 1])
                 
+                # Initialize the mask list to return the case mangling masks
+                mask_list = []
+                
                 ## loop through all the words returned by multiword_detector
                 #
                 # Need to keep track of where each word starts in the working_string
@@ -94,13 +97,24 @@ def detect_alpha(section, multiword_detector):
                 for word in word_list:
                     # Update the parsing
                     parsing.append((section[0][current_start:current_start+len(word)],'A'))
+                    
+                    # Add in the mask
+                    mask = ''
+                    for c in section[0][current_start:current_start+len(word)]:
+                        if c.isupper():
+                            mask +='U'
+                        else:
+                            mask +='L'                           
+                    mask_list.append(mask)
+                    
+                    # Update the pointer to the start of the word
                     current_start +=len(word)
                     
                 # Update the parsing info if data occurs after the alpha run
                 if end_pos != len(section[0]) -1:
                     parsing.append((section[0][end_pos+1:],None))
                     
-                return parsing, word_list, ['TEST']
+                return parsing, word_list, mask_list
     
                     
     return section, None, None

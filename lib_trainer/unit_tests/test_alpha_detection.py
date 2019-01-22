@@ -68,6 +68,7 @@ class Test_Alpha_Checks(unittest.TestCase):
         
         assert found_alpha_strings == ['chair']
         assert section_list == [('chair','A')]
+        assert found_mask_list == ['LLLLL']
     
     
     ## Test the whole word is an alpha string that is not a base word
@@ -83,6 +84,7 @@ class Test_Alpha_Checks(unittest.TestCase):
         
         assert found_alpha_strings == ['couch']
         assert section_list == [('couch','A')]
+        assert found_mask_list == ['LLLLL']
         
         
     ## Test 1 character alpha strings
@@ -98,6 +100,7 @@ class Test_Alpha_Checks(unittest.TestCase):
         
         assert found_alpha_strings == ['a']
         assert section_list == [('a','A')]
+        assert found_mask_list == ['L']
         
         
     ## Test first character capitalized alpha strings
@@ -113,6 +116,7 @@ class Test_Alpha_Checks(unittest.TestCase):
         
         assert found_alpha_strings == ['chair']
         assert section_list == [('Chair','A')]
+        assert found_mask_list == ['ULLLL']
         
         
     ## Test last character capitalized alpha strings
@@ -128,6 +132,8 @@ class Test_Alpha_Checks(unittest.TestCase):
         
         assert found_alpha_strings == ['chair']
         assert section_list == [('chaiR','A')]
+        print("FOUND MASK LIST :" + str(found_mask_list))
+        assert found_mask_list == ['LLLLU']
         
         
     ## Test alpha string followed by a digit
@@ -143,6 +149,7 @@ class Test_Alpha_Checks(unittest.TestCase):
         
         assert found_alpha_strings == ['chair']
         assert section_list == [('chair','A'),('6',None)]
+        assert found_mask_list == ['LLLLL']
         
         
     ## Test digit followed by an alpha string
@@ -158,6 +165,7 @@ class Test_Alpha_Checks(unittest.TestCase):
         
         assert found_alpha_strings == ['chair']
         assert section_list == [('6',None),('chair','A')]
+        assert found_mask_list == ['LLLLL']
         
         
     ## Test no alpha strings
@@ -172,7 +180,8 @@ class Test_Alpha_Checks(unittest.TestCase):
         found_alpha_strings, found_mask_list = alpha_detection(section_list, md)
         
         assert found_alpha_strings == []
-        assert section_list == [('1234',None)]    
+        assert section_list == [('1234',None)]
+        assert found_mask_list == []        
         
         
     ## Test two word multiword alpha string
@@ -188,6 +197,7 @@ class Test_Alpha_Checks(unittest.TestCase):
         
         assert found_alpha_strings == ['chair','table']
         assert section_list == [('chair','A'),('table','A')]
+        assert found_mask_list == ['LLLLL','LLLLL']
         
         
     ## Test alpha string followed by a digit followed by another alpha string
@@ -203,3 +213,4 @@ class Test_Alpha_Checks(unittest.TestCase):
         
         assert found_alpha_strings == ['chair','table']
         assert section_list == [('chair','A'),('6',None),('table','A')]
+        assert found_mask_list == ['LLLLL','LLLLL']
