@@ -19,6 +19,7 @@ from .email_detection import email_detection
 from .website_detection import website_detection
 from .year_detection import year_detection
 from .context_sensitive_detection import context_sensitive_detection
+from .alpha_detection import alpha_detection
 
 
 ## Responsible for parsing passwords to train a PCFG grammar
@@ -82,6 +83,13 @@ class PCFGPasswordParser:
         # it after other types of classifations.
         
         found_context_sensitive_strings = context_sensitive_detection(section_list)
+        
+        # Identify pure alpha strings in the dataset
+        
+        found_alpha_strings, found_mask_list = alpha_detection(section_list, self.multiword_detector)
+        
+        if found_alpha_strings:
+            print(str(password) + " " + str(found_alpha_strings) + " : " + str(section_list))
         
         #if found_urls:
         #    print(str(password) + " " + str(found_urls) + " : " + str(found_hosts))

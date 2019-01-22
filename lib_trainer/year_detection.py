@@ -14,8 +14,6 @@
 # Variables:
 #
 #     section: The current section of the password to process
-#              This function will break up the section into multiple parts
-#              if a year is found
 #
 # Returns:
 #    There are two return values:

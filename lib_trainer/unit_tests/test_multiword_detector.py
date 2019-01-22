@@ -26,6 +26,8 @@ from ..multiword_detector import MultiWordDetector
 # + Test _get_count sub-function
 # + Test _identify_multi sub-function
 # + Test whole password is two multiwords
+# + Test word is not a multiword
+# + Test word is not a multiword even though it is a base word
 #
 class Test_Multiword_Checks(unittest.TestCase):
 
@@ -94,6 +96,47 @@ class Test_Multiword_Checks(unittest.TestCase):
         assert is_parsed == True
         assert strings == ['chair', 'table']
         
+    
+    ## Test that word is not classified as a multiword
+    #
+    def test_word_is_not_multiword(self):
+        # Intitialize the multi-word detector
+        md = MultiWordDetector(
+            threshold = 2,
+            min_len = 4,
+            max_len = 21)
+        
+        # Train the multiword detector
+        md.train('chair')
+        md.train('chair')
+        md.train('table')
+        md.train('table')
+        
+        is_parsed, strings = md.parse('couch')
+        
+        assert is_parsed == False
+        assert strings == ['couch']
+        
+        
+    ## Test that word is not classified as a multiword even though it is a base word
+    #
+    def test_word_is_not_multiword_even_when_a_single_base_word(self):
+        # Intitialize the multi-word detector
+        md = MultiWordDetector(
+            threshold = 2,
+            min_len = 4,
+            max_len = 21)
+        
+        # Train the multiword detector
+        md.train('chair')
+        md.train('chair')
+        md.train('table')
+        md.train('table')
+        
+        is_parsed, strings = md.parse('chair')
+        
+        assert is_parsed == True
+        assert strings == ['chair']
     
     
         
