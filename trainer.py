@@ -61,6 +61,8 @@ from lib_trainer.multiword_detector import MultiWordDetector
 
 from lib_trainer.pcfg_password_parser import PCFGPasswordParser
 
+from lib_trainer.config_file import save_config_file
+
 
 ## Parses the command line
 #
@@ -114,6 +116,15 @@ def parse_command_line(program_info):
         'specified autodetect is used', 
         metavar = 'ENCODING', 
         required = False
+    )
+    
+    # Any comments someone may want to add to the training file
+    parser.add_argument(
+        '--comments', 
+        help = 'Comments to save in the generated rule configuration file, encapsulated in quotes ""', 
+        metavar = '"COMMENTS"', 
+        required = False,
+        default = program_info['comments']
     )
     
     ## OMEN Options
@@ -184,6 +195,7 @@ def parse_command_line(program_info):
     program_info['rule_name'] = args.rule
     program_info['training_file'] = args.training
     program_info['encoding']= args.encoding
+    program_info['comments'] = args.comments
     
     # OMEN Options
     program_info['ngram'] = args.ngram
@@ -234,6 +246,7 @@ def main():
         'rule_name':'Default',
         'training_file':None,
         'encoding':None,
+        'comments':'',
         
         # OMEN Options
         'ngram': 4,
@@ -446,11 +459,48 @@ def main():
     print("-------------------------------------------------")
     print()
     
+    # Save the configuration file
+    if not save_config_file(base_directory,program_info, file_input):
+        print("Error, something went wrong saving the configuration file to disk")
+        print("The training did not compleate correctly")
+        print("Exiting...")
+    
     # Save the OMEN data
     if not save_omen_rules_to_disk(omen_trainer, base_directory, program_info):
         print("Error, something went wrong saving the OMEN data to disk")
         print("The training did not compleate correctly")
         print("Exiting...")
+        
+        
+    ## Print statisticts to the screen
+   
+    print()    
+    print("-------------------------------------------------") 
+    print("Top 5 e-mail providers")   
+    print("-------------------------------------------------")
+    print()
+    top5= pcfg_parser.count_email_providers.most_common(5)
+    for item in top5:
+        print(item[0] + " : " + str(item[1]))
+        
+    print()    
+    print("-------------------------------------------------") 
+    print("Top 5 URL domains")   
+    print("-------------------------------------------------")
+    print()
+    top5 = pcfg_parser.count_website_hosts.most_common(5)
+    for item in top5:
+        print(item[0] + " : " + str(item[1]))
+        
+    print()    
+    print("-------------------------------------------------") 
+    print("Top 10 Years found")   
+    print("-------------------------------------------------")
+    print()
+    top10 = pcfg_parser.count_years.most_common(10)
+    for item in top10:
+        print(item[0] + " : " + str(item[1]))      
+    
     
 if __name__ == "__main__":
     main()    

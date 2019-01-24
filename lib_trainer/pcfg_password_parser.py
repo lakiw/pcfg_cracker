@@ -11,6 +11,7 @@
 
 
 import sys
+from collections import Counter
 
 # Local imports
 from .leet_detector import LeetDetector
@@ -55,6 +56,19 @@ class PCFGPasswordParser:
         # Keep track of the number of leet replacements detected
         self.num_leet = 0
         
+        ## The following counters keep track of global running stats
+        #
+        self.count_keyboard = Counter()
+        self.count_emails = Counter()
+        self.count_email_providers = Counter()
+        self.count_website_urls = Counter()
+        self.count_website_hosts = Counter()
+        self.count_website_prefixes = Counter()
+        self.count_years = Counter()
+        self.count_conext_sensitive = Counter()
+        self.count_alpha = Counter()
+        self.count_digits = Counter()
+        self.count_other = Counter()
     
     ## Main function called to parse an individual password
     #
@@ -67,18 +81,37 @@ class PCFGPasswordParser:
         # Since keyboard combos can look like many other parsings, filter them
         # out first
         
-        section_list, found_list = detect_keyboard_walk(password)
+        section_list, found_walks = detect_keyboard_walk(password)
+        
+        for walk in found_walks:
+            self.count_keyboard[walk] +=1
         
         # Identify e-mail and web sites before doing other string parsing
         # this is because they can have digits + special characters
         
-        found_emails, found_providers = email_detection(section_list)       
+        found_emails, found_providers = email_detection(section_list)
+        
+        for email in found_emails:
+            self.count_emails[email] += 1
+        for provider in found_providers:
+            self.count_email_providers[provider] += 1
+        
         found_urls, found_hosts, found_prefixes = website_detection(section_list)
+        
+        for url in found_urls:
+            self.count_website_urls[url] += 1
+        for host in found_hosts:
+            self.count_website_hosts[host] += 1
+        for prefix in found_prefixes:
+            self.count_website_prefixes[prefix] += 1
         
         # Identify years in the dataset. This is done before other parsing
         # because parsing after this may classify years as another type
         
         found_years = year_detection(section_list)
+        
+        for year in found_years:
+            self.count_years[year] += 1
         
         # Need to classify context sensitive replacements before doing the
         # straight type classifications, (alpha, digit, etc), but want to doing
@@ -96,8 +129,8 @@ class PCFGPasswordParser:
         
         found_other_strings = other_detection(section_list)
         
-        if found_other_strings:
-            print(str(password) + " " + str(found_other_strings) + " : " + str(section_list))
+        #if found_other_strings:
+        #    print(str(password) + " " + str(found_other_strings) + " : " + str(section_list))
         
         #if found_digit_strings:
         #    print(str(password) + " " + str(found_digit_strings) + " : " + str(section_list))
