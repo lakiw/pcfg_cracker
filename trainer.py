@@ -460,17 +460,18 @@ def main():
     print()
     
     # Save the configuration file
-    if not save_config_file(base_directory,program_info, file_input):
+    if not save_config_file(base_directory,program_info, file_input, pcfg_parser):
         print("Error, something went wrong saving the configuration file to disk")
         print("The training did not compleate correctly")
         print("Exiting...")
+        return
     
     # Save the OMEN data
     if not save_omen_rules_to_disk(omen_trainer, base_directory, program_info):
         print("Error, something went wrong saving the OMEN data to disk")
         print("The training did not compleate correctly")
         print("Exiting...")
-        
+        return
         
     ## Print statisticts to the screen
    

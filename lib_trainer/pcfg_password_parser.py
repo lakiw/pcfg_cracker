@@ -58,7 +58,7 @@ class PCFGPasswordParser:
         
         ## The following counters keep track of global running stats
         #
-        self.count_keyboard = Counter()
+        self.count_keyboard = {}
         self.count_emails = Counter()
         self.count_email_providers = Counter()
         self.count_website_urls = Counter()
@@ -66,9 +66,10 @@ class PCFGPasswordParser:
         self.count_website_prefixes = Counter()
         self.count_years = Counter()
         self.count_conext_sensitive = Counter()
-        self.count_alpha = Counter()
-        self.count_digits = Counter()
-        self.count_other = Counter()
+        self.count_alpha = {}
+        self.count_alpha_masks = {}
+        self.count_digits = {}
+        self.count_other = {}
     
     ## Main function called to parse an individual password
     #
@@ -83,8 +84,7 @@ class PCFGPasswordParser:
         
         section_list, found_walks = detect_keyboard_walk(password)
         
-        for walk in found_walks:
-            self.count_keyboard[walk] +=1
+        self._update_counter_len_indexed(self.count_keyboard, found_walks)
         
         # Identify e-mail and web sites before doing other string parsing
         # this is because they can have digits + special characters
@@ -119,32 +119,54 @@ class PCFGPasswordParser:
         
         found_context_sensitive_strings = context_sensitive_detection(section_list)
         
+        for cs_string in found_context_sensitive_strings:
+            self.count_conext_sensitive[cs_string] += 1
+        
         # Identify pure alpha strings in the dataset
         
         found_alpha_strings, found_mask_list = alpha_detection(section_list, self.multiword_detector)
+        
+        self._update_counter_len_indexed(self.count_alpha, found_alpha_strings)
+        self._update_counter_len_indexed(self.count_alpha_masks, found_mask_list)
         
         # Identify pure digit strings in the dataset
         
         found_digit_strings = digit_detection(section_list)
         
+        self._update_counter_len_indexed(self.count_digits, found_digit_strings)
+        
+        # Categorize everything else as other
+        
         found_other_strings = other_detection(section_list)
         
-        #if found_other_strings:
-        #    print(str(password) + " " + str(found_other_strings) + " : " + str(section_list))
-        
-        #if found_digit_strings:
-        #    print(str(password) + " " + str(found_digit_strings) + " : " + str(section_list))
-        
-        #if found_alpha_strings:
-        #    print(str(password) + " " + str(found_alpha_strings) + " : " + str(section_list))
-        
-        #if found_urls:
-        #    print(str(password) + " " + str(found_urls) + " : " + str(found_hosts))
-        
-        #if found_years:
-        #    print(str(password) + " " + str(found_years))
-        
-        #if found_context_sensitive_strings:
-        #    print(str(password) + " : " + str(found_context_sensitive_strings))
+        self._update_counter_len_indexed(self.count_other, found_other_strings)
         
         return True
+        
+    
+    ## Updates a Python Counter object when the item is lenght indexed
+    #
+    # For example, if the individual counts are broken up by length of input
+    # Aka A1 = 'a', A3 = 'cat', A5 = 'chair'
+    #
+    # Input Values:
+    #
+    # self: Since this is a class private function
+    #
+    # input_counter: The Python Counter object to update
+    #
+    # input_list: A list of items to update in the counter
+    #
+    def _update_counter_len_indexed(self, input_counter, input_list):
+    
+        # Go through every item in the list to insert it in the counter
+        for item in input_list:
+            # First try a blind insertion into the list
+            try:
+                input_counter[len(item)][item] +=1
+            
+            # If that length index doesn't exist, it'll throw an exception some
+            # now create it
+            except:
+                input_counter[len(item)] = Counter()
+                input_counter[len(item)][item] +=1

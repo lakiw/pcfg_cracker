@@ -96,7 +96,7 @@ def add_start(config):
     config.set(section, "inject_type", "Wordlist")
     config.set(section, "is_terminal", str(False))
     config.set(section, "replacements", json.dumps(replacements))
-    config.set(section, "filenames", "Grammar.txt")
+    config.set(section, "filenames", json.dumps("grammar.txt"))
         
         
 ## Creates the configuration for the Alpha Replacements
@@ -120,6 +120,10 @@ def add_alpha(config, filenames):
     config.set(section, "file_type", "Length")
     config.set(section, "inject_type", "Wordlist")
     config.set(section, "is_terminal", str(False))
+    config.set(section, "replacements", json.dumps(
+            [{"Config_id": "CAPITALIZATION", "Transition_id": "Capitalization"}]
+        )
+    )
     config.set(section, "filenames", json.dumps(filenames))     
     
 
@@ -204,7 +208,7 @@ def add_keyboard(config, filenames):
 #
 #     filenames: A list of filenames associated with this replacement
 #
-def add_context_sensitive(config, filenames):
+def add_context_sensitive(config):
 
     section = "BASE_X"
     config.add_section(section)
@@ -216,7 +220,7 @@ def add_context_sensitive(config, filenames):
     config.set(section, "file_type", "Length")
     config.set(section, "inject_type", "Copy")
     config.set(section, "is_terminal", str(True))
-    config.set(section, "filenames", json.dumps(filenames))
+    config.set(section, "filenames", json.dumps("context_sensitive.txt"))
 
 
 ## Creates the configuration for Year Replacements
@@ -228,7 +232,7 @@ def add_context_sensitive(config, filenames):
 #
 #     filenames: A list of filenames associated with this replacement
 #
-def add_years(config, filenames):
+def add_years(config):
 
     section = "BASE_Y"
     config.add_section(section)
@@ -240,7 +244,7 @@ def add_years(config, filenames):
     config.set(section, "file_type", "Flat")
     config.set(section, "inject_type", "Copy")
     config.set(section, "is_terminal", str(True))
-    config.set(section, "filenames", json.dumps(filenames))    
+    config.set(section, "filenames", json.dumps(["years.txt"]))    
 
 
 ## Creates the configuration for Capitalization Replacements
@@ -267,6 +271,29 @@ def add_capitalization(config, filenames):
     config.set(section, "filenames", json.dumps(filenames))
 
 
+## Takes as input a Python Dictionary and returns a list of filenames from the keys
+#
+# Variables:
+#
+#     input_dictionary: The Python dictionary to create filenames from
+#
+# Returns:
+#
+#      filenames: A Python List of all the filenames as strings
+#
+#
+def create_filename_list(input_dictionary):
+    
+    # Get the counter keys as a list
+    filenames = list(input_dictionary)
+    
+    # Add the .txt at the end
+    for i in range(len(filenames)):
+        filenames[i] = str(filenames[i]) + ".txt"
+        
+    return filenames
+
+
 ## Creates the config file and returns it
 #
 #
@@ -276,11 +303,14 @@ def add_capitalization(config, filenames):
 #     
 #     file_input: Contains info about the passwords just parsed
 #
+#     pcfg_parser: The pcfg parser class that was trained on passwords
+#                  This is used for extracting file names
+#
 # Returns:
 #
 #    config: The Python ConfigParser configuration to save for this rulesets
 #
-def create_config_file(program_info, file_input):
+def create_config_file(program_info, file_input, pcfg_parser):
 
     # Using Python's ConfigParser since it's the most standard built in
     # function to do this
@@ -292,19 +322,19 @@ def create_config_file(program_info, file_input):
     
     add_start(config)
     
-    add_alpha(config,["file1.txt","file2.txt"])
+    add_alpha(config,create_filename_list(pcfg_parser.count_alpha))
     
-    add_digits(config,["file1.txt","file2.txt"])
+    add_digits(config,create_filename_list(pcfg_parser.count_digits))
     
-    add_other(config,["file1.txt","file2.txt"])
+    add_other(config,create_filename_list(pcfg_parser.count_other))
     
-    add_keyboard(config,["file1.txt","file2.txt"])
+    add_keyboard(config,create_filename_list(pcfg_parser.count_keyboard))
     
-    add_context_sensitive(config,["file1.txt","file2.txt"])
+    add_context_sensitive(config)
     
-    add_years(config,["file1.txt","file2.txt"])
+    add_years(config)
     
-    add_capitalization(config,["file1.txt","file2.txt"])
+    add_capitalization(config,create_filename_list(pcfg_parser.count_alpha_masks))
     
     # print({section: dict(config[section]) for section in config.sections()})
     
@@ -322,17 +352,20 @@ def create_config_file(program_info, file_input):
 #     
 #     file_input: Contains info about the passwords just parsed
 #
+#     pcfg_parser: The pcfg parser class that was trained on passwords
+#                  This is used for extracting file names
+#
 # Returns:
 #
 #    True: If everything worked correctly
 #
 #    False: If any errors were encountered
 #
-def save_config_file(directory_name, program_info, file_input):
+def save_config_file(directory_name, program_info, file_input, pcfg_parser):
 
     # Create the configuration file
     try:
-        config = create_config_file(program_info, file_input)
+        config = create_config_file(program_info, file_input, pcfg_parser)
     except Exception as msg:
         print("Exception Encountered: " + str(msg))
         return False
