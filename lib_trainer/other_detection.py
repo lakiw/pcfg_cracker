@@ -36,7 +36,7 @@ def other_detection(section_list):
         # by keyboard walk detection
         if section_list[index][1] == None:
         
-           section_list[index] = (section_list[index][0],'O')
+           section_list[index] = (section_list[index][0],'O' + str(len(section_list[index][0])) )
            other_list.append(section_list[index][0])
            
         index += 1

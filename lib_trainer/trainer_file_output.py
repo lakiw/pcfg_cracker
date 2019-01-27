@@ -52,9 +52,22 @@ def create_rule_folders(base_directory):
 
     # Set up the list of all the directories to create
     directory_listing = [base_directory]
+    
+    # Non-PCFG related directories
     directory_listing.append(os.path.join(base_directory,"Masks"))
     directory_listing.append(os.path.join(base_directory,"Prince"))
     
-    # Create the directories
+    # PCFG replacements directories
+    directory_listing.append(os.path.join(base_directory,"Grammar"))
+    directory_listing.append(os.path.join(base_directory,"Alpha"))
+    directory_listing.append(os.path.join(base_directory,"Capitialization"))
+    directory_listing.append(os.path.join(base_directory,"Prince"))
+    directory_listing.append(os.path.join(base_directory,"Digits"))
+    directory_listing.append(os.path.join(base_directory,"Years"))
+    directory_listing.append(os.path.join(base_directory,"Other"))
+    directory_listing.append(os.path.join(base_directory,"Context"))
+    directory_listing.append(os.path.join(base_directory,"Keyboard"))
+    directory_listing.append(os.path.join(base_directory,"Websites"))
+    directory_listing.append(os.path.join(base_directory,"Emails"))
     
     return make_directories_from_list(directory_listing)

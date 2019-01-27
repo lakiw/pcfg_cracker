@@ -43,7 +43,7 @@ class Test_Digit_Checks(unittest.TestCase):
         found_digit_strings = digit_detection(section_list)
         
         assert found_digit_strings == ['1234']
-        assert section_list == [('1234','D')]
+        assert section_list == [('1234','D4')]
     
     
     ## Test 1 character digit string
@@ -55,7 +55,7 @@ class Test_Digit_Checks(unittest.TestCase):
         found_digit_strings = digit_detection(section_list)
         
         assert found_digit_strings == ['1']
-        assert section_list == [('1','D')]
+        assert section_list == [('1','D1')]
         
         
     ## Test alpha string followed by a digit
@@ -67,7 +67,7 @@ class Test_Digit_Checks(unittest.TestCase):
         found_digit_strings = digit_detection(section_list)
         
         assert found_digit_strings == ['1234']
-        assert section_list == [('chair',None),('1234','D')]
+        assert section_list == [('chair',None),('1234','D4')]
         
         
     ## Test digit followed by an alpha string
@@ -79,7 +79,7 @@ class Test_Digit_Checks(unittest.TestCase):
         found_digit_strings = digit_detection(section_list)
         
         assert found_digit_strings == ['1234']
-        assert section_list == [('1234','D'),('chair',None)]
+        assert section_list == [('1234','D4'),('chair',None)]
         
         
     ## Test no digit strings
@@ -103,7 +103,7 @@ class Test_Digit_Checks(unittest.TestCase):
         found_digit_strings = digit_detection(section_list)
         
         assert found_digit_strings == ['1234','5678']
-        assert section_list == [('1234','D'),('chair',None),('5678','D')]
+        assert section_list == [('1234','D4'),('chair',None),('5678','D4')]
 
 
     ## Test digit detection of a 0
@@ -115,4 +115,4 @@ class Test_Digit_Checks(unittest.TestCase):
         found_digit_strings = digit_detection(section_list)
         
         assert found_digit_strings == ['0']
-        assert section_list == [('0','D')]          
+        assert section_list == [('0','D1')]          

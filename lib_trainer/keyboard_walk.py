@@ -248,7 +248,7 @@ def detect_keyboard_walk(password, min_keyboard_run = 4):
                         section_list.append((password[0:index-len(cur_combo)],None))
                         
                     # Update the mask for the current run
-                    section_list.append((''.join(cur_combo),"K"+str(len(cur_combo))))
+                    section_list.append((''.join(cur_combo),"K"+str(len(cur_combo)) ))
                     
                     # If not the last section, go recursive and call it with 
                     # what's remaining

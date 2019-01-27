@@ -76,7 +76,7 @@ def detect_digits(section):
                 ## Parse the section where digits were found
                 found_digit = ''.join(section[0][start_pos:end_pos + 1])
 
-                parsing.append((found_digit,'D'))
+                parsing.append((found_digit,'D' + str(len(found_digit)) ))
                     
                 # Update the parsing info if data occurs after the alpha run
                 if end_pos != len(section[0]) -1:

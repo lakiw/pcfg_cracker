@@ -23,6 +23,7 @@ from .context_sensitive_detection import context_sensitive_detection
 from .alpha_detection import alpha_detection
 from .digit_detection import digit_detection
 from .other_detection import other_detection
+from .base_structure import base_structure_creation
 
 
 ## Responsible for parsing passwords to train a PCFG grammar
@@ -70,6 +71,9 @@ class PCFGPasswordParser:
         self.count_alpha_masks = {}
         self.count_digits = {}
         self.count_other = {}
+        self.count_base_structures = Counter()
+        self.count_raw_base_structures = Counter()
+    
     
     ## Main function called to parse an individual password
     #
@@ -140,6 +144,16 @@ class PCFGPasswordParser:
         found_other_strings = other_detection(section_list)
         
         self._update_counter_len_indexed(self.count_other, found_other_strings)
+        
+        # Now after all the other parsing is done, create the base structures
+        
+        is_supported, base_structure = base_structure_creation(section_list)
+        
+        if is_supported:
+            self.count_base_structures[base_structure] += 1
+            print(base_structure + " : " + str(section_list))
+            
+        self.count_raw_base_structures[base_structure] += 1
         
         return True
         

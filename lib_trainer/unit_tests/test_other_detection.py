@@ -45,7 +45,7 @@ class Test_Other_Checks(unittest.TestCase):
         found_other_strings = other_detection(section_list)
         
         assert found_other_strings == ['!@#$']
-        assert section_list == [('!@#$','O')]
+        assert section_list == [('!@#$','O4')]
     
     
     ## Test 1 character other string
@@ -57,54 +57,54 @@ class Test_Other_Checks(unittest.TestCase):
         found_other_strings = other_detection(section_list)
         
         assert found_other_strings == ['!']
-        assert section_list == [('!','O')]
+        assert section_list == [('!','O1')]
         
         
     ## Test alpha string followed by an other string
     #
     def test_alpha_string_followed_by_an_other(self):
     
-        section_list = [('chair','A'),('!@#$',None)]
+        section_list = [('chair','A5'),('!@#$',None)]
         
         found_other_strings = other_detection(section_list)
         
         assert found_other_strings == ['!@#$']
-        assert section_list == [('chair','A'),('!@#$','O')]
+        assert section_list == [('chair','A5'),('!@#$','O4')]
         
         
     ## Test other string followed by an alpha string
     #
     def test_other_followed_by_a_alpha_string(self):
     
-        section_list = [('!@#$',None),('chair','A')]
+        section_list = [('!@#$',None),('chair','A5')]
         
         found_other_strings = other_detection(section_list)
         
         assert found_other_strings == ['!@#$']
-        assert section_list == [('!@#$','O'),('chair','A')]
+        assert section_list == [('!@#$','O4'),('chair','A5')]
         
         
     ## Test no other strings
     #
     def test_no_other_strings(self):
     
-        section_list = [('chair','A')]
+        section_list = [('chair','A5')]
         
         found_other_strings = other_detection(section_list)
         
         assert found_other_strings == []
-        assert section_list == [('chair','A')]   
+        assert section_list == [('chair','A5')]   
         
         
     ## Test other string followed by a alpha followed by another other string
     #
     def test_other_string_followed_by_alpha_followed_by_other_string(self):
     
-        section_list = [('!@#$',None),('chair','A'),('%^&*',None)]
+        section_list = [('!@#$',None),('chair','A5'),('%^&*',None)]
         
         found_other_strings = other_detection(section_list)
         
         assert found_other_strings == ['!@#$','%^&*']
-        assert section_list == [('!@#$','O'),('chair','A'),('%^&*','O')]
+        assert section_list == [('!@#$','O4'),('chair','A5'),('%^&*','O4')]
         
 

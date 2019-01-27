@@ -67,7 +67,7 @@ class Test_Alpha_Checks(unittest.TestCase):
         found_alpha_strings, found_mask_list = alpha_detection(section_list, md)
         
         assert found_alpha_strings == ['chair']
-        assert section_list == [('chair','A')]
+        assert section_list == [('chair','A5')]
         assert found_mask_list == ['LLLLL']
     
     
@@ -83,7 +83,7 @@ class Test_Alpha_Checks(unittest.TestCase):
         found_alpha_strings, found_mask_list = alpha_detection(section_list, md)
         
         assert found_alpha_strings == ['couch']
-        assert section_list == [('couch','A')]
+        assert section_list == [('couch','A5')]
         assert found_mask_list == ['LLLLL']
         
         
@@ -99,7 +99,7 @@ class Test_Alpha_Checks(unittest.TestCase):
         found_alpha_strings, found_mask_list = alpha_detection(section_list, md)
         
         assert found_alpha_strings == ['a']
-        assert section_list == [('a','A')]
+        assert section_list == [('a','A1')]
         assert found_mask_list == ['L']
         
         
@@ -115,7 +115,7 @@ class Test_Alpha_Checks(unittest.TestCase):
         found_alpha_strings, found_mask_list = alpha_detection(section_list, md)
         
         assert found_alpha_strings == ['chair']
-        assert section_list == [('Chair','A')]
+        assert section_list == [('Chair','A5')]
         assert found_mask_list == ['ULLLL']
         
         
@@ -131,7 +131,7 @@ class Test_Alpha_Checks(unittest.TestCase):
         found_alpha_strings, found_mask_list = alpha_detection(section_list, md)
         
         assert found_alpha_strings == ['chair']
-        assert section_list == [('chaiR','A')]
+        assert section_list == [('chaiR','A5')]
         print("FOUND MASK LIST :" + str(found_mask_list))
         assert found_mask_list == ['LLLLU']
         
@@ -148,7 +148,7 @@ class Test_Alpha_Checks(unittest.TestCase):
         found_alpha_strings, found_mask_list = alpha_detection(section_list, md)
         
         assert found_alpha_strings == ['chair']
-        assert section_list == [('chair','A'),('6',None)]
+        assert section_list == [('chair','A5'),('6',None)]
         assert found_mask_list == ['LLLLL']
         
         
@@ -164,7 +164,7 @@ class Test_Alpha_Checks(unittest.TestCase):
         found_alpha_strings, found_mask_list = alpha_detection(section_list, md)
         
         assert found_alpha_strings == ['chair']
-        assert section_list == [('6',None),('chair','A')]
+        assert section_list == [('6',None),('chair','A5')]
         assert found_mask_list == ['LLLLL']
         
         
@@ -196,7 +196,7 @@ class Test_Alpha_Checks(unittest.TestCase):
         found_alpha_strings, found_mask_list = alpha_detection(section_list, md)
         
         assert found_alpha_strings == ['chair','table']
-        assert section_list == [('chair','A'),('table','A')]
+        assert section_list == [('chair','A5'),('table','A5')]
         assert found_mask_list == ['LLLLL','LLLLL']
         
         
@@ -212,5 +212,5 @@ class Test_Alpha_Checks(unittest.TestCase):
         found_alpha_strings, found_mask_list = alpha_detection(section_list, md)
         
         assert found_alpha_strings == ['chair','table']
-        assert section_list == [('chair','A'),('6',None),('table','A')]
+        assert section_list == [('chair','A5'),('6',None),('table','A5')]
         assert found_mask_list == ['LLLLL','LLLLL']

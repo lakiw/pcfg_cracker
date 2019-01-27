@@ -96,7 +96,7 @@ def detect_alpha(section, multiword_detector):
                 current_start = start_pos
                 for word in word_list:
                     # Update the parsing
-                    parsing.append((section[0][current_start:current_start+len(word)],'A'))
+                    parsing.append((section[0][current_start:current_start+len(word)],'A' + str(len(word)) ))
                     
                     # Add in the mask
                     mask = ''
