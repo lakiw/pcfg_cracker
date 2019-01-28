@@ -151,7 +151,6 @@ class PCFGPasswordParser:
         
         if is_supported:
             self.count_base_structures[base_structure] += 1
-            print(base_structure + " : " + str(section_list))
             
         self.count_raw_base_structures[base_structure] += 1
         

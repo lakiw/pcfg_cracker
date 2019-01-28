@@ -41,7 +41,7 @@ def apply_probability_smoothing(counter):
 #    prob_list: A Python List containing ('value','probability) pairs
 #               ordered from hightest probabilty to lowest probability
 #
-def calculate_probabilites(counter):
+def calculate_probabilities(counter):
     
     ## Apply probability smoothing to the counts in the counter
     #

@@ -62,6 +62,7 @@ from lib_trainer.multiword_detector import MultiWordDetector
 from lib_trainer.pcfg_password_parser import PCFGPasswordParser
 
 from lib_trainer.config_file import save_config_file
+from lib_trainer.save_pcfg_data import save_pcfg_data
 
 
 ## Parses the command line
@@ -125,6 +126,15 @@ def parse_command_line(program_info):
         metavar = '"COMMENTS"', 
         required = False,
         default = program_info['comments']
+    )
+    
+    # If PII info like e-mails and full websites should be saved
+    parser.add_argument(
+        '--save_sensitive', 
+        help = 'Saves sensitive info like full e-mail addresses to the rules file', 
+        default=False, 
+        required = False,
+        action='store_true'
     )
     
     ## OMEN Options
@@ -196,6 +206,7 @@ def parse_command_line(program_info):
     program_info['training_file'] = args.training
     program_info['encoding']= args.encoding
     program_info['comments'] = args.comments
+    program_info['save_sensitive'] = args.save_sensitive
     
     # OMEN Options
     program_info['ngram'] = args.ngram
@@ -247,6 +258,7 @@ def main():
         'training_file':None,
         'encoding':None,
         'comments':'',
+        'save_sensitive': False,
         
         # OMEN Options
         'ngram': 4,
@@ -469,6 +481,18 @@ def main():
     # Save the OMEN data
     if not save_omen_rules_to_disk(omen_trainer, base_directory, program_info):
         print("Error, something went wrong saving the OMEN data to disk")
+        print("The training did not compleate correctly")
+        print("Exiting...")
+        return
+        
+    # Save the pcfg data to disk
+    if not save_pcfg_data(
+                base_directory, 
+                pcfg_parser, 
+                program_info['encoding'], 
+                program_info['save_sensitive']
+            ):
+        print("Error, something went wrong saving the pcfg data to disk")
         print("The training did not compleate correctly")
         print("Exiting...")
         return

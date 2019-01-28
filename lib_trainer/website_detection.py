@@ -159,7 +159,13 @@ def detect_website(section):
             if start_index == -1:
                 start_of_url = 0
             
-            # Look for a prefix            
+            # Look for a prefix       
+            if start_of_url == -1:
+                prefix_index = working_string[:start_index].rfind('http://www.')
+                if prefix_index != -1:
+                    prefix = 'http://www.'
+                    start_of_url = prefix_index
+            
             if start_of_url == -1:
                 prefix_index = working_string[:start_index].rfind('http://')
                 if prefix_index != -1:
@@ -169,7 +175,7 @@ def detect_website(section):
             if start_of_url == -1:
                 prefix_index = working_string[:start_index].rfind('www.')
                 if prefix_index != -1:
-                    prefix = 'www'
+                    prefix = 'www.'
                     start_of_url = prefix_index
                     
             # No prefix found           
