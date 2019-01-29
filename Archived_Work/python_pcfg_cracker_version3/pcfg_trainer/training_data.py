@@ -25,13 +25,13 @@ from pcfg_trainer.markov import Markov
 # For example it has the BaseStructures, Digit probabilities, etc
 ############################################################################
 class TrainingData:
-    def __init__(self, alphabet_size = 100, ngram = 4):
+    def __init__(self):
         
         ##--Holds all of the individual DataList objects for iterating though them when it comes time to save the data
         self.master_data_list = []
         
         ##--Brute force data
-        self.markov = Markov(alphabet_size, ngram)
+        self.markov = Markov()
         
         ######################################################
         ##Init Base Structures
@@ -156,7 +156,7 @@ class TrainingData:
         ############################################################
         config = {
             'Name':'M',
-            'Comments':'Markov based brute force of a string. Currently based on OMEN',
+            'Comments':'Markov based brute force of a string. Currently based on John the Rippers Markov mode',
             'Directory':'Markov',
             'Filenames':'markov_prob.txt',
             'Inject_type':'Markov',
@@ -165,6 +165,8 @@ class TrainingData:
         }
         self.markov_structure = DataList(type= ListType.FLAT, config_name = 'BASE_M', config_data = config)
         self.master_data_list.append(self.markov_structure)
+        
+        ##--Hackish way to create the Markov probability threshold--##
         
         ##Number of passwords that were rejected
         ##Used for record keeping and debugging
@@ -380,35 +382,25 @@ class TrainingData:
     
     
     ######################################################################################
-    # Learns the alphabet for setting the underlying Markov based model
-    # Aka 'abcdef...'. Making this dynamic to support non-ASCII datasets
-    #
-    # This will need to be run before parsing the password normally
-    #
-    # Could probably combine this with the parse step itself and then remove low prob items
-    # later, but this is easier for now and doesn't take that long.
-    ######################################################################################
-    def learn_alphabet(self, input_password):
-        ##--Just pass it on to the underlying markov class
-        self.markov.learn_alphabet(input_password)
-    
-    
-    ######################################################################################
-    # Finalizes the alphabet to have the N most commonly seen characters where
-    # N is the alphabet_size specified in the command line
-    ######################################################################################
-    def finalize_alphabet(self):
-        ##--Just pass it on to the underlying markov class
-        self.markov.finalize_alphabet()
-    
-    
-    ######################################################################################
     # Once you have all the counts, calculate the actual probabilities associated with 
     # the Markov grammar
     #######################################################################################
     def calc_markov_stats(self):
         ##--Calculate Markov probabilities
         self.markov.calculate_probabilities()
+
+    
+    #######################################################################################
+    # Finds the Markov rank of a password
+    #######################################################################################    
+    def find_markov_rank(self, input_password):        
+        ret_value = self.check_valid(input_password)
+        ##-If the password isn't valid for the training data
+        if ret_value != RetType.IS_TRUE:
+            return None
+            
+        rank = self.markov.evaulate_ranking(input_password)
+        return rank
           
            
     ###########################################################################################
