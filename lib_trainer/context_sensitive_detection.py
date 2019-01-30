@@ -83,7 +83,7 @@ def detect_context_sensitive(section):
             parsing.append((working_string[0:start_index], None))
                         
         # Mark the context sensitive string as parsed
-        parsing.append((working_string[start_index:start_index + len(replacement)],'X'))
+        parsing.append((working_string[start_index:start_index + len(replacement)],'X1'))
                     
         # If there is non-CS data at the end. aka '#1pass'
         if start_index +len(replacement) < len(working_string) -1:

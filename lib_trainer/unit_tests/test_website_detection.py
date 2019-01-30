@@ -42,7 +42,7 @@ class Test_Website_Checks(unittest.TestCase):
         
         assert url_list == ['http://www.google.com']
         assert host_list == ['google.com']
-        assert prefix_list == ['http://']
+        assert prefix_list == ['http://www.']
         assert section_list == [('http://www.google.com','W')]
         
         
@@ -68,7 +68,7 @@ class Test_Website_Checks(unittest.TestCase):
         
         assert url_list == ['http://www.community.horse.com']
         assert host_list == ['horse.com']
-        assert prefix_list == ['http://']
+        assert prefix_list == ['http://www.']
         assert section_list == [('http://www.community.horse.com','W')]
         
         
@@ -81,7 +81,7 @@ class Test_Website_Checks(unittest.TestCase):
         
         assert url_list == ['http://www.google.com']
         assert host_list == ['google.com']
-        assert prefix_list == ['http://']
+        assert prefix_list == ['http://www.']
         assert section_list == [('http://www.google.com','W'),('123',None)]
         
         
@@ -93,7 +93,8 @@ class Test_Website_Checks(unittest.TestCase):
         
         assert url_list == ['http://www.subdomain.anothersub.google.com']
         assert host_list == ['google.com']
-        assert prefix_list == ['http://']
+        print("PREFIX LIST :" + str(prefix_list))
+        assert prefix_list == ['http://www.']
         assert section_list == [('http://www.subdomain.anothersub.google.com','W')]
         
         
@@ -105,6 +106,6 @@ class Test_Website_Checks(unittest.TestCase):
         
         assert url_list == ['http://www.google.com/data.html']
         assert host_list == ['google.com']
-        assert prefix_list == ['http://']
+        assert prefix_list == ['http://www.']
         assert section_list == [('http://www.google.com/data.html','W')]
     

@@ -38,7 +38,7 @@ class Test_Context_Sensitive_Checks(unittest.TestCase):
         found_cs = context_sensitive_detection(section_list)
         
         assert found_cs == ['#1']
-        assert section_list == [('#1','X')]
+        assert section_list == [('#1','X1')]
         
         
     ## Test #1 followed by <3
@@ -49,7 +49,7 @@ class Test_Context_Sensitive_Checks(unittest.TestCase):
         found_cs = context_sensitive_detection(section_list)
         
         assert found_cs == ['<3','#1']
-        assert section_list == [('#1','X'),('<3','X')]
+        assert section_list == [('#1','X1'),('<3','X1')]
         
     
     ## Test <3 followed by #1
@@ -60,4 +60,4 @@ class Test_Context_Sensitive_Checks(unittest.TestCase):
         found_cs = context_sensitive_detection(section_list)
         
         assert found_cs == ['<3','#1']
-        assert section_list == [('<3','X'),('#1','X')]
+        assert section_list == [('<3','X1'),('#1','X1')]

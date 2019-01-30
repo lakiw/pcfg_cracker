@@ -66,7 +66,7 @@ class PCFGPasswordParser:
         self.count_website_hosts = Counter()
         self.count_website_prefixes = Counter()
         self.count_years = Counter()
-        self.count_conext_sensitive = Counter()
+        self.count_context_sensitive = Counter()
         self.count_alpha = {}
         self.count_alpha_masks = {}
         self.count_digits = {}
@@ -124,7 +124,7 @@ class PCFGPasswordParser:
         found_context_sensitive_strings = context_sensitive_detection(section_list)
         
         for cs_string in found_context_sensitive_strings:
-            self.count_conext_sensitive[cs_string] += 1
+            self.count_context_sensitive[cs_string] += 1
         
         # Identify pure alpha strings in the dataset
         

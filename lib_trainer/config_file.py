@@ -51,7 +51,7 @@ def add_program_details(config, program_info):
 #
 def add_dataset_details(config, program_info, file_input):
 
-    section = "DATASET_DETAILS"
+    section = "TRAINING_DATASET_DETAILS"
     config.add_section(section)
     
     config.set(section, "comments", program_info['comments'])
@@ -96,7 +96,7 @@ def add_start(config):
     config.set(section, "inject_type", "Wordlist")
     config.set(section, "is_terminal", str(False))
     config.set(section, "replacements", json.dumps(replacements))
-    config.set(section, "filenames", json.dumps("grammar.txt"))
+    config.set(section, "filenames", json.dumps(["grammar.txt"]))
         
         
 ## Creates the configuration for the Alpha Replacements
@@ -217,10 +217,10 @@ def add_context_sensitive(config):
     config.set(section, "function", "Copy")
     config.set(section, "directory", "Context")
     config.set(section, "comments", "conte(X)t sensitive replacements to the base structure. This is mostly a grab bag of things like #1 or ;p")
-    config.set(section, "file_type", "Length")
+    config.set(section, "file_type", "Flat")
     config.set(section, "inject_type", "Copy")
     config.set(section, "is_terminal", str(True))
-    config.set(section, "filenames", json.dumps("context_sensitive.txt"))
+    config.set(section, "filenames", json.dumps(["1.txt"]))
 
 
 ## Creates the configuration for Year Replacements
@@ -244,7 +244,7 @@ def add_years(config):
     config.set(section, "file_type", "Flat")
     config.set(section, "inject_type", "Copy")
     config.set(section, "is_terminal", str(True))
-    config.set(section, "filenames", json.dumps(["years.txt"]))    
+    config.set(section, "filenames", json.dumps(["1.txt"]))    
 
 
 ## Creates the configuration for Capitalization Replacements

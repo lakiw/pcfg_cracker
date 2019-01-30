@@ -91,7 +91,7 @@ def detect_year(section):
                         parsing.append((working_string[0:start_index], None))
                         
                     # Mark the year as parsed
-                    parsing.append((working_string[start_index:start_index+4],'Y'))
+                    parsing.append((working_string[start_index:start_index+4],'Y1'))
                     
                     # If there is non-year data at the end. aka '2019pass'
                     if start_index +4 < len(working_string):

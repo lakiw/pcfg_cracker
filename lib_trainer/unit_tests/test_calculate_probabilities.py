@@ -16,7 +16,7 @@ from collections import Counter
 
 ## Functions and classes to tests
 #
-from ..calculate_probabilities import calculate_probabilites
+from ..calculate_probabilities import calculate_probabilities
 
 ## Responsible for testing the probability calculations for the trainer code
 #
@@ -42,7 +42,7 @@ class Test_Calculate_Probabilities(unittest.TestCase):
         # Intitialize the counter
         counter = Counter()
         
-        prob_list = calculate_probabilites(counter)
+        prob_list = calculate_probabilities(counter)
         
         assert prob_list == []
 
@@ -58,7 +58,7 @@ class Test_Calculate_Probabilities(unittest.TestCase):
         
         counter['chair'] = 5
         
-        prob_list = calculate_probabilites(counter)
+        prob_list = calculate_probabilities(counter)
 
         assert prob_list == [('chair',1.0)]
         
@@ -75,7 +75,7 @@ class Test_Calculate_Probabilities(unittest.TestCase):
         counter['chair'] = 5
         counter['table'] = 5
         
-        prob_list = calculate_probabilites(counter)
+        prob_list = calculate_probabilities(counter)
         
         # Need to sort the lists, because otherwise the order can vary
         validate_list = [('chair',0.5), ('table',0.5)]
@@ -96,7 +96,7 @@ class Test_Calculate_Probabilities(unittest.TestCase):
         counter['chair'] = 90
         counter['table'] = 10
         
-        prob_list = calculate_probabilites(counter)
+        prob_list = calculate_probabilities(counter)
         
         validate_list = [('chair',0.9), ('table',0.1)]
 

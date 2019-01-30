@@ -60,7 +60,7 @@ def create_rule_folders(base_directory):
     # PCFG replacements directories
     directory_listing.append(os.path.join(base_directory,"Grammar"))
     directory_listing.append(os.path.join(base_directory,"Alpha"))
-    directory_listing.append(os.path.join(base_directory,"Capitialization"))
+    directory_listing.append(os.path.join(base_directory,"Capitalization"))
     directory_listing.append(os.path.join(base_directory,"Prince"))
     directory_listing.append(os.path.join(base_directory,"Digits"))
     directory_listing.append(os.path.join(base_directory,"Years"))

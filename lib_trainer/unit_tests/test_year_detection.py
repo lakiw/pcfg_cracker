@@ -41,7 +41,7 @@ class Test_Year_Checks(unittest.TestCase):
         found_years = year_detection(section_list)
         
         assert found_years == ['2019']
-        assert section_list == [('2019','Y')]
+        assert section_list == [('2019','Y1')]
         
         
     ## Test two years in a password seperated by a string
@@ -52,7 +52,7 @@ class Test_Year_Checks(unittest.TestCase):
         found_years = year_detection(section_list)
         
         assert found_years == ['2018','2019']
-        assert section_list == [('2018','Y'),('pass',None),('2019','Y')]
+        assert section_list == [('2018','Y1'),('pass',None),('2019','Y1')]
         
         
     ## Test non-year 4 digit number that is not classified as a year
@@ -96,7 +96,7 @@ class Test_Year_Checks(unittest.TestCase):
         found_years = year_detection(section_list)
         
         assert found_years == ['1920','2019']
-        assert section_list == [('1920','Y'),('pass',None),('2019','Y')]
+        assert section_list == [('1920','Y1'),('pass',None),('2019','Y1')]
         
         
     ## Test 2019 followed by 1920
@@ -106,4 +106,4 @@ class Test_Year_Checks(unittest.TestCase):
         section_list = [('2019pass1920',None)]
         found_years = year_detection(section_list)
         assert found_years == ['1920','2019']
-        assert section_list == [('2019','Y'),('pass',None),('1920','Y')]
+        assert section_list == [('2019','Y1'),('pass',None),('1920','Y1')]
