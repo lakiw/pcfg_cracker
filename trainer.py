@@ -44,6 +44,7 @@ if sys.version_info[0] < 3:
 import argparse
 import os  
 import traceback
+from collections import Counter
 
 # Local imports
 from lib_trainer.banner_info import print_banner
@@ -56,6 +57,8 @@ from lib_trainer.trainer_file_output import create_rule_folders
 from lib_trainer.omen.alphabet_generator import AlphabetGenerator
 from lib_trainer.omen.alphabet_lookup import AlphabetLookup
 from lib_trainer.omen.omen_file_output import save_omen_rules_to_disk
+from lib_trainer.omen.evaluate_password import find_omen_level
+from lib_trainer.omen.evaluate_password import calc_omen_keyspace
 
 from lib_trainer.multiword_detector import MultiWordDetector
 
@@ -456,14 +459,54 @@ def main():
         return
     
     print()    
-    print("-------------------------------------------------") 
-    print("Compleated Parsing Training Data")    
-    print("Calculating Statistics")
+    print("-------------------------------------------------")  
+    print("Calculating OMEN probabilities")
     print("-------------------------------------------------")
     print()
 
     # Calculate the OMEN level data
     omen_trainer.apply_smoothing()
+    
+    omen_keyspace = calc_omen_keyspace(omen_trainer)
+    
+    print("-------------------------------------------------")    
+    print("Performing third pass on the training passwords")
+    print("-------------------------------------------------")
+    print("")   
+    
+    # Re-Initialize the file input to read passwords from
+    file_input = TrainerFileInput(
+                    program_info['training_file'], 
+                    program_info['encoding'])
+                    
+    # Reset progress_bar
+    num_parsed_so_far = 0
+    print("Printing out status after every million passwords parsed")
+    print("------------")
+    
+    omen_levels_count = Counter()
+    ## Loop until we hit the end of the file
+    try:
+        password = file_input.read_password()
+        while password:
+        
+            # Print status indicator if needed
+            num_parsed_so_far += 1
+            if num_parsed_so_far % 1000000 == 0:
+                print(str(num_parsed_so_far//1000000) +' Million')
+                
+            # Find OMEN level of password
+            level = find_omen_level(omen_trainer,password)
+            omen_levels_count[level] += 1
+            
+            # Get the next password
+            password = file_input.read_password()
+        
+    except Exception as msg:
+        traceback.print_exc(file=sys.stdout)
+        print("Exception: " + str(msg))
+        print("Exiting...")
+        return
     
     print()    
     print("-------------------------------------------------") 

@@ -58,7 +58,7 @@ def save_omen_rules_to_disk(omen_trainer, base_directory, program_info):
     full_path = os.path.join(omen_directory, "EP.level")
     try:
         with codecs.open(full_path, 'w', encoding=encoding) as file:
-            # Loop through the top (ngram-1) list that has IP
+            # Loop through the top (ngram-1) list that has EP
             for key, data in omen_trainer.grammar.items():
                 file.write(str(data['ep_level'])+ "\t" + key + "\n")    
                 
