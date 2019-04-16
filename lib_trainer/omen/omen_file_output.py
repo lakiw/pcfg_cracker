@@ -9,6 +9,7 @@ import sys
 import os
 import configparser
 import codecs
+from collections import Counter
 
 from ..trainer_file_output import make_sure_path_exists
 
@@ -19,7 +20,7 @@ from ..trainer_file_output import make_sure_path_exists
 #    True: If everything worked ok
 #    False: If any problems occured
 #
-def save_omen_rules_to_disk(omen_trainer, base_directory, program_info):
+def save_omen_rules_to_disk(omen_trainer, omen_keyspace, omen_levels_count, num_valid_passwords, base_directory, program_info):
     
     encoding = program_info['encoding']
     
@@ -121,7 +122,81 @@ def save_omen_rules_to_disk(omen_trainer, base_directory, program_info):
         encoding = encoding
     ):
         return False
+        
+    ## Save the Keyspace information to disk
+    #
+    # Don't actually need this to generate PCFG guesses, but it's interesting
+    # data that may be useful for other tools
+    #
+    # Open the file for writing
+    full_path = os.path.join(omen_directory, "omen_keyspace.txt")
+    try:
+        with codecs.open(full_path, 'w', encoding=encoding) as file:
+            # Loop through the keyspace dataset
+            for level in reversed(omen_keyspace.most_common()):
+                file.write(str(level[0])+ "\t" + str(level[1]) + "\n")
+                
+    # Print out where the error occured, but then re-raise it for the calling function
+    # to inform the user that the rules will not be saved
+    except:
+        print("Error creating the rules file: " + full_path)
+        raise 
+        
+    ## Save the number of passwords each limit would crack to disk
+    #
+    # Don't actually need this to generate PCFG guesses, but it's interesting
+    # data that may be useful for other tools
+    #
+    # Open the file for writing
+    full_path = os.path.join(omen_directory, "omen_pws_per_level.txt")
+    try:
+        with codecs.open(full_path, 'w', encoding=encoding) as file:
+            # Loop through the keyspace dataset
+            for level in omen_levels_count.most_common():
+                file.write(str(level[0])+ "\t" + str(level[1]) + "\n")
+                
+    # Print out where the error occured, but then re-raise it for the calling function
+    # to inform the user that the rules will not be saved
+    except:
+        print("Error creating the rules file: " + full_path)
+        raise 
     
+    
+    ## Calculate and save the probability to perform each level at
+    #
+    # For each level find the probability associated with it
+    pcfg_omen_prob = Counter()
+    
+    # Start by going through all the levels we calculated the keyspace for
+    #
+    # Do not need to calculate probabilities when the keyspace is too large
+    for item in omen_keyspace.items():
+        level = item[0]
+        keyspace = item[1]
+        
+        # sanity check so we don't try to divide by 0 accidently
+        if keyspace == 0:
+            continue
+        
+        num_instances = omen_levels_count[level]
+        percentage_cracked = num_instances / num_valid_passwords
+        
+        pcfg_omen_prob[level] = percentage_cracked/keyspace
+    
+    # Save OMEN level probabilities to disk
+    full_path = os.path.join(omen_directory, "pcfg_omen_prob.txt")
+    try:
+        with codecs.open(full_path, 'w', encoding=encoding) as file:
+            # Loop through the keyspace dataset
+            for level in pcfg_omen_prob.most_common():
+                file.write(str(level[0])+ "\t" + str(level[1]) + "\n")
+                
+    # Print out where the error occured, but then re-raise it for the calling function
+    # to inform the user that the rules will not be saved
+    except:
+        print("Error creating the rules file: " + full_path)
+        raise 
+        
     return True 
        
     

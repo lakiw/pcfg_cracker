@@ -382,10 +382,19 @@ def main():
         
     # Save the learned alphabet
     program_info['alphabet'] = ag.get_alphabet()
-        
+    
+    # Record how many valid passwords there were
+    num_valid_passwords = file_input.num_passwords
+    
+    if num_valid_passwords == 0:
+        print()
+        print("Error, no valid passwords were found when attempting to train ruleset.")
+        print("Quiting")
+        return
+    
     # Print some basic statistics after first loop
     print()
-    print("Number of Valid Passwords: " + str(file_input.num_passwords))
+    print("Number of Valid Passwords: " + str(num_valid_passwords))
     print("Number of Encoding Errors Found in Training Set:" + str(file_input.num_encoding_errors))
     print()
         
@@ -464,11 +473,19 @@ def main():
     print("-------------------------------------------------")
     print()
 
+    # Add in the probability of brute force to the base structures
+    if program_info['coverage'] != 0:
+        # Adding the Markov/Omen numbers in as addition to the currently parsed
+        # passwords vs. resetting the counts/probabilities of what was already
+        # parsed
+        markov_instances = (num_valid_passwords /  program_info['coverage']) - num_valid_passwords
+        pcfg_parser.count_base_structures['M'] = markov_instances
+    
     # Calculate the OMEN level data
     omen_trainer.apply_smoothing()
     
     omen_keyspace = calc_omen_keyspace(omen_trainer)
-    
+     
     print("-------------------------------------------------")    
     print("Performing third pass on the training passwords")
     print("-------------------------------------------------")
@@ -522,7 +539,7 @@ def main():
         return
     
     # Save the OMEN data
-    if not save_omen_rules_to_disk(omen_trainer, base_directory, program_info):
+    if not save_omen_rules_to_disk(omen_trainer, omen_keyspace, omen_levels_count, num_valid_passwords, base_directory, program_info):
         print("Error, something went wrong saving the OMEN data to disk")
         print("The training did not compleate correctly")
         print("Exiting...")
@@ -533,7 +550,7 @@ def main():
                 base_directory, 
                 pcfg_parser, 
                 program_info['encoding'], 
-                program_info['save_sensitive']
+                program_info['save_sensitive'],
             ):
         print("Error, something went wrong saving the pcfg data to disk")
         print("The training did not compleate correctly")
