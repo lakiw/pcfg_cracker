@@ -197,7 +197,6 @@ def save_pcfg_data(base_directory, pcfg_parser, encoding, save_sensitive):
         
     ## Save Base Structures
     #
-   
     folder = os.path.join(base_directory, "Grammar")
     
     grammar_grouping = {

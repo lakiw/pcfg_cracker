@@ -275,6 +275,7 @@ def main():
     }
       
     print_banner()
+    print("Version: " + str(program_info['version']))
     
     # Parsing the command line
     if not parse_command_line(program_info):
