@@ -9,10 +9,10 @@
 #  -- Uses previously trained grammars created by trainer.py to assign
 #     probabilities to different transistions and terminals
 #
-#  -- PLEASE DO NOT USE THIS WITHOUT MAJOR MODIFICATIONS AS PART OF A PASSWORD
-#     CREATION POLICY OR BLACKLIST. YOUR USERS WILL HATE YOU AND THERE'S
+#  -- PLEASE DO NOT USE AS PART OF A PASSWORD CREATION POLICY OR BLACKLIST
+#     WITHOUT MAJOR MODIFICATIONS. YOUR USERS WILL HATE YOU AND THERE'S
 #     A LOT OF FUNDAMENTAL WORK THAT STILL NEEDS TO BE DONE TO MAKE THIS
-#     USEFUL FOR THAT USE CASE.
+#     USEFUL FOR THOSE USE CASES.
 #
 #
 #  Written by Matt Weir
@@ -55,6 +55,8 @@ from collections import Counter
 from lib_scorer.banner_info import print_banner
 from lib_scorer.pcfg_grammar import PcfgGrammar
 from lib_scorer.grammar_io import load_grammar
+from lib_scorer.file_output import FileOutput
+from lib_scorer.omen_scorer import OmenScorer
 from lib_trainer.trainer_file_input import TrainerFileInput
 
 
@@ -121,6 +123,17 @@ def parse_command_line(program_info):
         type = float, 
     )
     
+    # The output file to save results too 
+    parser.add_argument(
+        '--max_omen',
+        '-m',
+        help = 'The maximum OMEN level for categorization as a password. Set to "0" to disable OMEN matching',
+        metavar = 'MAX_OMEN_LEVEL',
+        required = False,
+        default = program_info['max_omen_level'],
+        type = int, 
+    )
+    
     # Parse all the args and save them    
     args=parser.parse_args() 
     
@@ -129,6 +142,7 @@ def parse_command_line(program_info):
     program_info['input_file'] = args.input
     program_info['output_file']= args.output
     program_info['limit'] = args.limit
+    program_info['max_omen_level'] = args.max_omen
     
     ## Sanity checking of values
     #
@@ -138,7 +152,7 @@ def parse_command_line(program_info):
         print("Also, your limit probably should be very close to 0.0, or have a lot of 0's in it")
         print("This is because most password guesses have very low probabilities of actually being a target's password.")
         return False
-
+        
     return True
     
 
@@ -159,6 +173,12 @@ def main():
         'rule_name':'Default',
         'output_file':None,
         'limit':0,
+        
+        # OMEN Options
+        #
+        # Note, pickng 9 as the default because the keyspace when training
+        # on rockyou for level 9 is roughly 600 million which seems reasonable
+        'max_omen_level':9
         
     }
       
@@ -182,8 +202,8 @@ def main():
     ## Create the grammar object
     #
     # Does not load the grammar yet
-    grammar = PcfgGrammar()
-    
+    grammar = PcfgGrammar(limit = program_info['limit'])
+      
     # Attempt to load the rules file into the grammar
     print("Loading Rule: " + str(program_info['rule_name']))
     if not load_grammar(grammar, base_directory):
@@ -193,6 +213,10 @@ def main():
     # Initialize the multiword detector
     print("Initializing Multi-Word Detector")
     grammar.create_multiword_detector()
+    
+    # Initalize the OMEN scorer
+    print("Initializing the OMEN scorer")
+    grammar.create_omen_scorer( base_directory, program_info['max_omen_level'])
 
     # Initialize the file input to read input values from
     # Re-using the TrainerFileInput from the trainer
@@ -200,6 +224,8 @@ def main():
                     program_info['input_file'], 
                     grammar.encoding)
     
+    # Open file for output
+    writer = FileOutput(program_info['output_file'], grammar.encoding)
 
     # Start processing input
     print("Processing input wordlist")
@@ -211,7 +237,9 @@ def main():
         while input_value:
             
             result = grammar.parse(input_value)
-            print (result)
+            
+            writer.write_data(result)
+            
             if result[1] == 'o':
                 false_negative += 1
             

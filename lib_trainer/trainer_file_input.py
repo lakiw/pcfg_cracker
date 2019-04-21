@@ -142,8 +142,8 @@ class TrainerFileInput:
 
     ## Open the file for reading
     #
-    # Passes file exceptions back up if they occuring
-    # Aka: if the file doesn't exist
+    # Passes file exceptions back up if they occur
+    # Eg: if the file doesn't exist
     #
     def __init__(self, filename, encoding = 'utf-8'):
         

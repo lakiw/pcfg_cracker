@@ -261,7 +261,7 @@ def add_capitalization(config, filenames):
     section = "CAPITALIZATION"
     config.add_section(section)
     
-    config.set(section, "name", "Capitalization")
+    config.set(section, "name", "C")
     config.set(section, "function", "Capitalization")
     config.set(section, "directory", "Capitalization")
     config.set(section, "comments", "apitalization Masks for words. Aka LLLLUUUU for passWORD")

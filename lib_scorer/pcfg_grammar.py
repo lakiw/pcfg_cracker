@@ -24,6 +24,7 @@ from lib_trainer.digit_detection import digit_detection
 from lib_trainer.other_detection import other_detection
 from lib_trainer.base_structure import base_structure_creation
 from lib_trainer.multiword_detector import MultiWordDetector
+from .omen_scorer import OmenScorer
 
 
 ## Responsible for holding the Grammar and evaluating inputs against it
@@ -32,11 +33,14 @@ class PcfgGrammar:
 
     ## Initializes the class and all the data structures
     #
-    def __init__(self):
+    def __init__(self, limit = 0):
         
         ## Information for using this grammar
         #
         self.encoding = None
+        
+        ## The probability limit to cut-off being categorized as a password
+        self.limit = limit
         
         ## The following counters hold the base grammar
         #
@@ -88,11 +92,22 @@ class PcfgGrammar:
                             
                     else:
                         self.multiword_detector.train(item[0])
+                        
+    
+    ## Initializes the OMEN level parser
+    #
+    def create_omen_scorer(self, base_directory, max_omen_level):
+        
+        self.max_omen_level = max_omen_level
+        
+        ## Create the OmenScorer object to parse using OMEN Markov
+        #
+        self.omen = OmenScorer(base_directory, self.encoding, max_omen_level)  
                     
     
     ## Parses an input value and determines if it is a password or not
     #
-    # Will return a tuple of word, category, probability
+    # Will return a tuple of word, category, probability, omen_level
     #
     # category = [pewo]
     #   -p = password
@@ -101,8 +116,9 @@ class PcfgGrammar:
     #   -o = other
     #
     def parse(self, password):
-    
-
+        
+        # Parse the OMEN score
+        omen_score = self.omen.parse(password)
         
         # Since keyboard combos can look like many other parsings, filter them
         # out first 
@@ -121,7 +137,7 @@ class PcfgGrammar:
         
         # Bail out early if e-mails or websites were found
         if category in ['e', 'w']:
-            return (password, category, 0)
+            return (password, category, 0, omen_score)
             
         found_years = year_detection(section_list)
         found_context_sensitive_strings = context_sensitive_detection(section_list)
@@ -137,7 +153,7 @@ class PcfgGrammar:
         #
         if not is_supported:
             category = 'o'
-            return (password, category, 0)
+            return (password, category, 0, omen_score)
             
         ## Find the probability for all of the transitions and values
         #
@@ -177,10 +193,14 @@ class PcfgGrammar:
         except KeyError:
             cur_prob = 0
         
-        if cur_prob != 0:
+        ## Classify it as a password if the probablility is higher than the
+        #  PCFG cut-off limit OR the OMEN score is equal to or below the OMEN
+        #  cut-off limit
+        #
+        if cur_prob > self.limit or omen_score <= self.omen.max_omen_level:
             category = 'p'
             
-        return (password, category, cur_prob)
+        return (password, category, cur_prob, omen_score)
                 
        
         

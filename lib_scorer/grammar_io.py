@@ -163,5 +163,6 @@ def _load_from_file(grammar_counter, filename, encoding):
         print (error,file=sys.stderr)
         return False
 
-    return True    
+    return True   
+
     
