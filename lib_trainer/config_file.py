@@ -15,6 +15,8 @@
 from configparser import ConfigParser
 import os
 import json
+# Used to uniquely identify the ruleset. Used for saving/restaring cracking sessions
+import uuid  
 
 
 ## Adds the program details to the config file
@@ -55,8 +57,13 @@ def add_dataset_details(config, program_info, file_input):
     config.add_section(section)
     
     config.set(section, "comments", program_info['comments'])
-    config.set(section, "filename", program_info['training_file'])
+    
+    # Only grabbing the file, since there is concern about leaking folder structures
+    # from peoples' computers when they train a dataset
+    config.set(section, "filename", os.path.basename(program_info['training_file']))
+    
     config.set(section, "encoding", program_info['encoding'])
+    config.set(section, "uuid", str(uuid.uuid4()))
     config.set(section, "number_of_passwords_in_set", str(file_input.num_passwords))
     config.set(section, "number_of_encoding_errors", str(file_input.num_encoding_errors))
     

@@ -52,6 +52,7 @@ import traceback
 # Local imports
 from lib_guesser.banner_info import print_banner, print_error
 from lib_guesser.pcfg_grammar import PcfgGrammar
+from lib_guesser.cracking_session import CrackingSession
 
        
 ## Parses the command line
@@ -161,6 +162,8 @@ def main():
     # Note, if the ruleset can not be loaded, (for example it doesn't exist),
     # it will throw an exception.
     try:
+        print("Loading Ruleset: " + str(program_info['rule_name']),file=sys.stderr)
+        print('',file=sys.stderr)
         pcfg = PcfgGrammar(
             program_info['rule_name'], 
             base_directory,
@@ -172,7 +175,16 @@ def main():
         print("Exception: " + str(msg))
         print("Exiting")
         return
-        
+    
+    
+    # Initalize the cracking session
+    current_cracking_session = CrackingSession(pcfg = pcfg)
+    
+    # Setup is done, now start generating rules
+    print ("Starting to generate password guesses",file=sys.stderr)
+    print ("Press [ENTER] to display a status output",file=sys.stderr)
+    
+    current_cracking_session.run(print_queue_info = program_info['queue_info'])
     
     
 if __name__ == "__main__":

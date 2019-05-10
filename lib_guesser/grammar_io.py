@@ -29,11 +29,14 @@ import codecs
 #             masks.
 #
 #             Takes the form of a dictionary with the variable name, and
-#             a list of (value, prob) tuples in probability order.
+#             a sub-dictionary of the form:
+#                {
+#                   'values':['11','51'],
+#                   'prob':0.3
+#                }
 #
-#             For example {'D2':[('11',0.3),('12',0.2),....]}
-#
-#    base:    A list of (base structures, prob) tuples in probability order
+#    base_structures:    A list of (base structures, prob) tuples in 
+#                        probability order
 #
 #             For example [('D2L2',0.3), ('D4L3',0.2) ...]
 #
@@ -57,9 +60,77 @@ def load_grammar(rule_name, base_directory, version):
     
     if not _load_terminals(ruleset_info, grammar, base_directory, config):
         raise Exception
+        
+    # Holds the base structures
+    base_structures = []
+    if not _load_base_structures(base_structures, base_directory):
+        raise Exception
     
-    return None, None, ruleset_info
+    return grammar, base_structures, ruleset_info
 
+
+## Loads the base structures for the grammar
+#
+# Input:
+#
+#    base_structures: A list to return the data in
+#             Entries take the form of a dictionary with the following fields:
+#                 'prob': The probability of the base structure
+#                 'replacements': A list of the individual transitions.
+#                      Aka: ['A2','D3', 'K5']
+#
+#    base_directory: The base directory to load the rules from
+#
+# Output:
+#    True: Config was loaded and parsed correctly
+#
+#    False: Config failed to load 
+#
+def _load_base_structures(base_structures, base_directory):
+    
+    filename = os.path.join(base_directory,"grammar","grammar.txt")
+    
+    # Try to open the file
+    try:
+        with open(filename, 'r') as file:
+            # Read though all the lines in the file
+            for value in file:
+            
+                # Split up the tab seperated items and then save their values
+                split_values = value.rstrip().split("\t") 
+                
+                value = split_values[0]
+                prob = float(split_values[1])
+                
+                new_base = {
+                    'prob':prob,
+                    'replacements':[]
+                }
+                
+                ## Split up the replacements and save them
+                #
+                # Note, splitting on digits, and all transistions are only
+                # one alpha character long
+                for item in value:
+                    if item.isalpha():
+                        new_base['replacements'].append(item)
+                    else:
+                        new_base['replacements'][-1] += item
+                
+                # Save the base structure
+                base_structures.append(new_base)
+            
+    except IOError as error:
+        print (error,file=sys.stderr)
+        print ("Error opening file " + filename ,file=sys.stderr)
+        return False
+        
+    except Exception as error:
+        print (error,file=sys.stderr)
+        return False
+
+    return True
+    
 
 ## Loads most of the terminals for the grammar
 #
@@ -95,6 +166,11 @@ def _load_terminals(ruleset_info, grammar, base_directory, config):
         print("Error loading alpha terminals")
         return False
         
+    # Load the capitalziaton masks
+    if not _load_from_multiple_files(grammar, config['CAPITALIZATION'], base_directory, encoding):
+        print("Error loading capitalization masks")
+        return False
+        
     # Load the digit terminals
     if not _load_from_multiple_files(grammar, config['BASE_D'], base_directory, encoding):
         print("Error loading digit terminals")
@@ -118,7 +194,13 @@ def _load_terminals(ruleset_info, grammar, base_directory, config):
     # Load Context Sensitive replacements
     if not _load_from_multiple_files(grammar, config['BASE_X'], base_directory, encoding):
         print("Error loading context sensitive terminals")
-        return False       
+        return False  
+
+    # Load OMEN level probabilities
+    full_path = os.path.join(base_directory, "Omen", "pcfg_omen_prob.txt")
+    grammar['M'] = []     
+    if not _load_from_file(grammar['M'], full_path, encoding):
+        return False
         
         
     return True
@@ -165,6 +247,9 @@ def _load_config(ruleset_info, base_directory, config):
         # Find the encoding for the config file
         ruleset_info['encoding'] = config.get('TRAINING_DATASET_DETAILS','encoding')
         
+        # Get the UUID to aid in saving/restarting cracking sessions
+        ruleset_info['uuid'] = config.get('TRAINING_DATASET_DETAILS','uuid')
+        
     except IOError as msg:
         print("Could not open the config file for the ruleset specified. The rule directory may not exist",file=sys.stderr)
         print("Ruleset: " + str(base_directory))
@@ -176,8 +261,7 @@ def _load_config(ruleset_info, base_directory, config):
     return True
     
     
-##############################################################
-# Loads grammar information from multiple files for length specified terminals
+## Loads grammar information from multiple files for length specified terminals
 #
 # Return Values:
 #
@@ -185,7 +269,6 @@ def _load_config(ruleset_info, base_directory, config):
 #
 #     False: If an error occured loading the ruleset
 #
-##############################################################
 def _load_from_multiple_files(grammar, config, base_directory, encoding):
     
     directory = config.get('directory')
@@ -207,8 +290,7 @@ def _load_from_multiple_files(grammar, config, base_directory, encoding):
     return True
     
     
-##############################################################
-# Loads grammar information from a file
+## Loads grammar information from a file
 #
 # Return Values:
 #
@@ -216,14 +298,16 @@ def _load_from_multiple_files(grammar, config, base_directory, encoding):
 #
 #     False: If an error occured loading the ruleset
 #
-##############################################################
 def _load_from_file(grammar_section, filename, encoding):
-
+    
     # Try to open the file
     try:
         with codecs.open(filename, 'r', encoding= encoding, errors= 'surrogateescape') as file:
             
-            # Read though all the lines in the fil
+            # Used to group different items of the same probability together
+            prev_prob = -1.0
+            
+            # Read though all the lines in the file
             for value in file:
 
                 # There "shouldn't" be encoding errors in the rules files, but
@@ -241,7 +325,24 @@ def _load_from_file(grammar_section, filename, encoding):
      
                 # Split up the tab seperated items and then save their values
                 split_values = value.rstrip().split("\t") 
-                grammar_section.append([split_values[0],float(split_values[1])])
+                
+                value = split_values[0]
+                prob = float(split_values[1])
+                
+                # If another item had the same probabilty value
+                if prob == prev_prob:
+                    grammar_section[-1]['values'].append(value)
+                  
+                # If this is the first item with this probability    
+                else:
+                    prev_prob = prob
+                    
+                    item = {
+                        'values': [value],
+                        'prob': prob
+                    }
+                    
+                    grammar_section.append(item)
                                   
     except IOError as error:
         print (error,file=sys.stderr)

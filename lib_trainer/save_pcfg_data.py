@@ -204,7 +204,9 @@ def save_pcfg_data(base_directory, pcfg_parser, encoding, save_sensitive):
         'raw_grammar':pcfg_parser.count_raw_base_structures
         }
     
-    if not save_indexed_counters(folder, grammar_grouping, encoding):
+    # Note, saving these as ASCII since there may not be representations for
+    # the base structure categories in the training file encoding
+    if not save_indexed_counters(folder, grammar_grouping, 'ASCII'):
         return False
                   
     return True
