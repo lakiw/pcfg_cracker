@@ -10,10 +10,14 @@
 #
 #########################################################################################
 
+
 import sys
 import traceback
 import time
 import threading ##--Used only for the "check for user input" threads
+
+# Local imports
+from .priority_queue import PcfgQueue
 
 
 ## Used to manage a password cracking session
@@ -24,6 +28,8 @@ class CrackingSession:
     ## Basic initialization function
     #
     def __init__(self, pcfg = None):
+    
+        # Save the grammar for easy reference
         self.pcfg = pcfg
         
         ## Debugging and Performance Monitoring Variables
@@ -60,6 +66,9 @@ class CrackingSession:
         # Start the clock
         self.total_time_start = time.perf_counter()
         
+        ## Initalize the priority queue
+        self.pqueue = PcfgQueue(self.pcfg)
+        
         ## Set up the check to see if a user is pressing a button
         #
         user_input = [None]
@@ -81,6 +90,22 @@ class CrackingSession:
                     user_thread = threading.Thread(target=keypress, args=(user_input,))
                     user_thread.daemon = True  # thread dies when main thread (only non-daemon thread) exits.
                     user_thread.start()
+                    
+            ## Get the next item from the pqueue
+            #
+            pt_item = self.pqueue.next()
+            
+            # If the pqueue is empty, there are no more guesses to make
+            if pt_item == None:
+                print ("Done processing the PCFG. No more guesses to generate",file=sys.stderr)
+                print ("Shutting down guessing session",file=sys.stderr)
+                return
+                
+            self.num_parse_trees += 1
+            
+            self.num_guesses += self.pcfg.create_guesses(pt_item['pt'])
+            
+            #print(self.num_guesses)
                                
         return
     

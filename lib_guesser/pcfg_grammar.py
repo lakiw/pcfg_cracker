@@ -38,12 +38,13 @@ class PcfgGrammar:
     #             this program can load a ruleset that may be generated from
     #             an older version of the trainer
     #
-    def __init__(self, rule_name, base_directory, version):
+    def __init__(self, rule_name, base_directory, version, debug = False):
         
         ## Debugging and Status Information
         #
         self.encoding = None
         self.rulename = rule_name
+        self.debug = debug
         
         ## If an exception occurs, pass it back up the stack
         self.grammar, self.base, ruleset_info = load_grammar(rule_name, base_directory, version)
@@ -140,7 +141,6 @@ class PcfgGrammar:
             # Get the level
             level = int(self.grammar[type][index]['values'][0])
             
-            print("Omen Level: " + str(level))
             mc = MarkovCracker(self.omen_grammar, level, self.omen_optimizer)
             
             guess = mc.next_guess()
@@ -148,8 +148,8 @@ class PcfgGrammar:
                 num_guesses += 1
                 
                 # Output the results
-                print (cur_guess + guess)
-                
+                self.print_guess(cur_guess + guess)
+
                 guess = mc.next_guess()
 
         # If it is a capitalization mask
@@ -180,7 +180,8 @@ class PcfgGrammar:
                 # there is more to do
                 if len(pt) == 1:
                     num_guesses += 1
-                    print(new_guess)
+                    self.print_guess(new_guess)
+
                 else:
                     num_guesses += self._recursive_guesses(new_guess, pt[1:]) 
             
@@ -193,12 +194,32 @@ class PcfgGrammar:
                 # there is more to do
                 if len(pt) == 1:
                     num_guesses += 1
-                    print(new_guess)
+                    self.print_guess(new_guess)
+
                 else:
                     num_guesses += self._recursive_guesses(new_guess, pt[1:])                             
                 
         return num_guesses
         
+
+    ## General code to print out a guess to stdout
+    #
+    # Need to have error handling and want to centerlize all the calls to this so I don't\t
+    # accidently forget some printout somewhere else
+    #
+    def print_guess(self, guess):
+        if self.debug == False:
+            try:
+                print(guess)
+            ##--While I could silently replace/ignore the Unicode character for now I want to know if this is happening
+            except UnicodeEncodeError as msg:
+                #print("UNICODE_ERROR: " + str(msg),file=sys.stderr) 
+                pass                            
+            except:
+                print("Consumer, (probably the password cracker), stopped accepting input.",file=sys.stderr)
+                print("Halting guess generation and exiting",file=sys.stderr)
+                raise
+    
     
     ## Finds the children for a given parse tree
     #
@@ -230,7 +251,7 @@ class PcfgGrammar:
             parent_index = item[1]
                              
             # If true, there are no children at this level
-            if len(self.grammar[parent_type]) == parent_index:
+            if len(self.grammar[parent_type]) == parent_index +1:
                 continue
             
             # Create the child node
@@ -308,11 +329,6 @@ class PcfgGrammar:
             
             # Check if the new parent should take care of the child
             if new_parent_prob < parent_prob:
-                print("New parent prob: " + str(new_parent_prob))
-                print("New parent pos: " + str(pos))
-                print("New parent: "  + str(new_parent))
-                print("Child: " + str(child))
-                print("")
                 return False
             elif new_parent_prob == parent_prob:
                 if pos < parent_pos:

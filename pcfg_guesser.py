@@ -167,7 +167,8 @@ def main():
         pcfg = PcfgGrammar(
             program_info['rule_name'], 
             base_directory,
-            program_info['version']
+            program_info['version'],
+            debug = False
             )
         
     except Exception as msg:
