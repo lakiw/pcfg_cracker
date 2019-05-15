@@ -128,6 +128,22 @@ def _load_base_structures(base_structures, base_directory):
     except Exception as error:
         print (error,file=sys.stderr)
         return False
+        
+    ## Add in case mangling to all the alpha characters
+    for base in base_structures:
+        replacement = base['replacements']
+        
+        i=0
+        while i < len(replacement):
+            # It is an alpha string
+            if replacement[i][0] == 'A':
+                # Find the length of the alpha string, (though it is a string)
+                len_str = replacement[i][1:]
+                # Insert the case mangling
+                replacement.insert(i+1,'C' + len_str)
+        
+            i += 1
+            
 
     return True
     

@@ -103,7 +103,13 @@ class CrackingSession:
                 
             self.num_parse_trees += 1
             
-            self.num_guesses += self.pcfg.create_guesses(pt_item['pt'])
+            try:
+                self.num_guesses += self.pcfg.create_guesses(pt_item['pt'])
+            
+            # The receiving program is no longer accepting guesses
+            # Usually occurs after all passwords have been cracked
+            except OSError:
+                break
             
             #print(self.num_guesses)
                                

@@ -216,9 +216,10 @@ class PcfgGrammar:
                 #print("UNICODE_ERROR: " + str(msg),file=sys.stderr) 
                 pass                            
             except:
+                print('',file=sys.stderr)
                 print("Consumer, (probably the password cracker), stopped accepting input.",file=sys.stderr)
                 print("Halting guess generation and exiting",file=sys.stderr)
-                raise
+                raise OSError
     
     
     ## Finds the children for a given parse tree
