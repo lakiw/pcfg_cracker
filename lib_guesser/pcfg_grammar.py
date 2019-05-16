@@ -65,7 +65,7 @@ class PcfgGrammar:
         self.omen_optimizer = Optimizer(max_length = 4)
         
         
-    ## Generates Guesses From a Pase Tree
+    ## Generates Guesses From a Parse Tree
     #
     # This is mostly a wrapper to hide the recursive calls from the calling
     # function
@@ -78,7 +78,7 @@ class PcfgGrammar:
     #
     def create_guesses(self, pt):
         return self._recursive_guesses('',pt)
-        
+          
         
     ## Initalizes and returns a set of parse trees from the base structures
     #
@@ -220,7 +220,7 @@ class PcfgGrammar:
                 print("Consumer, (probably the password cracker), stopped accepting input.",file=sys.stderr)
                 print("Halting guess generation and exiting",file=sys.stderr)
                 raise OSError
-    
+                
     
     ## Finds the children for a given parse tree
     #
@@ -361,4 +361,96 @@ class PcfgGrammar:
             prob *= self.grammar[type][index]['prob']
             
         return prob    
+        
+        
+    ## General code to print out a guess to stderr for status report
+    #
+    # Need to have error handling and want to centerlize all the calls to this so I don't\t
+    # accidently forget some printout somewhere else
+    #
+    def _actually_print_guess_status(self, guess):
+        try:
+            print("Example Guess From Rule: " + guess, file=sys.stderr)
+            
+        ##--While I could silently replace/ignore the Unicode character for now I want to know if this is happening
+        except UnicodeEncodeError as msg:
+            print("Unable to print example guess due to Unprintable Character",file=sys.stderr)                         
+        except Exception as msg:
+            print('',file=sys.stderr)
+            print("Weird error trying to print status.",file=sys.stderr)
+            print(str(msg),file=sys.stderr)   
+
+
+    ## Prints current status for a Parse Tree
+    #
+    # Input Values:
+    #   pt: The parse tree, which is a list of tuples
+    #   cur_guesses: The begining of a guess
+    #                Use default (don't specify) if you are calling it directly
+    #
+    def print_status(self, pt, cur_guess = ''):
+    
+        # Get the transistion category for the current rule, aka 'A' for alpha
+        category = pt[0][0][0]
+        
+        # Get the type for the transistion, Aka A10 for 10 letter long alpha
+        type = pt[0][0]
+        
+        # Get he index into the transition, aka the 2nd most probable A10
+        index = pt[0][1]
+        
+        # If it is a Markov guess
+        if category == 'M':
+            # Get the level
+            level = int(self.grammar[type][index]['values'][0])
+            
+            print("OMEN Cracking Session",file=sys.stderr)
+            print("OMEN Level: " + str(level),file=sys.stderr)
+
+        # If it is a capitalization mask
+        elif category == 'C':
+            
+            mask_len = len(self.grammar[type][index]['values'][0])
+            
+            # Split off the part of the word we need to modify with the mask
+            start_word = [cur_guess[:- mask_len]]
+            end_word = cur_guess[- mask_len:]
+            
+            mask = self.grammar[type][index]['values'][0]
+
+            # Apply the capitalization mask
+            new_end = []
+            index = 0
+            for item in mask:
+                if item == 'L':
+                    new_end.append(end_word[index])
+                else:
+                    new_end.append(end_word[index].upper())
+                index += 1
+                
+            # Recombine the capitalization mask with what came before
+            new_guess = ''.join(start_word + new_end)
+            
+            # Figure out if the guess is ready to be printed out or if
+            # there is more to do
+            if len(pt) == 1:
+            
+                self._actually_print_guess_status(new_guess)
+
+            else:
+                self.print_status(pt[1:], cur_guess = new_guess) 
+            
+        # If it is any striaght replacement, (digits, letters, etc)    
+        else:
+            item = self.grammar[type][index]['values'][0]
+            new_guess = cur_guess + item
+            
+            # Figure out if the guess is ready to be printed out or if
+            # there is more to do
+            if len(pt) == 1:
+            
+                self._actually_print_guess_status(new_guess)
+
+            else:
+                self.print_status(pt[1:],cur_guess = new_guess)            
         

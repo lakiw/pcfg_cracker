@@ -93,12 +93,13 @@ def parse_command_line(program_info):
     ## Debugging and research information
     #
     parser.add_argument(
-        '--queue_info',
-        '-q', 
-        help='Prints the priority queue info vs guesses. Used for debugging',
-        dest='queue_info', 
+        '--debug',
+        '-d', 
+        help='Prints out debugging info vs guesses.',
+        dest='debug', 
         action='store_const', 
-        const= not program_info['queue_info']
+        const= not program_info['debug'],
+        default = program_info['debug']
     )
         
     # Parse all the args and save them    
@@ -108,7 +109,7 @@ def parse_command_line(program_info):
     program_info['rule_name'] = args.rule
    
     # Debugging Options
-    program_info['queue_info'] = args.queue_info
+    program_info['debug'] = args.debug
 
     return True 
 
@@ -130,7 +131,7 @@ def main():
         'rule_name':'Default',
         
         # Debugging Options
-        'queue_info': False,
+        'debug': False,
 
     }
       
@@ -143,7 +144,7 @@ def main():
         # There was a problem with the command line so exit
         print("Exiting...")
         return
-        
+  
     # Get the base directory to load all of the rules from
     #
     # Don't want to use the relative path since who knows where someone is 
@@ -168,7 +169,7 @@ def main():
             program_info['rule_name'], 
             base_directory,
             program_info['version'],
-            debug = False
+            debug = program_info['debug']
             )
         
     except Exception as msg:
@@ -184,8 +185,9 @@ def main():
     # Setup is done, now start generating rules
     print ("Starting to generate password guesses",file=sys.stderr)
     print ("Press [ENTER] to display a status output",file=sys.stderr)
+    print ("Press 'q' [ENTER] to exit",file=sys.stderr)
     
-    current_cracking_session.run(print_queue_info = program_info['queue_info'])
+    current_cracking_session.run()
     
     
 if __name__ == "__main__":
