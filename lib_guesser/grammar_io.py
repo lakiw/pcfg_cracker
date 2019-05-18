@@ -22,6 +22,11 @@ import codecs
 # Input:
 #    rule_name: the name of the ruleset to load
 #
+#    base_directory: The directory to load the ruleset from
+#
+#    version: The version of the guess generator, used to tell if ruleset is
+#             valid for this version
+#
 # Output:
 #    grammar: A loaded PCFG Grammar, minus the (S)tart item and base structures
 #
@@ -67,7 +72,45 @@ def load_grammar(rule_name, base_directory, version):
         raise Exception
     
     return grammar, base_structures, ruleset_info
+    
 
+## Loads the OMEN keyspace information from file
+#
+# This is useful for status outputs to let users know how many guesses
+# are generated for each OMEN level
+#
+# Will not catch exceptions. Passes file execeptions up to calling code
+#
+# Input:
+#    base_directory: The base directory to load the rules from
+#
+# Returns:
+#    omen_keyspace: A dictionary indexed by omen levels with the value being
+#                   the keyspace. Initially empty
+#                   Example:
+#                   {'1':5000, '2':300012, '3':981138888}
+#    
+def load_omen_keyspace(base_directory):
+    filename = os.path.join(base_directory,"Omen","omen_keyspace.txt")
+
+    omen_keyspace = {}
+    
+    # Try to open the file
+    with open(filename, 'r') as file:
+        # Read though all the lines in the file
+        for value in file:
+        
+            # Split up the tab seperated items and then save their values
+            split_values = value.rstrip().split("\t") 
+            
+            level = int(split_values[0])
+            keyspace = int(split_values[1])
+            
+            omen_keyspace[level] = keyspace
+    
+    return omen_keyspace    
+                
+                
 
 ## Loads the base structures for the grammar
 #

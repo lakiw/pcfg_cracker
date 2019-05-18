@@ -48,6 +48,8 @@ if sys.version_info[0] < 3:
 import argparse
 import os
 import traceback
+import configparser # Used to save/load status of guessing sessions
+import datetime
 
 # Local imports
 from lib_guesser.banner_info import print_banner, print_error
@@ -89,6 +91,26 @@ def parse_command_line(program_info):
         required = False,
         default = program_info['rule_name']
     )
+    
+    parser.add_argument(
+        '--session',
+        '-s',
+        help = 'Session name. Used for saving/restoring sessions Default is ' + 
+        program_info['session_name'],
+        metavar = 'SESSION_NAME',
+        required = False,
+        default = program_info['session_name']
+    )
+    
+    parser.add_argument(
+        '--load',
+        '-l', 
+        help='Loads a previous guessing session (NOT IMPLIMENTED)',
+        dest='load', 
+        action='store_const', 
+        const= not program_info['load_session'],
+        default = program_info['load_session']
+    )
 
     ## Debugging and research information
     #
@@ -107,6 +129,8 @@ def parse_command_line(program_info):
     
     # Standard Options
     program_info['rule_name'] = args.rule
+    program_info['session_name'] = args.session
+    program_info['load_session'] = args.load
    
     # Debugging Options
     program_info['debug'] = args.debug
@@ -129,6 +153,8 @@ def main():
         
         # Standard Options
         'rule_name':'Default',
+        'session_name':'default_run',
+        'load_session':False,
         
         # Debugging Options
         'debug': False,
@@ -142,8 +168,29 @@ def main():
     # Parsing the command line
     if not parse_command_line(program_info):
         # There was a problem with the command line so exit
-        print("Exiting...")
+        print("Exiting...",file=sys.stderr)
         return
+  
+    # The configfile to load/save the guessing session status
+    save_filename = os.path.join(
+                        os.path.dirname(os.path.realpath(__file__)),
+                        program_info['session_name'] + '.sav'
+                        ) 
+  
+    # Check to see if we need to load up a previous guessing session
+    if program_info['load_session']:
+        print("Loading previous guessing session: " + program_info['session_name'],file=sys.stderr)
+        save_config = load_save(save_filename, program_info)
+        
+        # Check to make sure it is valid
+        if save_config == None:
+            print("Exiting...",file=sys.stderr)
+            return
+        
+    
+    # Create a new save config    
+    else:
+        save_config = create_save_config(program_info)
   
     # Get the base directory to load all of the rules from
     #
@@ -169,6 +216,7 @@ def main():
             program_info['rule_name'], 
             base_directory,
             program_info['version'],
+            save_config,
             debug = program_info['debug']
             )
         
@@ -178,17 +226,87 @@ def main():
         print("Exiting")
         return
     
+    # Check to make the ruleset is the same if restoring a guessing session
+    if save_config.has_option('rule_info','uuid'):
+        # Looks like the rule was changed since the last session
+        if save_config['rule_info']['uuid'] != pcfg.ruleset_info['uuid']:
+            print("Error: The UUID of the save file and the loaded rules do not match",file=sys.stderr)
+            print("       This normally happens if you retrain a ruleset and then try to restore an old session",file=sys.stderr)
+            print("Exiting...",file=sys.stderr)
     
+    # Initalize the rule UUID for a new guessing session        
+    else:
+        save_config.set('rule_info', 'uuid', pcfg.ruleset_info['uuid'])
+        
     # Initalize the cracking session
-    current_cracking_session = CrackingSession(pcfg = pcfg)
+    current_cracking_session = CrackingSession(pcfg, save_config, save_filename)
     
-    # Setup is done, now start generating rules
-    print ("Starting to generate password guesses",file=sys.stderr)
-    print ("Press [ENTER] to display a status output",file=sys.stderr)
-    print ("Press 'q' [ENTER] to exit",file=sys.stderr)
+    # Setup is done, now start generating rules 
+    current_cracking_session.run(load_session = program_info['load_session'])
     
-    current_cracking_session.run()
     
+## Creates the configparser object that will be used to save/load sessions
+#
+# Input Variables:
+#    program_info: A dictionary containing information about the current session
+#
+# Return Values:
+#    save_config: A configparser containing some of the values to save
+#
+def create_save_config(program_info):
+    
+    save_config = configparser.ConfigParser()
+    
+    section = "rule_info"
+    save_config.add_section(section)
+    save_config.set(section, 'rule_name', program_info['rule_name'])
+    
+    section = "session_info"
+    save_config.add_section(section)
+    save_config.set(section, 'first_started', datetime.datetime.now().isoformat())
+    
+    section = "guessing_info"
+    save_config.add_section(section)
+    
+    return save_config
+    
+    
+## Loads a configparser object containing info about a saved guessing session
+#
+# Input Variables:
+#    base_directory: The directory to load the save file from
+#    
+#    program_info: A dictionary containing information about the current session
+#
+# Return Values:
+#    save_config: A configparser containing some of the values to save
+#
+def load_save(save_filename, program_info):
+
+    save_config = configparser.ConfigParser()
+    
+    try:
+        save_config.read_file(open(save_filename))
+        
+        ## Check to make sure it is well formed
+        #
+        if not save_config.has_option('rule_info', 'rule_name'):
+            raise configparser.Error('Missing rule_name')
+        if not save_config.has_option('rule_info','uuid'):
+            raise configparser.Error('Missing rule uuid')
+        if not save_config.has_option('session_info','last_updated'):
+            raise configparser.Error('Missing last_updated')
+        
+        return save_config
+        
+    except IOError as msg:
+        print("Could not open the session save file.",file=sys.stderr)
+        print("Save File: " + save_filename,file=sys.stderr)
+        return None
+    except configparser.Error as msg:
+        print("Error occured parsing the save file: " + str(msg),file=sys.stderr)
+        return None 
+  
     
 if __name__ == "__main__":
     main()

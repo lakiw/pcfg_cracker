@@ -18,7 +18,7 @@ import copy
 import traceback
 
 # Local imports
-from .grammar_io import load_grammar
+from .grammar_io import load_grammar, load_omen_keyspace
 from .omen.optimizer import Optimizer
 from .omen.input_file_io import load_rules
 from .omen.markov_cracker import MarkovCracker
@@ -34,20 +34,26 @@ class PcfgGrammar:
     #
     #    rule_name: The name of the ruleset to load the grammar from
     #
+    #    base_directory: The directory to load the rule from
+    #
     #    version: The version of the PCFG Guesser. Used to determine if
     #             this program can load a ruleset that may be generated from
     #             an older version of the trainer
     #
-    def __init__(self, rule_name, base_directory, version, debug = False):
+    #    save_config: A configparser object to save session status to
+    #
+    #    debug: A boolean that specifies if a debugging run is occuring or not
+    #
+    def __init__(self, rule_name, base_directory, version, save_config, debug = False):
         
         ## Debugging and Status Information
         #
-        self.encoding = None
         self.rulename = rule_name
         self.debug = debug
+        self.ruleset_info = None
         
         ## If an exception occurs, pass it back up the stack
-        self.grammar, self.base, ruleset_info = load_grammar(rule_name, base_directory, version)
+        self.grammar, self.base, self.ruleset_info = load_grammar(rule_name, base_directory, version)
         
         ## Initailize and load the OMEN grammar and settings
         #
@@ -63,6 +69,11 @@ class PcfgGrammar:
        
         # Initialize the OMEN TMTO optimizer
         self.omen_optimizer = Optimizer(max_length = 4)
+        
+        self.omen_keyspace = load_omen_keyspace(base_directory)
+
+        # Used to track status during an OMEN guessing session
+        self.omen_guess_num = 0
         
         
     ## Generates Guesses From a Parse Tree
@@ -143,13 +154,20 @@ class PcfgGrammar:
             
             mc = MarkovCracker(self.omen_grammar, level, self.omen_optimizer)
             
+            # Initalize counter used for status reports and save files
+            self.omen_guess_num = 0
+            
             guess = mc.next_guess()
             while guess != None:
                 num_guesses += 1
                 
                 # Output the results
                 self.print_guess(cur_guess + guess)
-
+                
+                # Update counter used for status reports and save files
+                self.omen_guess_num += 1
+                
+                # Get next guess
                 guess = mc.next_guess()
 
         # If it is a capitalization mask
@@ -363,32 +381,30 @@ class PcfgGrammar:
         return prob    
         
         
-    ## General code to print out a guess to stderr for status report
-    #
-    # Need to have error handling and want to centerlize all the calls to this so I don't\t
-    # accidently forget some printout somewhere else
-    #
-    def _actually_print_guess_status(self, guess):
-        try:
-            print("Example Guess From Rule: " + guess, file=sys.stderr)
-            
-        ##--While I could silently replace/ignore the Unicode character for now I want to know if this is happening
-        except UnicodeEncodeError as msg:
-            print("Unable to print example guess due to Unprintable Character",file=sys.stderr)                         
-        except Exception as msg:
-            print('',file=sys.stderr)
-            print("Weird error trying to print status.",file=sys.stderr)
-            print(str(msg),file=sys.stderr)   
-
-
-    ## Prints current status for a Parse Tree
+    ## Returns current status for a Parse Tree
     #
     # Input Values:
     #   pt: The parse tree, which is a list of tuples
     #   cur_guesses: The begining of a guess
     #                Use default (don't specify) if you are calling it directly
     #
-    def print_status(self, pt, cur_guess = ''):
+    # Returns:
+    #    guess_status: Dictionary with the following keys depending on if
+    #                  is is an OMEN parse tree or not
+    #
+    #    -Omen PT: {
+    #               'pt':[('M',1)],
+    #               'level':"12",
+    #               'keyspace':123953343,
+    #               'guess_num':19533,
+    #              }
+    #
+    #    -Non-Omen:{
+    #               'pt':[('A3',10),('D2',1)]
+    #                'first_guess': 'cat12'
+    #              }
+    #
+    def get_status(self, pt, cur_guess = ''):
     
         # Get the transistion category for the current rule, aka 'A' for alpha
         category = pt[0][0][0]
@@ -404,8 +420,12 @@ class PcfgGrammar:
             # Get the level
             level = int(self.grammar[type][index]['values'][0])
             
-            print("OMEN Cracking Session",file=sys.stderr)
-            print("OMEN Level: " + str(level),file=sys.stderr)
+            return {
+                     'pt':pt,
+                     'level': level,
+                     'keyspace': self.omen_keyspace[level],
+                     'guess_num': self.omen_guess_num,
+                   }
 
         # If it is a capitalization mask
         elif category == 'C':
@@ -431,26 +451,104 @@ class PcfgGrammar:
             # Recombine the capitalization mask with what came before
             new_guess = ''.join(start_word + new_end)
             
-            # Figure out if the guess is ready to be printed out or if
-            # there is more to do
-            if len(pt) == 1:
             
-                self._actually_print_guess_status(new_guess)
-
-            else:
-                self.print_status(pt[1:], cur_guess = new_guess) 
             
         # If it is any striaght replacement, (digits, letters, etc)    
         else:
             item = self.grammar[type][index]['values'][0]
             new_guess = cur_guess + item
             
-            # Figure out if the guess is ready to be printed out or if
-            # there is more to do
-            if len(pt) == 1:
-            
-                self._actually_print_guess_status(new_guess)
-
-            else:
-                self.print_status(pt[1:],cur_guess = new_guess)            
+        # Figure out if the guess is ready to be printed out or if
+        # there is more to do
+        if len(pt) == 1:
         
+            return {
+                    'pt':pt,
+                    'first_guess': new_guess
+                   } 
+
+        else:
+            return self.get_status(pt[1:],cur_guess = new_guess)            
+        
+        
+        
+    ## Walks through the pt_item restoring children using save_function
+    #
+    # Note: This works recursivly with the first call being passed the base_item
+    #       which is the most probable pt parsing
+    #
+    # Input Values:
+    #   pt_item: A pt_item to parse
+    #   save_function: The function to call to save valid children
+    #   left_index: The index to find children at. The orig calling function should
+    #          not use this
+    #    
+    def restore_prob_order(self, pt_item, max_prob, min_prob, save_function, left_index=0):
+    
+        parent_prob = pt_item['prob']
+        parent_pt = pt_item['pt']
+        parent_len = len(parent_pt)
+        
+        # Too low probability, stop this parsing
+        if parent_prob < min_prob:
+            return
+        
+        # If this node might be inserted into the queue        
+        elif parent_prob <= max_prob:
+            # Check to make sure none of this child's parents are in the queue
+            if not self.is_parent_around(pt_item, max_prob):
+                # Save the node and exit, since we don't need to check its
+                # children
+                save_function(pt_item)
+
+            return
+        
+        # Only find children the left of left_index + left_index itself
+        for pos in range(left_index, parent_len):
+        
+            item = parent_pt[pos]
+            
+            parent_type = item[0]
+            parent_index = item[1]
+                             
+            # If true, there are no children at this level
+            if len(self.grammar[parent_type]) == parent_index +1:
+                continue
+            
+            # Create the child node
+            child = copy.copy(parent_pt)
+            child[pos] = (child[pos][0], child[pos][1]+1)
+            
+            child_item = {
+                    'pt':child,
+                    'base_prob': pt_item['base_prob'],
+                    'prob': self._find_prob(child, pt_item['base_prob'])
+                }
+                
+            # Call the function again for the child
+            self.restore_prob_order(child_item, max_prob, min_prob, save_function, left_index = pos)
+            
+            
+    def is_parent_around(self, pt_item, max_prob):
+        
+        child = pt_item['pt']
+        
+        for pos, item in enumerate(child):
+                
+            # Skip if there is no parent at this position
+            if item[1] == 0:
+                continue
+            
+            # Create the new parent
+            new_parent = copy.copy(child)
+            new_parent[pos] = (new_parent[pos][0], new_parent[pos][1]-1)
+            
+            # Calculate new parent's probability
+            new_parent_prob = self._find_prob(new_parent, pt_item['base_prob'])
+            
+            # Check if the new parent should take care of the child
+            if new_parent_prob < max_prob:
+                return True
+    
+        return False
+            

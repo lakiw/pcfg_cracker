@@ -72,7 +72,14 @@ class PcfgQueue:
 
     ## Basic initialization function
     #
-    def __init__(self, pcfg):
+    # saved_session is a dictionary that takes the following format:
+    #
+    # {
+    #    'min_probability': float,
+    #    'max_probability': float,
+    # }
+    #
+    def __init__(self, pcfg, save_config = None):
     
         # Holds the grammar
         self.pcfg = pcfg
@@ -93,10 +100,23 @@ class PcfgQueue:
         # Note: the queue can temporarially be larger than this
         self.max_queue_size = 50000
         
-        ## Initalize the priority queue with all of the initial base structures
-        #  from the pcfg
+        ## New Guessing Session
+        #
+        if save_config == None:
+            # Initalize the priority queue with all of the initial base 
+            # structures from the pcfg
+            for base_item in self.pcfg.initalize_base_structures():
+                heapq.heappush(self.p_queue, QueueItem(base_item))
+            
+            return
+                
+        ## Restore Guessing Session
+        #
+        self.min_probability = save_config.getfloat('guessing_info', 'min_probability')
+        self.max_probability = save_config.getfloat('guessing_info', 'max_probability')
+        
         for base_item in self.pcfg.initalize_base_structures():
-            heapq.heappush(self.p_queue, QueueItem(base_item))
+            self.restore_base_item(base_item)
             
             
     ## Pops the top value off the queue and inserts children back
@@ -123,11 +143,42 @@ class PcfgQueue:
         # http://diginole.lib.fsu.edu/cgi/viewcontent.cgi?article=5135
         #
         for child in self.pcfg.find_children(queue_item.pt_item):
-            heapq.heappush(self.p_queue, QueueItem(child))
+            self.insert_queue(child)
             
         return queue_item.pt_item
             
+    
+    ## Inserts an item into the pqueue
+    #
+    # Making this its own function in case I decide to change how the pqueue
+    # operates in the future
+    #
+    # Input Values:
+    #    queue_item: The value to save in the pqueue
+    #
+    def insert_queue(self, queue_item):    
+        heapq.heappush(self.p_queue, QueueItem(queue_item))
+    
+    
+    ## Restores all the items from the base_item to the pqueue
+    #
+    # This is used to restore a previous guessing session
+    #
+    # Input Values:
+    #    base_item: A pt of the most probable pre-terminal for a base_item
+    #
+    def restore_base_item(self, base_item):   
+        self.pcfg.restore_prob_order(base_item, self.max_probability, self.min_probability, self.insert_queue)
         
         
+    ## Updates the config file for saving/loading sessions, with current status
+    #
+    # Input Values:
+    #    save_config: A configparser object to save the current state
+    #
+    def update_save_config(self, save_config):
+        save_config.set('guessing_info', 'min_probability', str(self.min_probability))
+        save_config.set('guessing_info', 'max_probability', str(self.max_probability))    
+     
 
         
