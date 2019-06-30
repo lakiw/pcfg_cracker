@@ -10,6 +10,7 @@
 
 import sys
 import datetime
+import time
 
 
 ## Used to keep track of a gussing session's status
@@ -34,6 +35,12 @@ class StatusReport:
         # Probability Coverage
         # See https://github.com/lakiw/pcfg_cracker/issues/9
         self.probability_coverage = 0
+        
+        # The total time generating guesses in previoius sessions (seconds)
+        self.past_guessing_time = 0
+        
+        # The start time of the current run
+        self.start_time = time.perf_counter()
         
     
     ## Prints a status report to stderr
@@ -64,6 +71,14 @@ class StatusReport:
             print("Total Guesses (Approximate): " + "{:,}".format(self.num_guesses + status_item['guess_num']),file=sys.stderr)
         else:
             print("Total Guesses (Approximate): " + "{:,}".format(self.num_guesses),file=sys.stderr)
+            
+        # Time spent generating guesses
+        total_time, current_session_time = self._calc_running_time()
+        
+        print("Total Guessing Time: ", end='', file=sys.stderr)
+        self._print_time(total_time)
+        print("Session Guessing Time: ", end='', file=sys.stderr)
+        self._print_time(current_session_time)
             
         print("Number of Pre-Terminals (Rules) Processed: " + "{:,}".format(self.num_parse_trees),file=sys.stderr)
         print("Probability Coverage: " + str(self.probability_coverage),file=sys.stderr)
@@ -102,7 +117,68 @@ class StatusReport:
             print("Weird error trying to print status.",file=sys.stderr)
             print(str(msg),file=sys.stderr)
 
+    
+    ## Prints the Days, Hours, Minutes and Seconds from a total number of seconds
+    #
+    # Used for formating the status output
+    #
+    def _print_time(self, time):
+        days = time // (24 * 3600)
+        time = time % (24 * 3600)
+        hours = time // 3600
+        time %= 3600
+        minutes = time // 60
+        time %= 60
+        seconds = time
+        
+        # Tell it to print out Hours, Minutes if there was a field printed
+        # before this
+        print_rest = False
+        
+        if days != 0:
+            print_rest = True
+            if days == 1:
+                print(str(days) +" Day, ", end='', file=sys.stderr)
+            else:
+                print(str(days) +" Day, ", end='', file=sys.stderr)
+            
+        if print_rest or hours != 0:
+            print_rest = True
+            if hours == 1:
+                print(str(hours) +" Hour, ", end='', file=sys.stderr)
+            else:
+                print(str(hours) +" Hours, ", end='', file=sys.stderr)
+        
+        if print_rest or minutes != 0:
+            print_rest = True
+            if minutes == 1:
+                print(str(minutes) +" Minute, ", end='', file=sys.stderr)
+            else:
+                print(str(minutes) +" Minutes, ", end='', file=sys.stderr)
+         
+        if seconds == 1:
+            print(str(seconds) +" Second", file=sys.stderr)
+        else:
+            print(str(seconds) +" Seconds", file=sys.stderr)
 
+    ## Returns the total time a cracking session has been actively running
+    #
+    # Putting this in a function to make it easier to poll
+    # Note, this will round down to the nearest second
+    #
+    # Returns:
+    #   total_time : The total time cracking sessions have been run (seconds)
+    #
+    #   current_session : The time in the current session (since load) (seconds)
+    #
+    def _calc_running_time(self):
+    
+        current_session = time.perf_counter() - self.start_time
+        total_time = self.past_guessing_time + current_session
+        
+        return int(total_time), int(current_session)
+        
+        
     ## Prints out help info for the status report
     #
     def print_help(self):
@@ -112,6 +188,17 @@ class StatusReport:
         print("    Total Guesses:", file=sys.stderr)
         print("        Overview: Approximate number of guesses generated so far", file=sys.stderr) 
         print("        Misc: Not 100% accurate as this is updated periodically", file=sys.stderr)
+        print("", file=sys.stderr)
+        print("    Total Guessing Time:", file=sys.stderr)
+        print("        Overview: Total time spent generating guesses", file=sys.stderr) 
+        print("        Misc: This includes time from previous run if you have", file=sys.stderr)
+        print("              restored/loaded this guessing session", file=sys.stderr)
+        print("", file=sys.stderr)
+        print("    Session Guessing Time:", file=sys.stderr)
+        print("        Overview: Time spent this session generating guesses", file=sys.stderr) 
+        print("        Misc: This does not include previous time if you loaded", file=sys.stderr)
+        print("              this guessing session. If this is your first run,", file=sys.stderr)
+        print("              then this should match total guessing time.", file=sys.stderr)
         print("", file=sys.stderr)
         print("    Number of Pre-Terminals:", file=sys.stderr)
         print("        Overview: Can be viewed as the number of rules that have", file=sys.stderr)
@@ -182,7 +269,9 @@ class StatusReport:
         save_config.set('session_info', 'num_guesses', str(self.num_guesses))
         save_config.set('session_info', 'num_parse_trees', str(self.num_parse_trees))    
         save_config.set('session_info', 'probability_coverage', str(self.probability_coverage)) 
-        save_config.set('session_info', 'last_updated', datetime.datetime.now().isoformat())    
+        save_config.set('session_info', 'last_updated', datetime.datetime.now().isoformat())
+        total_time, current_session_time = self._calc_running_time()
+        save_config.set('session_info', 'running_time', str(total_time))
 
 
     ## Loads data from a previously saved session
@@ -193,5 +282,5 @@ class StatusReport:
     def load(self, save_config):
         self.num_guesses = save_config.getint('session_info', 'num_guesses')
         self.num_parse_trees = save_config.getint('session_info', 'num_parse_trees')    
-        self.probability_coverage = save_config.getfloat('session_info', 'probability_coverage') 
-    
+        self.probability_coverage = save_config.getfloat('session_info', 'probability_coverage')
+        self.past_guessing_time = save_config.getint('session_info','running_time')

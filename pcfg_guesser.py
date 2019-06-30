@@ -179,7 +179,7 @@ def main():
   
     # Check to see if we need to load up a previous guessing session
     if program_info['load_session']:
-        print("Loading previous guessing session: " + program_info['session_name'],file=sys.stderr)
+        print("Restoring previous session: " + program_info['session_name'],file=sys.stderr)
         save_config = load_save(save_filename, program_info)
         
         # Check to make sure it is valid

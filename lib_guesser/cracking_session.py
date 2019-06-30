@@ -42,7 +42,7 @@ class CrackingSession:
         self.pcfg = pcfg
         
         # The guessing session modes
-        self.mode = "priority_queue"
+        self.mode = "priority_queue"          
         
         
     ## Starts the cracking session and starts generating guesses
@@ -62,6 +62,7 @@ class CrackingSession:
         ## Load session described in previously saved configfile
         #        
         else:
+            print ("Restoring saved progress...",file=sys.stderr)
             # Update the status report so things like probability coverage
             # reflect what was done before
             self.report.load(self.save_config)

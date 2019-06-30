@@ -177,17 +177,20 @@ def parse_command_line(program_info):
     # Smoothing is used to smooth out differences in probabilities between 
     # different items. Higher smoothing will slightly speed up the cracker
     # and reduce its memory usage significanlty, but makes it less precise
-    parser.add_argument(
-        '--smoothing', 
-        '-s', 
-        help = '<ADVANCED> The amount of probability smoothing to apply to ' +
-        'the generated grammar. For example, if it is 0.01 then items with ' +
-        'a prob difference of 1%% will be given the same prob. A setting ' +
-        'of 0 will turn this off. Default: ' +  str(program_info['smoothing']),
-        required = False, 
-        default = program_info['smoothing'], 
-        type = float
-    )
+    #
+    # Note, not implimented yet
+    #
+    #parser.add_argument(
+    #    '--smoothing', 
+    #    '-s', 
+    #    help = '<ADVANCED> The amount of probability smoothing to apply to ' +
+    #    'the generated grammar. For example, if it is 0.01 then items with ' +
+    #    'a prob difference of 1%% will be given the same prob. A setting ' +
+    #    'of 0 will turn this off. Default: ' +  str(program_info['smoothing']),
+    #    required = False, 
+    #    default = program_info['smoothing'], 
+    #    type = float
+    #)
     
     # Sets the coverage of the trained grammer. Set it to 1.0 to disable Markov
     # guesses. If you set it to 0.0 it will only generate Markov guesses.
@@ -216,15 +219,15 @@ def parse_command_line(program_info):
     program_info['alphabet_size'] = args.alphabet
     
     # Advanced Options
-    program_info['smoothing'] = args.smoothing
+    #program_info['smoothing'] = args.smoothing
     program_info['coverage'] = args.coverage
 
     ## Sanity checking of values
     #
     # Check to make sure smoothing makes sense
-    if program_info['smoothing'] < 0 or program_info['smoothing'] > 0.9:
-        print("Error, smoothing must be a value between 0.9 and 0")
-        return False
+    #if program_info['smoothing'] < 0 or program_info['smoothing'] > 0.9:
+    #    print("Error, smoothing must be a value between 0.9 and 0")
+    #    return False
          
     # Check to make sure coverage makes sense
     if program_info['coverage'] < 0 or program_info['coverage'] > 1.0:

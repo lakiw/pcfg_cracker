@@ -10,3 +10,5 @@
 */Rules/Test*
 */Rules/*
 Rules/*
+# Don't commit save files
+*.sav
