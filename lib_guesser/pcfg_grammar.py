@@ -44,7 +44,7 @@ class PcfgGrammar:
     #
     #    debug: A boolean that specifies if a debugging run is occuring or not
     #
-    def __init__(self, rule_name, base_directory, version, save_config, debug = False):
+    def __init__(self, rule_name, base_directory, version, save_config, skip_brute, debug = False):
         
         ## Debugging and Status Information
         #
@@ -53,7 +53,7 @@ class PcfgGrammar:
         self.ruleset_info = None
         
         ## If an exception occurs, pass it back up the stack
-        self.grammar, self.base, self.ruleset_info = load_grammar(rule_name, base_directory, version)
+        self.grammar, self.base, self.ruleset_info = load_grammar(rule_name, base_directory, version, skip_brute)
         
         ## Initailize and load the OMEN grammar and settings
         #

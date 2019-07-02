@@ -96,7 +96,7 @@ def parse_command_line(program_info):
         '--session',
         '-s',
         help = 'Session name. Used for saving/restoring sessions Default is ' + 
-        program_info['session_name'],
+            program_info['session_name'],
         metavar = 'SESSION_NAME',
         required = False,
         default = program_info['session_name']
@@ -105,11 +105,23 @@ def parse_command_line(program_info):
     parser.add_argument(
         '--load',
         '-l', 
-        help='Loads a previous guessing session (NOT IMPLIMENTED)',
+        help='Loads a previous guessing session',
         dest='load', 
         action='store_const', 
         const= not program_info['load_session'],
         default = program_info['load_session']
+    )
+    
+    ## Markov bruteforce options
+    #
+    parser.add_argument(
+        '--skip_brute',
+        help='Do not perform Markov based guesses using OMEN. This is useful ' +
+            'if you are running a seperate dedicated Markov based attack',
+        dest='skip_brute', 
+        action='store_const', 
+        const= not program_info['skip_brute'],
+        default = program_info['skip_brute']
     )
 
     ## Debugging and research information
@@ -131,6 +143,9 @@ def parse_command_line(program_info):
     program_info['rule_name'] = args.rule
     program_info['session_name'] = args.session
     program_info['load_session'] = args.load
+    
+    # Markov Options
+    program_info['skip_brute'] = args.skip_brute
    
     # Debugging Options
     program_info['debug'] = args.debug
@@ -155,6 +170,9 @@ def main():
         'rule_name':'Default',
         'session_name':'default_run',
         'load_session':False,
+        
+        # Markov Options
+        'skip_brute': False,
         
         # Debugging Options
         'debug': False,
@@ -217,6 +235,7 @@ def main():
             base_directory,
             program_info['version'],
             save_config,
+            skip_brute = program_info['skip_brute'],
             debug = program_info['debug']
             )
         
@@ -260,6 +279,7 @@ def create_save_config(program_info):
     section = "rule_info"
     save_config.add_section(section)
     save_config.set(section, 'rule_name', program_info['rule_name'])
+    save_config.set(section, 'skip_brute', str(program_info['skip_brute']))
     
     section = "session_info"
     save_config.add_section(section)
@@ -294,6 +314,8 @@ def load_save(save_filename, program_info):
             raise configparser.Error('Missing rule_name')
         if not save_config.has_option('rule_info','uuid'):
             raise configparser.Error('Missing rule uuid')
+        if not save_config.has_option('rule_info','skip_brute'):
+            raise configparser.Error('Missing the skip_brute flag for session')
         if not save_config.has_option('session_info','last_updated'):
             raise configparser.Error('Missing last_updated')
         

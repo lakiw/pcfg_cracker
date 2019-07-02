@@ -47,7 +47,7 @@ import codecs
 #
 #    ruleset_info: A dictionary containing general information about the ruleset
 #
-def load_grammar(rule_name, base_directory, version):
+def load_grammar(rule_name, base_directory, version, skip_brute):
 
     # Holds general information about the grammar
     ruleset_info = {
@@ -68,7 +68,7 @@ def load_grammar(rule_name, base_directory, version):
         
     # Holds the base structures
     base_structures = []
-    if not _load_base_structures(base_structures, base_directory):
+    if not _load_base_structures(base_structures, base_directory, skip_brute):
         raise Exception
     
     return grammar, base_structures, ruleset_info
@@ -129,13 +129,37 @@ def load_omen_keyspace(base_directory):
 #
 #    False: Config failed to load 
 #
-def _load_base_structures(base_structures, base_directory):
+def _load_base_structures(base_structures, base_directory, skip_brute):
     
     filename = os.path.join(base_directory,"grammar","grammar.txt")
     
     # Try to open the file
     try:
         with open(filename, 'r') as file:
+        
+            # If skip_brute is enabled, find out what probability is
+            # assigned to brute force guesses if any
+            
+            # This is the maximum probability the grammar is compared against
+            # Need to specify this because if we remove brute force structures
+            # the total prob needs to be reduced so everything else can be
+            # normalized against the new total prob.
+            total_prob= 1.0
+            
+            if skip_brute:
+                for value in file:
+                    # Split up the tab seperated items and then save their values
+                    split_values = value.rstrip().split("\t") 
+                    
+                    # Found the brute force section, record probabilty and break
+                    # out of the loop
+                    if split_values[0] == 'M':
+                        total_prob = total_prob - float(split_values[1])
+                        
+                        # Reset the file pointer and exit
+                        file.seek(0)
+                        break
+            
             # Read though all the lines in the file
             for value in file:
             
@@ -143,7 +167,7 @@ def _load_base_structures(base_structures, base_directory):
                 split_values = value.rstrip().split("\t") 
                 
                 value = split_values[0]
-                prob = float(split_values[1])
+                prob = float(split_values[1]) / total_prob
                 
                 new_base = {
                     'prob':prob,
@@ -161,7 +185,10 @@ def _load_base_structures(base_structures, base_directory):
                         new_base['replacements'][-1] += item
                 
                 # Save the base structure
-                base_structures.append(new_base)
+                #
+                # Note if we are skipping Markov attacks, don't save that 
+                if not skip_brute or 'M' not in new_base['replacements']:
+                    base_structures.append(new_base)             
             
     except IOError as error:
         print (error,file=sys.stderr)
