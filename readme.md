@@ -15,11 +15,12 @@ My 2010 dissertation which describes several advanced features such as the updat
 [https://diginole.lib.fsu.edu/islandora/object/fsu%3A175769](https://diginole.lib.fsu.edu/islandora/object/fsu%3A175769)
 
 ### Wiki
-Since it doesn't require pushing new versions to update it, the wiki is a source of random notes about this project:
+Since it does not require pushing new versions to update it, the wiki is a source of random notes about this project:
 [https://github.com/lakiw/pcfg_cracker/wiki](https://github.com/lakiw/pcfg_cracker/wiki)
 
 ### Documents Folder
-Several documents can also be found in the "Documents" folder of this repository.
+Several documents can also be found in the Documents folder of this repository.
+ - **pcfg_next_function_overview.pptx:** A slidedeck talking about the pcfg next function. The intended audience for this is developers and academic researchers.
 
 ## Overview
 
