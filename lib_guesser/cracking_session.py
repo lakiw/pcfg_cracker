@@ -80,7 +80,25 @@ class CrackingSession:
         user_thread = threading.Thread(target=keypress, args=(self.report, self.pcfg))
         user_thread.daemon = True  # thread dies when main thread (only non-daemon thread) exits.
         user_thread.start()
-                            
+        
+        ## Check to see if we are restoring an OMEN session
+        #
+        if load_session:
+            # If true, we need to restart an OMEN guessing session
+            if self.save_config.has_option('guessing_info','omen_guess_number'):
+
+                # Create a fake pt_item for the status reports while generating
+                # OMEN guesses. Will fill it in when we restore OMEN session
+                self.report.pt_item = {
+                    'prob': self.save_config.getfloat('guessing_info','max_probability'),
+                    'pt':[['M',1,1]],
+                    'level':1,
+                }
+                    
+                omen_guess_num = self.save_config.getint('guessing_info','omen_guess_number')
+                num_generated_guesses = self.pcfg.restore_omen(omen_guess_num, self.report.pt_item)
+                self.report.num_guesses += num_generated_guesses
+                
         # Keep running while the p_queue.next_function still has items in it
         while True:
                  
@@ -145,6 +163,10 @@ class CrackingSession:
         # Priority Queue Mode
         if self.mode == "priority_queue":
             self.pqueue.update_save_config(self.save_config)
+        
+        #OMEN Guessing is going on so save the current state
+        if self.pcfg.omen_exit:
+            self.save_config.set('guessing_info', 'omen_guess_number', str(self.pcfg.omen_guess_num))
     
         # Save the configuration file
         try:
@@ -179,6 +201,7 @@ def keypress(report, pcfg):
             print ("      but if you exit early and later restart the session ",file=sys.stderr)
             print ("      it will begin with the previous pre-terminal",file=sys.stderr)
             print ("",file=sys.stderr)
+            pcfg.should_exit = True
             return
             
         # Print the help screen

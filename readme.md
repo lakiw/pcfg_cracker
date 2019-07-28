@@ -1,15 +1,30 @@
-# Welcome to the Probabilistic Context Free Grammar Password Research Project
+# Welcome to the PCFG Password Research Project
+
+PCFG = Probabilistic Context Free Grammar
+PCFG = Pretty Cool Fuzzy Guesser
+
+In short: A collection of tools to perform research into how humans generate passwords. These can be used to crack password hashes, but also create synthetic passwords (honeywords), or help develop better password stength algorithms
 
 ## Documentation
 
-Please see the wiki pages of this git repo for additional documentation
+### Academic Papers:
+Original 2009 IEEE Security and Privacy paper on PCFGs for password cracking:
+[https://ieeexplore.ieee.org/abstract/document/5207658](https://ieeexplore.ieee.org/abstract/document/5207658)
+
+My 2010 dissertation which describes several advanced features such as the updated "next" algorithm:
+[https://diginole.lib.fsu.edu/islandora/object/fsu%3A175769](https://diginole.lib.fsu.edu/islandora/object/fsu%3A175769)
+
+### Wiki
+Since it doesn't require pushing new versions to update it, the wiki is a source of random notes about this project:
+[https://github.com/lakiw/pcfg_cracker/wiki](https://github.com/lakiw/pcfg_cracker/wiki)
+
+### Documents Folder
+Several documents can also be found in the "Documents" folder of this repository.
 
 ## Overview
 
-This is a major area of research for me, and something that I truly believe in. For years, we have been applying probability models to help speed up brute force attacks, (aka letter frequency analysis and Markov Models). At the same time though, our approach to dictionary based attacks has been fairly ad-hoc. John the Ripper’s default, (and single mode), rules while built based on their creators experiences with cracking passwords, are still extremely subjective. For example I’ve found very few passwords in my cracking attacks that were created by reversing an input dictionary word. Cain and Able, while a great product, probably has the most bizarre rule selection in that it focuses on capitalization mangling at the expense of just about everything else, (though it will also add two numbers to the end of words and replace letters with numbers). AccessData orders their default rule set not on how effective the rules are but by how large the search space is for each rule. This is not a slam on these approaches but I do think that as passwords become stronger and stronger, (either through user training or password creation policies), we need to improve how we generate and use word mangling rules.
-
-The main goal of this project is to see if we can assign probabilities to different word mangling rules and then generate password guesses in probability order. There are several advantages I feel this approach offers us.  First, by designing a way to measure the probability of word mangling rules, we can quickly generate new rules by training our password cracker on known passwords that we feel are similar to the target. This way, we will be able to train our cracker to go against English speakers, Russian speakers, passwords created for social networking sites, passwords created with a strong password creation strategy, etc. If you’ve ever spent time editing a John the Ripper config file, you know that ability to automatically generate rules is very nice. Second, it allows us to more effectively target strong passwords. Just like with letter frequency analysis, the letter “z” may be uncommon, but the string “aaaaz” may be more probable than the string “dfttp” since it takes into account the probability of all the letters. Likewise, by using a probability model of how passwords are created, we can better balance the order of how multiple word mangling rules are applied to password guesses. For example, the guess “$$password63” may be more probable than “!*password12”. Not only does this technique apply to word mangling rules, but also to the input words themselves. We know that the word “password” is more probable than the word “zebra”. Using a probabilistic approach gives us a framework to make use of this knowledge.
+This is a major area of research for me, and something that I truly believe in. 
 
 ## Special Thanks and Acknowledgements:
 
-The original version of the program was written Bill Glodek, another graduate student at Florida State University. The original idea for using probabilistic context free grammars to represent how people create passwords was Dr. Sudhir Aggarwal’s and Professor Breno de Medeiros’s. Basically I was lucky enough to come in at the right time to assist with the start of the program and help carry it on once Bill graduated.
+

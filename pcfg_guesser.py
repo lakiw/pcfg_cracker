@@ -234,7 +234,7 @@ def main():
             program_info['rule_name'], 
             base_directory,
             program_info['version'],
-            save_config,
+            save_filename,
             skip_brute = program_info['skip_brute'],
             debug = program_info['debug']
             )

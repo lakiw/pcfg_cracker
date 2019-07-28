@@ -8,7 +8,7 @@
 
 import sys
 import os 
-
+import pickle # Used for saving sessions
 
 from .guess_structure import GuessStructure
            
@@ -198,3 +198,54 @@ class MarkovCracker:
                 return False
        
     
+    ## Saves a cracking session to disk
+    #
+    # Note: Using python pickles just to make coding it easier
+    #       Of course that makes debugging harder, and the overall saving slower though. 
+    #       May move away from this in the future
+    #
+    def save_session(self, file_name):
+        with open(file_name, 'wb') as file:
+            
+            # Save the Markov Cracker variables here
+            pickle.dump(self.target_level, file)        
+            pickle.dump(self.cur_ip, file)
+            pickle.dump(self.cur_len, file)
+            
+            # Save the guess structure variables here, not saving the full guess structure since it
+            # includes a link to the grammar itself.
+            pickle.dump(self.cur_guess.parse_tree, file)
+            pickle.dump(self.cur_guess.first_guess, file)
+            
+    
+    ## Restores a session from disk
+    #
+    def load_session(self, file_name, pt_item):
+        with open(file_name, 'rb') as file:
+            
+            # Reset the options for the Markov Cracker
+            self.target_level = pickle.load(file)         
+            self.cur_ip = pickle.load(file)
+            self.cur_len = pickle.load(file)
+            
+            # Reset the current guess
+            parse_tree = pickle.load(file)
+            first_guess = pickle.load(file)
+               
+            self.cur_guess = GuessStructure(
+                cp = self.grammar['cp'],
+                max_level = self.max_level,                      
+                ip = self.grammar['ip'][self.cur_ip[0]][self.cur_ip[1]],
+                cp_length = self.grammar['ln'][self.cur_len[0]][self.cur_len[1]],
+                target_level = self.target_level - self.cur_len[0] - self.cur_ip[0],
+                optimizer = self.optimizer
+                )    
+        
+            # Update the status report item with the real level
+            pt_item['pt'][0][1] = self.target_level -1
+            pt_item['pt'][0][2] = self.target_level -1
+            
+            self.cur_guess.parse_tree = parse_tree
+            self.cur_guess.first_guess = first_guess
+            
+            

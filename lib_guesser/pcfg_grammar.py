@@ -40,11 +40,11 @@ class PcfgGrammar:
     #             this program can load a ruleset that may be generated from
     #             an older version of the trainer
     #
-    #    save_config: A configparser object to save session status to
+    #    save_file: The file to save results to
     #
     #    debug: A boolean that specifies if a debugging run is occuring or not
     #
-    def __init__(self, rule_name, base_directory, version, save_config, skip_brute, debug = False):
+    def __init__(self, rule_name, base_directory, version, save_file, skip_brute, debug = False):
         
         ## Debugging and Status Information
         #
@@ -74,6 +74,16 @@ class PcfgGrammar:
 
         # Used to track status during an OMEN guessing session
         self.omen_guess_num = 0
+        
+        # Used to tell long running guess generators, (like OMEN), that
+        # the user wants to exit the program
+        self.should_exit = False
+        
+        # If this exited in the middle of an OMEN guessing session
+        self.omen_exit = False
+        
+        # Base filename for save files
+        self.save_file = save_file
         
         
     ## Generates Guesses From a Parse Tree
@@ -157,18 +167,7 @@ class PcfgGrammar:
             # Initalize counter used for status reports and save files
             self.omen_guess_num = 0
             
-            guess = mc.next_guess()
-            while guess != None:
-                num_guesses += 1
-                
-                # Output the results
-                self.print_guess(cur_guess + guess)
-                
-                # Update counter used for status reports and save files
-                self.omen_guess_num += 1
-                
-                # Get next guess
-                guess = mc.next_guess()
+            return self.omen_generate_guesses(mc)
 
         # If it is a capitalization mask
         elif category == 'C':
@@ -218,7 +217,49 @@ class PcfgGrammar:
                     num_guesses += self._recursive_guesses(new_guess, pt[1:])                             
                 
         return num_guesses
-        
+    
+
+    ## Generates OMEN Guesses
+    #
+    # Making this its own functions so that the load/restore and generate guesses
+    # from a normal session options can re-use this code
+    #
+    # Variables:
+    #
+    #     mc: An OMEN MarkovCracker instance
+    #
+    # Returns:
+    #
+    #     num_guesses: The number of guesses generated for this OMEN session
+    #
+    def omen_generate_guesses(self, mc):
+    
+        num_guesses = 0
+        guess = mc.next_guess()
+        while guess != None:
+            num_guesses += 1
+            
+            # Output the results
+            self.print_guess(guess)
+            
+            # Update counter used for status reports and save files
+            self.omen_guess_num += 1
+            
+            # Check to see if the user wanted to exit the program
+            if self.should_exit:
+                self.omen_exit = True
+                print("Saving OMEN guess generation status",file=sys.stderr)
+                
+                # Note, need to add the new extension onto omen session
+                # files for now
+                mc.save_session(self.save_file[:-4] + ".omn")
+                return num_guesses
+            
+            # Get next guess
+            guess = mc.next_guess()
+            
+        return num_guesses
+
 
     ## General code to print out a guess to stdout
     #
@@ -405,7 +446,7 @@ class PcfgGrammar:
     #              }
     #
     def get_status(self, pt, cur_guess = ''):
-    
+
         # Get the transistion category for the current rule, aka 'A' for alpha
         category = pt[0][0][0]
         
@@ -551,4 +592,18 @@ class PcfgGrammar:
                 return True
     
         return False
+        
+        
+    ## Restores an OMEN guessing session and starts generating OMEN guesses
+    #
+    def restore_omen(self, omen_guess_num, pt_item):
+    
+        # Initialize, then restore the markovcracker
+        mc = MarkovCracker(self.omen_grammar, 1, self.omen_optimizer)
+        mc.load_session(self.save_file[:-4]+'.omn', pt_item)
+            
+        # Initalize counter used for status reports and save files
+        self.omen_guess_num = omen_guess_num
+        
+        return self.omen_generate_guesses(mc)
             

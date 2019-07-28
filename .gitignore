@@ -12,3 +12,4 @@
 Rules/*
 # Don't commit save files
 *.sav
+*.omn
