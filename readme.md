@@ -1,4 +1,6 @@
 PCFG = Probabilistic Context Free Grammar
+
+
 PCFG = Pretty Cool Fuzzy Guesser
 
 In short: A collection of tools to perform research into how humans generate passwords. These can be used to crack password hashes, but also create synthetic passwords (honeywords), or help develop better password strength algorithms
