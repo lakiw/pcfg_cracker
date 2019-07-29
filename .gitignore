@@ -7,6 +7,8 @@
 
 # Don't ignore the default ruleset
 !*/Rules/Default
+!Rules/Default/*
+!*/Rules/Default/*
 
 # Ignore any other ruleset so I don't accidently upload something I don't want
 # to
