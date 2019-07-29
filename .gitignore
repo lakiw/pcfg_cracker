@@ -4,12 +4,15 @@
 *.swp
 *.swo
 *.pyc
-# Removing Rules for now during development since this will be messy and the
-# rules themselves don't offer any value to anyone else until a release
-# version is created
-*/Rules/Test*
+
+# Don't ignore the default ruleset
+!*/Rules/Default
+
+# Ignore any other ruleset so I don't accidently upload something I don't want
+# to
 */Rules/*
 Rules/*
+
 # Don't commit save files
 *.sav
 *.omn
