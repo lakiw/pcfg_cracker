@@ -131,7 +131,7 @@ def load_omen_keyspace(base_directory):
 #
 def _load_base_structures(base_structures, base_directory, skip_brute):
     
-    filename = os.path.join(base_directory,"grammar","grammar.txt")
+    filename = os.path.join(base_directory,"Grammar","grammar.txt")
     
     # Try to open the file
     try:
