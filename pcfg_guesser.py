@@ -319,6 +319,8 @@ def load_save(save_filename, program_info):
         if not save_config.has_option('session_info','last_updated'):
             raise configparser.Error('Missing last_updated')
         
+        # Set the skip_brute flag
+        program_info['skip_brute'] = save_config.getboolean('rule_info','skip_brute')
         return save_config
         
     except IOError as msg:
