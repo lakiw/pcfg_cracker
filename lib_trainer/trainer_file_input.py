@@ -219,8 +219,9 @@ class TrainerFileInput:
                     if e.reason == 'surrogates not allowed':
                         self.num_encoding_errors += 1
                     else:
-                        print("Hmm, there was a weird problem reading in a line from the training file")
-                        print("")
+                        #print("Hmm, there was a weird problem reading in a line from the training file")
+                        #print("")
+                        self.num_encoding_errors += 1
                     continue
                 
                 # Remove newlines but leave whitespace
