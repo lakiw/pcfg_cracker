@@ -251,7 +251,10 @@ def main():
         if save_config['rule_info']['uuid'] != pcfg.ruleset_info['uuid']:
             print("Error: The UUID of the save file and the loaded rules do not match",file=sys.stderr)
             print("       This normally happens if you retrain a ruleset and then try to restore an old session",file=sys.stderr)
+            print("       Expected UUID: " + str(save_config['rule_info']['uuid']), file=sys.stderr)
+            print("       Found UUID: " + str(pcfg.ruleset_info['uuid']), file=sys.stderr)
             print("Exiting...",file=sys.stderr)
+            return
     
     # Initalize the rule UUID for a new guessing session        
     else:
@@ -318,9 +321,13 @@ def load_save(save_filename, program_info):
             raise configparser.Error('Missing the skip_brute flag for session')
         if not save_config.has_option('session_info','last_updated'):
             raise configparser.Error('Missing last_updated')
+            
+        # Set the ruleset info
+        program_info['rule_name'] = save_config.get('rule_info','rule_name')
         
         # Set the skip_brute flag
         program_info['skip_brute'] = save_config.getboolean('rule_info','skip_brute')
+        
         return save_config
         
     except IOError as msg:
