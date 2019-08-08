@@ -24,6 +24,7 @@ from .alpha_detection import alpha_detection
 from .digit_detection import digit_detection
 from .other_detection import other_detection
 from .base_structure import base_structure_creation
+from .prince_metrics import prince_evaluation
 
 
 ## Responsible for parsing passwords to train a PCFG grammar
@@ -73,6 +74,7 @@ class PCFGPasswordParser:
         self.count_other = {}
         self.count_base_structures = Counter()
         self.count_raw_base_structures = Counter()
+        self.count_prince = Counter()
     
     
     ## Main function called to parse an individual password
@@ -144,6 +146,11 @@ class PCFGPasswordParser:
         found_other_strings = other_detection(section_list)
         
         self._update_counter_len_indexed(self.count_other, found_other_strings)
+        
+        # Calculate the counts of the individual sections for PRINCE dictionary 
+        # creation
+        
+        prince_evaluation(self.count_prince, section_list)
         
         # Now after all the other parsing is done, create the base structures
         
