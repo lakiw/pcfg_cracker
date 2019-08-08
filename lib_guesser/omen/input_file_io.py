@@ -146,7 +146,7 @@ def _load_ngrams(base_directory, filename, grammar, name, ngram_size):
         full_file_path = os.path.join(base_directory, filename)
         
         ##--Open the file for reading
-        with open(full_file_path, 'r') as file:
+        with codecs.open(full_file_path, 'r', encoding= grammar['alphabet_encoding'], errors= 'strict') as file:
             for line in file:
                 line = line.rstrip('\n\r').split('\t')
 
