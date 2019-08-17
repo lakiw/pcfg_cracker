@@ -105,6 +105,16 @@ def parse_command_line(program_info):
         type = int, 
     )
     
+    # Only generate lowercase words for the wordlist
+    parser.add_argument(
+        '--all_lower',
+        help='Only save lowercase words. No case mangling.', 
+        dest='skip_case', 
+        action='store_const', 
+        const= not program_info['skip_case'],
+        default = program_info['skip_case']
+    )
+    
     # Parse all the args and save them    
     args=parser.parse_args() 
     
@@ -112,6 +122,9 @@ def parse_command_line(program_info):
     program_info['rule_name'] = args.rule
     program_info['output_file']= args.output
     program_info['max_size'] = args.size
+    
+    # Advanced options
+    program_info['skip_case'] = args.skip_case
     
     ## Sanity checking of values
     #
@@ -140,6 +153,9 @@ def main():
         'rule_name':'Default',
         'output_file':None,
         'max_size':None,
+        
+        # Advanced Options
+        'skip_case':False,
         
     }
     
@@ -178,6 +194,7 @@ def main():
             base_directory,
             program_info['version'],
             base_structure_folder = "Prince",
+            skip_case = program_info['skip_case'],
             )
         
     except Exception as msg:

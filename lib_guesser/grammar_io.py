@@ -47,7 +47,7 @@ import codecs
 #
 #    ruleset_info: A dictionary containing general information about the ruleset
 #
-def load_grammar(rule_name, base_directory, version, skip_brute, base_structure_folder):
+def load_grammar(rule_name, base_directory, version, skip_brute, skip_case, base_structure_folder):
 
     # Holds general information about the grammar
     ruleset_info = {
@@ -63,7 +63,7 @@ def load_grammar(rule_name, base_directory, version, skip_brute, base_structure_
     # OMEN probabilities    
     grammar = {}
     
-    if not _load_terminals(ruleset_info, grammar, base_directory, config):
+    if not _load_terminals(ruleset_info, grammar, base_directory, config, skip_case):
         raise Exception
         
     # Holds the base structures
@@ -249,7 +249,7 @@ def _load_base_structures(base_structures, base_directory, skip_brute, base_stru
 #
 #    False: Config failed to load 
 #
-def _load_terminals(ruleset_info, grammar, base_directory, config):
+def _load_terminals(ruleset_info, grammar, base_directory, config, skip_case):
 
     # Quick way to reference variables
     encoding = ruleset_info['encoding']
@@ -259,10 +259,23 @@ def _load_terminals(ruleset_info, grammar, base_directory, config):
         print("Error loading alpha terminals")
         return False
         
-    # Load the capitalziaton masks
-    if not _load_from_multiple_files(grammar, config['CAPITALIZATION'], base_directory, encoding):
-        print("Error loading capitalization masks")
-        return False
+    # Load the capitalziaton masks, (if the user wants to apply case mangling)
+    if not skip_case:
+        if not _load_from_multiple_files(grammar, config['CAPITALIZATION'], base_directory, encoding):
+            print("Error loading capitalization masks")
+            return False
+            
+    # If the user only wants to generate lowercase guesses
+    else:
+        filenames = json.loads(config['CAPITALIZATION'].get('filenames'))
+        for file in filenames:
+            name = config['CAPITALIZATION'].get('name') + file.split('.')[0]
+            length = int(file.split('.')[0])
+            item = {
+                        'values': ['L'*length],
+                        'prob': 1.0
+                    }
+            grammar[name] = [item]
         
     # Load the digit terminals
     if not _load_from_multiple_files(grammar, config['BASE_D'], base_directory, encoding):

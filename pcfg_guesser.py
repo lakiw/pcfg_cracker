@@ -112,7 +112,7 @@ def parse_command_line(program_info):
         default = program_info['load_session']
     )
     
-    ## Markov bruteforce options
+    ## Advanced options
     #
     parser.add_argument(
         '--skip_brute',
@@ -122,6 +122,15 @@ def parse_command_line(program_info):
         action='store_const', 
         const= not program_info['skip_brute'],
         default = program_info['skip_brute']
+    )
+    
+    parser.add_argument(
+        '--all_lower',
+        help='Only generate lowercase guesses. No case mangling. (Setting is currently not applied to OMEN generated guesses)', 
+        dest='skip_case', 
+        action='store_const', 
+        const= not program_info['skip_case'],
+        default = program_info['skip_case']
     )
 
     ## Debugging and research information
@@ -144,8 +153,9 @@ def parse_command_line(program_info):
     program_info['session_name'] = args.session
     program_info['load_session'] = args.load
     
-    # Markov Options
+    # Advanced Options
     program_info['skip_brute'] = args.skip_brute
+    program_info['skip_case'] = args.skip_case
    
     # Debugging Options
     program_info['debug'] = args.debug
@@ -171,8 +181,9 @@ def main():
         'session_name':'default_run',
         'load_session':False,
         
-        # Markov Options
+        # Advanced Options
         'skip_brute': False,
+        'skip_case': False,
         
         # Debugging Options
         'debug': False,
@@ -236,6 +247,7 @@ def main():
             program_info['version'],
             save_filename,
             skip_brute = program_info['skip_brute'],
+            skip_case = program_info['skip_case'],
             debug = program_info['debug']
             )
         
@@ -281,6 +293,7 @@ def create_save_config(program_info):
     save_config.add_section(section)
     save_config.set(section, 'rule_name', program_info['rule_name'])
     save_config.set(section, 'skip_brute', str(program_info['skip_brute']))
+    save_config.set(section, 'skip_case', str(program_info['skip_case']))
     
     section = "session_info"
     save_config.add_section(section)
@@ -317,6 +330,8 @@ def load_save(save_filename, program_info):
             raise configparser.Error('Missing rule uuid')
         if not save_config.has_option('rule_info','skip_brute'):
             raise configparser.Error('Missing the skip_brute flag for session')
+        if not save_config.has_option('rule_info','skip_case'):
+            raise configparser.Error('Missing the skip_case flag for session')
         if not save_config.has_option('session_info','last_updated'):
             raise configparser.Error('Missing last_updated')
             
@@ -325,6 +340,9 @@ def load_save(save_filename, program_info):
         
         # Set the skip_brute flag
         program_info['skip_brute'] = save_config.getboolean('rule_info','skip_brute')
+        
+        # Set the skip_case flag for not doing case mangling
+        program_info['skip_case'] = save_config.getboolean('rule_info','skip_case')
         
         return save_config
         
