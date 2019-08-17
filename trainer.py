@@ -255,7 +255,7 @@ def main():
     
         # Program and Contact Info
         'name':'PCFG Trainer',
-        'version': '4.0',
+        'version': '4.0.1',
         'author':'Matt Weir',
         'contact':'cweir@vt.edu',
         
@@ -476,20 +476,25 @@ def main():
     print("Calculating OMEN probabilities")
     print("-------------------------------------------------")
     print()
-
-    # Add in the probability of brute force to the base structures
-    if program_info['coverage'] != 0:
-        # Adding the Markov/Omen numbers in as addition to the currently parsed
-        # passwords vs. resetting the counts/probabilities of what was already
-        # parsed
-        markov_instances = (num_valid_passwords /  program_info['coverage']) - num_valid_passwords
-        pcfg_parser.count_base_structures['M'] = markov_instances
     
     # Calculate the OMEN level data
     omen_trainer.apply_smoothing()
     
     omen_keyspace = calc_omen_keyspace(omen_trainer)
-     
+    
+    # Add in the probability of brute force to the base structures
+    if program_info['coverage'] != 0:
+        # Make sure there are valid OMEN parses, otherwise no sense creating
+        # a brute force rule
+        if omen_keyspace.most_common(1) != []:
+            # Adding the Markov/Omen numbers in as addition to the currently parsed
+            # passwords vs. resetting the counts/probabilities of what was already
+            # parsed
+            markov_instances = (num_valid_passwords /  program_info['coverage']) - num_valid_passwords
+            pcfg_parser.count_base_structures['M'] = markov_instances
+    
+    print("")    
+    
     print("-------------------------------------------------")    
     print("Performing third pass on the training passwords")
     print("-------------------------------------------------")

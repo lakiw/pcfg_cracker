@@ -94,9 +94,18 @@ def smooth_length(ln_lookup, ln_counter, max_level = 10):
     for length, count in enumerate(ln_lookup): 
         
         # Calculate the level
-        level = _calc_level(count, ln_counter, 1)
-        
-        ln_lookup[length] = (level, count)
+        try:
+            level = _calc_level(count, ln_counter, 1)    
+            ln_lookup[length] = (level, count)
+            
+        # Will throw a divide by 0 exception if there is length items
+        except ZeroDivisionError:
+            # Set the length to be the max_level
+            # DevNote: Creating length based exclusion rules should be the
+            #          responsibility of the guess generator. The trainer
+            #          should just say that this length is really unlikely
+            ln_lookup[length] = (max_level,0)
+            
         
     
 ## Applies the probability smoothing levels

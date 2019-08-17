@@ -47,7 +47,7 @@ import codecs
 #
 #    ruleset_info: A dictionary containing general information about the ruleset
 #
-def load_grammar(rule_name, base_directory, version, skip_brute):
+def load_grammar(rule_name, base_directory, version, skip_brute, base_structure_folder):
 
     # Holds general information about the grammar
     ruleset_info = {
@@ -68,7 +68,7 @@ def load_grammar(rule_name, base_directory, version, skip_brute):
         
     # Holds the base structures
     base_structures = []
-    if not _load_base_structures(base_structures, base_directory, skip_brute):
+    if not _load_base_structures(base_structures, base_directory, skip_brute, base_structure_folder):
         raise Exception
     
     return grammar, base_structures, ruleset_info
@@ -124,14 +124,21 @@ def load_omen_keyspace(base_directory):
 #
 #    base_directory: The base directory to load the rules from
 #
+#    skip_brute: (Bool) Markov guess generation should be removed from the base
+#                structures if True
+#
+#    base_structure_folder: The folder to load base structures from. Adding
+#                           this as a variable to support other modes like
+#                           PRINCE dictionary generation
+#
 # Output:
 #    True: Config was loaded and parsed correctly
 #
 #    False: Config failed to load 
 #
-def _load_base_structures(base_structures, base_directory, skip_brute):
+def _load_base_structures(base_structures, base_directory, skip_brute, base_structure_folder):
     
-    filename = os.path.join(base_directory,"Grammar","grammar.txt")
+    filename = os.path.join(base_directory,base_structure_folder,"grammar.txt")
     
     # Try to open the file
     try:
@@ -288,6 +295,17 @@ def _load_terminals(ruleset_info, grammar, base_directory, config):
     if not _load_from_file(grammar['M'], full_path, encoding):
         return False
         
+    # Load e-mail replacements
+    full_path = os.path.join(base_directory, "Emails", "email_providers.txt")
+    grammar['E'] = []
+    if not _load_from_file(grammar['E'], full_path, encoding):
+        return False
+        
+    # Load website replacements
+    full_path = os.path.join(base_directory, "Websites", "website_hosts.txt")
+    grammar['W'] = []
+    if not _load_from_file(grammar['W'], full_path, encoding):
+        return False
         
     return True
 

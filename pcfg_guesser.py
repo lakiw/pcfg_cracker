@@ -162,7 +162,7 @@ def main():
     
         # Program and Contact Info
         'name':'PCFG Guesser',
-        'version': '4.0',
+        'version': '4.0.1',
         'author':'Matt Weir',
         'contact':'cweir@vt.edu',
         
@@ -240,8 +240,6 @@ def main():
             )
         
     except Exception as msg:
-        traceback.print_exc(file=sys.stdout)
-        print("Exception: " + str(msg))
         print("Exiting")
         return
     

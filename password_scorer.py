@@ -112,7 +112,7 @@ def parse_command_line(program_info):
         default = program_info['output_file']
     )
     
-    # The output file to save results too 
+    # The probability limit used to classify password/not passwords
     parser.add_argument(
         '--limit',
         '-l',
@@ -123,7 +123,7 @@ def parse_command_line(program_info):
         type = float, 
     )
     
-    # The output file to save results too 
+    # The OMEN limit used to classify password/not password
     parser.add_argument(
         '--max_omen',
         '-m',
