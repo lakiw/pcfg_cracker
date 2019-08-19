@@ -443,8 +443,15 @@ def _load_from_file(grammar_section, filename, encoding):
                 # Split up the tab seperated items and then save their values
                 split_values = value.rstrip().split("\t") 
                 
-                value = split_values[0]
-                prob = float(split_values[1])
+                # Sanity checking to make sure the file is well formed
+                try:
+                    value = split_values[0]
+                    prob = float(split_values[1])
+                except Exception as msg:
+                    print ("Exception parsing file: " + str(filename),file=sys.stderr)
+                    print (error,file=sys.stderr)
+                    print ("Ignorning line and continuing" ,file=sys.stderr)
+                    continue
                 
                 # If another item had the same probabilty value
                 if prob == prev_prob:
