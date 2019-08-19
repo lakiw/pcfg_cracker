@@ -202,7 +202,12 @@ def main():
         print("Exiting")
         return
         
+    # Set up the wordlist save option, either stdout or write to file
+    pcfg.save_to_file(program_info['output_file'])
+    
     create_prince_wordlist(pcfg, program_info['max_size'], base_directory, program_info['output_file'])
+    
+    pcfg.shutdown()
     
         
 if __name__ == "__main__":

@@ -16,6 +16,7 @@ import configparser
 import os
 import copy
 import traceback
+import codecs
 
 # Local imports
 from .grammar_io import load_grammar, load_omen_keyspace
@@ -54,6 +55,8 @@ class PcfgGrammar:
         
         ## If an exception occurs, pass it back up the stack
         self.grammar, self.base, self.ruleset_info = load_grammar(rule_name, base_directory, version, skip_brute, skip_case, base_structure_folder)
+        
+        self.encoding = self.ruleset_info['encoding']
         
         ## Initailize and load the OMEN grammar and settings
         #
@@ -606,4 +609,40 @@ class PcfgGrammar:
         self.omen_guess_num = omen_guess_num
         
         return self.omen_generate_guesses(mc)
+        
+        
+    ## Sets the PCFG grammar to output guesses to a file vs. stdout
+    #
+    # Note: If filename = None, then will continue to use the standard stdout
+    #       option for guess generation, which is nice when parsing inputs
+    #       from the command line
+    #    
+    def save_to_file(self, filename):
+    
+        self.output_filename = filename
+        
+        # If a file was specified to write the data to, open it for writing
+        if self.output_filename  != None:
+            self.output_file = codecs.open(
+                self.output_filename, 
+                'w', 
+                encoding= self.encoding, 
+            )
+            
+            # Overload the print_guess function
+            self.print_guess = self.write_guess_to_file
+        
+        
+    ## Saves guess to file
+    #   
+    def write_guess_to_file(self, guess):
+        self.output_file.write(guess)
+        self.output_file.write('\n')
+        
+    
+    ## Cleanup function when shutting down
+    #
+    def shutdown(self):
+        if self.output_filename != None:
+            self.output_file.close()
             
