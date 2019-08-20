@@ -449,7 +449,7 @@ def _load_from_file(grammar_section, filename, encoding):
                     prob = float(split_values[1])
                 except Exception as msg:
                     print ("Exception parsing file: " + str(filename),file=sys.stderr)
-                    print (error,file=sys.stderr)
+                    print (msg,file=sys.stderr)
                     print ("Ignorning line and continuing" ,file=sys.stderr)
                     continue
                 
