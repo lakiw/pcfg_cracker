@@ -208,5 +208,18 @@ def save_pcfg_data(base_directory, pcfg_parser, encoding, save_sensitive):
     # the base structure categories in the training file encoding
     if not save_indexed_counters(folder, grammar_grouping, 'ASCII'):
         return False
+        
+    ## Save PRINCE data
+    #
+    folder = os.path.join(base_directory, "Prince")
+    
+    prince_grouping = {
+        'grammar':pcfg_parser.count_prince,
+    }
+    
+    # Note, saving these as ASCII since there may not be representations for
+    # the base structure categories in the training file encoding
+    if not save_indexed_counters(folder,prince_grouping, 'ASCII'):
+        return False
                   
     return True

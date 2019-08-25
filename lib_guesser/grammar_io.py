@@ -47,7 +47,7 @@ import codecs
 #
 #    ruleset_info: A dictionary containing general information about the ruleset
 #
-def load_grammar(rule_name, base_directory, version, skip_brute):
+def load_grammar(rule_name, base_directory, version, skip_brute, skip_case, base_structure_folder):
 
     # Holds general information about the grammar
     ruleset_info = {
@@ -63,12 +63,12 @@ def load_grammar(rule_name, base_directory, version, skip_brute):
     # OMEN probabilities    
     grammar = {}
     
-    if not _load_terminals(ruleset_info, grammar, base_directory, config):
+    if not _load_terminals(ruleset_info, grammar, base_directory, config, skip_case):
         raise Exception
         
     # Holds the base structures
     base_structures = []
-    if not _load_base_structures(base_structures, base_directory, skip_brute):
+    if not _load_base_structures(base_structures, base_directory, skip_brute, base_structure_folder):
         raise Exception
     
     return grammar, base_structures, ruleset_info
@@ -124,14 +124,21 @@ def load_omen_keyspace(base_directory):
 #
 #    base_directory: The base directory to load the rules from
 #
+#    skip_brute: (Bool) Markov guess generation should be removed from the base
+#                structures if True
+#
+#    base_structure_folder: The folder to load base structures from. Adding
+#                           this as a variable to support other modes like
+#                           PRINCE dictionary generation
+#
 # Output:
 #    True: Config was loaded and parsed correctly
 #
 #    False: Config failed to load 
 #
-def _load_base_structures(base_structures, base_directory, skip_brute):
+def _load_base_structures(base_structures, base_directory, skip_brute, base_structure_folder):
     
-    filename = os.path.join(base_directory,"Grammar","grammar.txt")
+    filename = os.path.join(base_directory,base_structure_folder,"grammar.txt")
     
     # Try to open the file
     try:
@@ -242,7 +249,7 @@ def _load_base_structures(base_structures, base_directory, skip_brute):
 #
 #    False: Config failed to load 
 #
-def _load_terminals(ruleset_info, grammar, base_directory, config):
+def _load_terminals(ruleset_info, grammar, base_directory, config, skip_case):
 
     # Quick way to reference variables
     encoding = ruleset_info['encoding']
@@ -252,10 +259,23 @@ def _load_terminals(ruleset_info, grammar, base_directory, config):
         print("Error loading alpha terminals")
         return False
         
-    # Load the capitalziaton masks
-    if not _load_from_multiple_files(grammar, config['CAPITALIZATION'], base_directory, encoding):
-        print("Error loading capitalization masks")
-        return False
+    # Load the capitalziaton masks, (if the user wants to apply case mangling)
+    if not skip_case:
+        if not _load_from_multiple_files(grammar, config['CAPITALIZATION'], base_directory, encoding):
+            print("Error loading capitalization masks")
+            return False
+            
+    # If the user only wants to generate lowercase guesses
+    else:
+        filenames = json.loads(config['CAPITALIZATION'].get('filenames'))
+        for file in filenames:
+            name = config['CAPITALIZATION'].get('name') + file.split('.')[0]
+            length = int(file.split('.')[0])
+            item = {
+                        'values': ['L'*length],
+                        'prob': 1.0
+                    }
+            grammar[name] = [item]
         
     # Load the digit terminals
     if not _load_from_multiple_files(grammar, config['BASE_D'], base_directory, encoding):
@@ -288,6 +308,17 @@ def _load_terminals(ruleset_info, grammar, base_directory, config):
     if not _load_from_file(grammar['M'], full_path, encoding):
         return False
         
+    # Load e-mail replacements
+    full_path = os.path.join(base_directory, "Emails", "email_providers.txt")
+    grammar['E'] = []
+    if not _load_from_file(grammar['E'], full_path, encoding):
+        return False
+        
+    # Load website replacements
+    full_path = os.path.join(base_directory, "Websites", "website_hosts.txt")
+    grammar['W'] = []
+    if not _load_from_file(grammar['W'], full_path, encoding):
+        return False
         
     return True
 
@@ -393,9 +424,20 @@ def _load_from_file(grammar_section, filename, encoding):
             # Used to group different items of the same probability together
             prev_prob = -1.0
             
+            debug_count = 0
+            error_flag = False
             # Read though all the lines in the file
             for value in file:
-
+            
+                # There was a problem with the previous line, so skip this line
+                # as it probably is just the probability info. Error flag
+                # is thrown when the Python readline splits on a weird input
+                if error_flag:
+                    error_flag = False
+                    continue
+                    
+                debug_count +=1
+                value2 = value
                 # There "shouldn't" be encoding errors in the rules files, but
                 # might as well check to be on the safe side
                 try:
@@ -412,8 +454,17 @@ def _load_from_file(grammar_section, filename, encoding):
                 # Split up the tab seperated items and then save their values
                 split_values = value.rstrip().split("\t") 
                 
-                value = split_values[0]
-                prob = float(split_values[1])
+                # Sanity checking to make sure the file is well formed
+                try:
+                    value = split_values[0]
+                    prob = float(split_values[1])
+                except Exception as msg:
+                    print ("Exception parsing file: " + str(filename),file=sys.stderr)
+                    print ("Line: " + str(debug_count),file=sys.stderr)
+                    print ("Value (HEX): " + str(value2.encode("utf-8").hex()))
+                    print ("Ignorning line and continuing" ,file=sys.stderr)
+                    error_flag = True
+                    continue
                 
                 # If another item had the same probabilty value
                 if prob == prev_prob:

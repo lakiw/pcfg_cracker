@@ -189,31 +189,49 @@ def keypress(report, pcfg):
     while True:
         user_input = input()
         
-        # Display the status report
-        report.print_status(pcfg)
-        
-        # If the program should exit
-        if user_input == 'q':
-            print( "",file=sys.stderr)
-            print ("Exit command received",file=sys.stderr)
-            print ("Will exit after finishing processing current pre-terminal",file=sys.stderr)
-            print ("Note: If this takes too long, you can also use CTRL-C",file=sys.stderr)
-            print ("      but if you exit early and later restart the session ",file=sys.stderr)
-            print ("      it will begin with the previous pre-terminal",file=sys.stderr)
-            print ("",file=sys.stderr)
-            pcfg.should_exit = True
+        # If the main thread died before this is killed off it will throw
+        # an error, so check to make sure it is alive before printing items
+        # to stderr. Otherwise exit.
+        #
+        # Adding the time.sleep option because otherwise it'll start trying
+        # to print and then error out after the below call. It's a hack, I'll
+        # admit it. Probably shouldn't use daemon threads, but Python makes
+        # checking for interuptable input a pain from stdin.
+        #
+        time.sleep(0.1)
+        if not threading.main_thread().is_alive():
             return
+        
+        try:        
+            # Display the status report
+            report.print_status(pcfg)
             
-        # Print the help screen
-        elif user_input == 'h':
+            # If the program should exit
+            if user_input == 'q':
+                print( "",file=sys.stderr)
+                print ("Exit command received",file=sys.stderr)
+                print ("Will exit after finishing processing current pre-terminal",file=sys.stderr)
+                print ("Note: If this takes too long, you can also use CTRL-C",file=sys.stderr)
+                print ("      but if you exit early and later restart the session ",file=sys.stderr)
+                print ("      it will begin with the previous pre-terminal",file=sys.stderr)
+                print ("",file=sys.stderr)
+                pcfg.should_exit = True
+                return
+                
+            # Print the help screen
+            elif user_input == 'h':
+                print( "",file=sys.stderr)
+                report.print_help()
+            
             print( "",file=sys.stderr)
-            report.print_help()
+            print("Press [ENTER] to display an updated status output",file=sys.stderr)
+            print("Press 'h' [ENTER] for help on what the status reports mean",file=sys.stderr)
+            print("Press 'q' [ENTER] to exit",file=sys.stderr)
+            print( "",file=sys.stderr)
         
-        print( "",file=sys.stderr)
-        print("Press [ENTER] to display an updated status output",file=sys.stderr)
-        print("Press 'h' [ENTER] for help on what the status reports mean",file=sys.stderr)
-        print("Press 'q' [ENTER] to exit",file=sys.stderr)
-        print( "",file=sys.stderr)
-        
+        # If we can't print to stderr, that implies something weird is happening
+        # so exit the user input thread.
+        except:
+            return
         
 
