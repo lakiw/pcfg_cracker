@@ -77,9 +77,12 @@ There are many cases where you may want to estimate the probability of a passwor
 
 ### Prince-Ling Wordlist Generator
 **Name: **PRINCE Language Idexed N-Grams (Prince-Ling)
+
 **Overview:** Constructs customized wordlists based on an already trained PCFG ruleset/grammar for use in PRINCE style combinator attacks. The idea behind this was since the PCFG trainer is already breaking up a training set up passwords into individual parsings, that information could be leveraged to make targeted wordlists for other attacks.
+
 **Basic Mechanics:** Under the hood, the Prince-Ling tool is basically a mini-PCFG guess generator. It strips out the Markov guess generation, and replaces the base structures used in normal PCFG attacks with a significantly reduced base-structure tailored for generating PRINCE wordlists. This allows generating dictionary words in probability order with an eye to how useful those words are expected to be in a PRINCE attack. 
-**Using Prince-LIng**
+
+**Using Prince-Ling**
 1. Train a PCFG ruleset using trainer.py. Note you need to create the ruleset using version 4.1 or later of the PCFG toolset, as earlier versions did not learn all the datastructures that Prince-Ling utilizes.
 2. Run Prince-Ling  `python3 prince-ling.py -r RULESET_NAME -s SIZE_OF_WORDLIST_TO_CREATE -o OUTPUT_FILENAME`
  - **--rule**: Name of the PCFG ruleset to create the PRINCE wordlist from
