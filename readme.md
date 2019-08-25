@@ -14,9 +14,8 @@ Original 2009 IEEE Security and Privacy paper on PCFGs for password cracking:
 My 2010 dissertation which describes several advanced features such as the updated "next" algorithm:
 [https://diginole.lib.fsu.edu/islandora/object/fsu%3A175769](https://diginole.lib.fsu.edu/islandora/object/fsu%3A175769)
 
-Using PCFGs against Chinese, Japanese, and English passwordss:
-[https://nsl.cs.waseda.ac.jp/wp-content/uploads/2019/07/EuroUSEC19-mori.pdf](https://nsl.cs.waseda.ac.jp/wp-content/uploads/2019/07/EuroUSEC19-mori.pdf)
-
+Comparative Analysis of Three Language Spheres: Are Linguistic and Cultural Differences Reflected in Password Selection Habits? Authors: Keika Mori, Takuya Watanabe, Yunao Zhou, Ayako Akiyama Hasegawa, Mitsuaki Akiyama and Tatsuya Mori:
+https://nsl.cs.waseda.ac.jp/wp-content/uploads/2019/07/EuroUSEC19-mori.pdf
 
 ### Wiki
 Since it does not require pushing new versions to update it, the wiki is a source of random notes about this project:
