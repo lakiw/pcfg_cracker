@@ -165,7 +165,7 @@ def main():
     
         # Program and Contact Info
         'name':'PCFG Password Scorer',
-        'version': '4.0',
+        'version': '4.1',
         'author':'Matt Weir',
         'contact':'cweir@vt.edu',
         
