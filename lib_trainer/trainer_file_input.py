@@ -129,6 +129,18 @@ def check_valid(input_password):
     if "\t" in input_password:
         return False
         
+    # Below are other values that cause problems that we are going to remove.
+    # These values include things like LineFeed LF
+    
+    #Invalid characters at the begining of the ASCII table
+    for invalid_hex in range (0x0,0x20):
+        if chr(invalid_hex) in input_password:
+            return False
+            
+    # UTF-8 Line Seperator
+    if u"\u2028" in input_password:
+        return False
+        
     return True
         
 

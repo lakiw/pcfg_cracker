@@ -424,9 +424,20 @@ def _load_from_file(grammar_section, filename, encoding):
             # Used to group different items of the same probability together
             prev_prob = -1.0
             
+            debug_count = 0
+            error_flag = False
             # Read though all the lines in the file
             for value in file:
-
+            
+                # There was a problem with the previous line, so skip this line
+                # as it probably is just the probability info. Error flag
+                # is thrown when the Python readline splits on a weird input
+                if error_flag:
+                    error_flag = False
+                    continue
+                    
+                debug_count +=1
+                value2 = value
                 # There "shouldn't" be encoding errors in the rules files, but
                 # might as well check to be on the safe side
                 try:
@@ -449,8 +460,10 @@ def _load_from_file(grammar_section, filename, encoding):
                     prob = float(split_values[1])
                 except Exception as msg:
                     print ("Exception parsing file: " + str(filename),file=sys.stderr)
-                    print (msg,file=sys.stderr)
+                    print ("Line: " + str(debug_count),file=sys.stderr)
+                    print ("Value (HEX): " + str(value2.encode("utf-8").hex()))
                     print ("Ignorning line and continuing" ,file=sys.stderr)
+                    error_flag = True
                     continue
                 
                 # If another item had the same probabilty value

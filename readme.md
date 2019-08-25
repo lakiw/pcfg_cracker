@@ -14,6 +14,10 @@ Original 2009 IEEE Security and Privacy paper on PCFGs for password cracking:
 My 2010 dissertation which describes several advanced features such as the updated "next" algorithm:
 [https://diginole.lib.fsu.edu/islandora/object/fsu%3A175769](https://diginole.lib.fsu.edu/islandora/object/fsu%3A175769)
 
+Using PCFGs against Chinese, Japanese, and English passwordss:
+[https://nsl.cs.waseda.ac.jp/wp-content/uploads/2019/07/EuroUSEC19-mori.pdf](https://nsl.cs.waseda.ac.jp/wp-content/uploads/2019/07/EuroUSEC19-mori.pdf)
+
+
 ### Wiki
 Since it does not require pushing new versions to update it, the wiki is a source of random notes about this project:
 [https://github.com/lakiw/pcfg_cracker/wiki](https://github.com/lakiw/pcfg_cracker/wiki)
@@ -43,10 +47,10 @@ The default ruleset included in this repo was created by training on a 1 million
   - For the purposes of this tutorial the input password list will be referred to as INPUT_PASSWORD_LIST
 2. Choose a name for your generated ruleset. For the purposes of this tutorial it will be NEW_RULESET
 3. Run the trainer on the input password list
- - `python3 -t INPUT_PASSWORD_LIST -r NEW_RULESET`
+ - `python3 trainer.py -t INPUT_PASSWORD_LIST -r NEW_RULESET`
  - Common optional flags:
-   a. **coverage**: How much you trust the training set to match the target passwords. A higher coverage means to use less intelligent brute force generation using Markov modeling, (currently using the OMEN algorithm). If you set coverage to 1, no brute force will be performed. If you set coverage to 0, it will only generate guesses using Markov attacks. This value is a float, with the default being 0.6 which means it expects a 60% chance the target password's base words can be found in the training set. Example: `python3 -t INPUT_PASSWORD_LIST -r NEW_RULESET -c 0.6`
-   b. **--save_sensitive**: If this is specified, sensitive data such as e-mail addresses and full websites which are discovered during training will be saved in the ruleset. While the PCFG guess generator does not currently make use of this data, it is very valuable during a real password cracking attack. This by default is off to make this tool easier to use in an academic setting. Note, even when this is off, there will almost certainly still be PII data saved inside a ruleset, so protect generated rulesets appropriately. Example: `python3 -t INPUT_PASSWORD_LIST -r NEW_RULESET --save_sensitive`
+   a. **coverage**: How much you trust the training set to match the target passwords. A higher coverage means to use less intelligent brute force generation using Markov modeling, (currently using the OMEN algorithm). If you set coverage to 1, no brute force will be performed. If you set coverage to 0, it will only generate guesses using Markov attacks. This value is a float, with the default being 0.6 which means it expects a 60% chance the target password's base words can be found in the training set. Example: `python3 trainer.py -t INPUT_PASSWORD_LIST -r NEW_RULESET -c 0.6`
+   b. **--save_sensitive**: If this is specified, sensitive data such as e-mail addresses and full websites which are discovered during training will be saved in the ruleset. While the PCFG guess generator does not currently make use of this data, it is very valuable during a real password cracking attack. This by default is off to make this tool easier to use in an academic setting. Note, even when this is off, there will almost certainly still be PII data saved inside a ruleset, so protect generated rulesets appropriately. Example: `python3 trainer.py -t INPUT_PASSWORD_LIST -r NEW_RULESET --save_sensitive`
    c. **--comments**: Adds a comment to your ruleset config file. This is useful so you know why and how you generated your ruleset when looking back at it later. Include the comment you want to add in quotes.
    
 ### Guess Generation
