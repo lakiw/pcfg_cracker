@@ -27,6 +27,14 @@
 import copy
 from typing import List, TextIO
 
+"""
+Note that catdog will not be treated as (cat, dog) 
+because both of them of length less than 4.
+
+helloabc will be treated as (hello, abc) 
+because one of multiword should be of length larger than of equal to 4
+"""
+
 
 def split_ado(string):
     """
@@ -363,3 +371,20 @@ class MyMultiWordDetector:
 
         self.lendict = lendict
         pass
+
+
+def _test():
+    multi = MyMultiWordDetector()
+    for _ in range(10):
+        multi.train("cat12345")
+        multi.train("dog45678")
+        multi.train("hello123")
+        multi.train("world456")
+    for s in ["catdog", "helloabc", "helloworld", "12345999"]:
+        r = multi.parse(s)
+        print(r)
+    pass
+
+
+if __name__ == '__main__':
+    _test()

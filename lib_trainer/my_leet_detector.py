@@ -9,6 +9,15 @@ import itertools
 from .speedup import load_l33t_ign, load_l33t_found
 from .trainer_file_input import TrainerFileInput
 
+"""
+The principle of L33t detector is as follows:
+Firstly, we find whether a whole password follows l33t transformation or not.
+Then, we will find some l33ts.
+Next, we use found l33ts to detect l33ts which appear as part of a password.
+Finally, we can find as many as possible l33ts in passwords.
+
+"""
+
 
 def get_mask(seg):
     """

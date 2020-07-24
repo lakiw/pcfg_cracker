@@ -87,7 +87,3 @@ def detect_context_sections(sections_list):
             parsed_sections.extend(parsed_s)
             contexts.extend(cont_s)
     return parsed_sections, contexts
-
-
-pass
-
