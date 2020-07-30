@@ -1,6 +1,8 @@
 import collections
 import functools
 import re
+from typing import Tuple, List
+
 import sys
 import traceback
 
@@ -395,11 +397,11 @@ class AsciiL33tDetector:
             dict_l33t["\x03"] = True
         pass
 
-    def extract_l33t(self, pwd):
+    def extract_l33t(self, pwd) -> List[Tuple[int, int, bool]]:
         """
         find the longest match of l33t, using DFS
         :param pwd:  password to be identified
-        :return: list of [segment, start_idx, is_l33t]
+        :return: list of [start_idx, len_of_seg, is_l33t]
         """
         l33t_list = []
         # candidate for a l33t
@@ -480,7 +482,7 @@ class AsciiL33tDetector:
         l33t_list = self.extract_l33t(password)
         if len(l33t_list) == 0:
             return [(password, None)], [], []
-        l33t_list = sorted(l33t_list, key=lambda x: x[1])
+        l33t_list = sorted(l33t_list, key=lambda x: x[0])
         section_list = []
         leet_list = []
         mask_list = []

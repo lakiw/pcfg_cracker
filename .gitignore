@@ -16,3 +16,5 @@ Rules/*
 *.sav
 *.omn
 venv
+.idea
+**/__pycache__
