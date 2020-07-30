@@ -1,6 +1,9 @@
+#!/usr/bin/env python3
 """
 This is to get the segments of a password.
 """
+import argparse
+import sys
 from collections import defaultdict
 from typing import TextIO
 
@@ -16,7 +19,7 @@ from lib_trainer.other_detection import other_detection
 from lib_trainer.year_detection import year_detection
 
 
-def v41seg(training: TextIO, test_set: TextIO, save2: TextIO):
+def v41seg(training: TextIO, test_set: TextIO, save2: TextIO) -> None:
     if not save2.writable():
         raise Exception(f"{save2.name} is not writable")
 
@@ -35,6 +38,10 @@ def v41seg(training: TextIO, test_set: TextIO, save2: TextIO):
     for password, num in pwd_counter.items():
         section_list, found_walks = detect_keyboard_walk(password)
         _ = year_detection(section_list)
+        """
+        Note that there is a bug in context_sensitive_detection
+        I have fixed that and add a test case in unit_tests folder
+        """
         _ = context_sensitive_detection(section_list)
         _, _ = alpha_detection(section_list, multiword_detector)
         _ = digit_detection(section_list)
@@ -46,13 +53,15 @@ def v41seg(training: TextIO, test_set: TextIO, save2: TextIO):
             info.append(sec)
             info.append(tag)
         if password.lower() != npass.lower():
+            print(password)
+            print(section_list)
             raise Exception("neq")
         print("\t".join(info), end="\n", file=save2)
     pass
 
 
-def l33tseg(training: TextIO, test_set: TextIO, save2: TextIO):
-    if not save2.writable() or not training.seekable():
+def l33tseg(training: TextIO, test_set: TextIO, save2: TextIO) -> None:
+    if not save2.writable():
         raise Exception(f"{save2.name} is not writable")
 
     multiword_detector = MyMultiWordDetector()
@@ -91,7 +100,26 @@ def l33tseg(training: TextIO, test_set: TextIO, save2: TextIO):
 
 
 def main():
-    pass
+    v41, l33t = ["v41", "l33t"]
+    cli = argparse.ArgumentParser("Find the structures of passwords in test set")
+    cli.add_argument("-s", "--src", dest="training", required=True, type=argparse.FileType("r"),
+                     help="training set")
+    cli.add_argument("-t", "--tar", dest="testing", required=True, type=argparse.FileType("r"),
+                     help="testing set")
+    cli.add_argument("-o", "--output", dest="save2", required=True, type=argparse.FileType("w"),
+                     help="save output here")
+    cli.add_argument("-c", "--choice", dest="choice", required=False, choices=[v41, l33t], type=str, default="v41",
+                     help="use v41 or v41-with-l33t")
+    args = cli.parse_args()
+    choice, training, testing, save2 = \
+        args.choice, args.training, args.testing, args.save2  # type: str, TextIO, TextIO, TextIO
+    if choice == v41:
+        v41seg(training=training, test_set=testing, save2=save2)
+    elif choice == l33t:
+        l33tseg(training=training, test_set=testing, save2=save2)
+    else:
+        print("Unknown method or method has not been implemented", file=sys.stderr)
+        sys.exit(-1)
 
 
 if __name__ == '__main__':
