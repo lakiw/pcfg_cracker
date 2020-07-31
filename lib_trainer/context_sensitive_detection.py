@@ -122,7 +122,6 @@ def detect_context_sensitive(section):
 #
 def context_sensitive_detection(section_list):
     context_sensitive_list = []
-
     ## Do a pass through and detect context sensitive strings
     #
     # Walk through each section and parse it individually
@@ -151,5 +150,4 @@ def context_sensitive_detection(section_list):
                 continue
 
         index += 1
-
     return context_sensitive_list

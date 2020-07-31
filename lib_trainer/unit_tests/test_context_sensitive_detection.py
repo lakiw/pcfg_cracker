@@ -9,6 +9,7 @@
 
 import unittest
 import unittest.mock
+import collections
 
 ## Functions and classes to tests
 #
@@ -42,8 +43,9 @@ class Test_Context_Sensitive_Checks(unittest.TestCase):
     def test_number_one_followed_by_heart(self):
         section_list = [('#1<3', None)]
         found_cs = context_sensitive_detection(section_list)
-
-        assert found_cs == ['<3', '#1']
+        
+        # Using a counter in case the order of the items in the list change
+        assert collections.Counter(found_cs) == collections.Counter(['<3', '#1'])
         assert section_list == [('#1', 'X1'), ('<3', 'X1')]
 
     ## Test <3 followed by #1
@@ -52,7 +54,8 @@ class Test_Context_Sensitive_Checks(unittest.TestCase):
         section_list = [('<3#1', None)]
         found_cs = context_sensitive_detection(section_list)
 
-        assert found_cs == ['<3', '#1']
+        # Using a counter in case the order of the items in the list change
+        assert collections.Counter(found_cs) == collections.Counter(['<3', '#1'])
         assert section_list == [('<3', 'X1'), ('#1', 'X1')]
 
     def test_some_cases(self):

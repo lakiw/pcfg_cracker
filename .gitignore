@@ -1,3 +1,4 @@
+# Standard "temp" file types that should not be committed
 *.i
 *.o
 *.rec
@@ -5,16 +6,16 @@
 *.swo
 *.pyc
 
+venv
+.idea
+**/__pycache__
+
 # Ignore rulesets so I don't accidently upload something I don't want to
 Rules/*
 
 # Don't ignore the default ruleset
 !Rules/Default
 
-
 # Don't commit save files
 *.sav
 *.omn
-venv
-.idea
-**/__pycache__

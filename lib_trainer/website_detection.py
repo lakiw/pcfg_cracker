@@ -131,24 +131,24 @@ def detect_website(section):
             
             # Note, this will misparse IP addresses. Not sure if I care enough
             # to add handling for that at this time.
-            start_index = working_string[:total_index].rfind('.')
+            start_index = working_string[:total_index].rfind('.') + 1
             
             # No '.' found. Now look for the /
             if start_index == -1:
-                start_index = working_string[:total_index].rfind('/')
+                start_index = working_string[:total_index].rfind('/') + 1
                 
             # No '/' found. Now look for a ':'
             if start_index == -1:
-                start_index = working_string[:total_index].rfind(':')
+                start_index = working_string[:total_index].rfind(':') + 1
                 
             # Look for spaces too since they appear in passphrases
             if start_index == -1:
-                start_index = working_string[:total_index].rfind(' ')
+                start_index = working_string[:total_index].rfind(' ') + 1
     
             # Note, if the start character wasn't found, start_index will be
             # '-1' so adding +1 to it will set the host to the begining of the
             # string   
-            host = working_string[start_index+1:total_index+len(tld)]
+            host = working_string[start_index:total_index+len(tld)]
             
             ## Find the prifix if it exists
             #
@@ -158,10 +158,10 @@ def detect_website(section):
             # If the host wasn't found, assume there will not be a prefix
             if start_index == -1:
                 start_of_url = 0
-            
+
             # Look for a prefix       
             if start_of_url == -1:
-                prefix_index = working_string[:start_index].rfind('http://www.')
+                prefix_index = working_string[:start_index+1].rfind('http://www.')
                 if prefix_index != -1:
                     prefix = 'http://www.'
                     start_of_url = prefix_index
