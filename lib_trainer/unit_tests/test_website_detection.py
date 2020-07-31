@@ -93,7 +93,6 @@ class Test_Website_Checks(unittest.TestCase):
         
         assert url_list == ['http://www.subdomain.anothersub.google.com']
         assert host_list == ['google.com']
-        print("PREFIX LIST :" + str(prefix_list))
         assert prefix_list == ['http://www.']
         assert section_list == [('http://www.subdomain.anothersub.google.com','W')]
         
@@ -105,7 +104,7 @@ class Test_Website_Checks(unittest.TestCase):
         url_list, host_list, prefix_list = website_detection(section_list)
         
         assert url_list == ['http://www.google.com/data.html']
-        assert host_list == ['google.com']
-        assert prefix_list == ['http://www.']
+        self.assertEqual(host_list, ['google.com'])
+        self.assertEqual(prefix_list,['http://www.'])
         assert section_list == [('http://www.google.com/data.html','W')]
     
