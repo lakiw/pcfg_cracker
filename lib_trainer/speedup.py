@@ -11,6 +11,7 @@ def load_l33t_found() -> Set[str]:
     words in this set will be treated as l33t and will not be parsed again
     :return: set of l33ts
     """
+    
     if not os.path.exists(path_found_l33t):
         return set()
     fd = open(path_found_l33t, "r")
