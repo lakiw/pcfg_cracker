@@ -1,38 +1,40 @@
 #!/usr/bin/env python3
 
 
-###############################################################################
-# This file contains the functionality to detect context sensitive replacements
-#
-# Examples include strings that contain multiple character types that have
-# context sensitive meaning when combined. For example ';p', '#1', '<3'
-#
-###############################################################################
+"""
+This file contains the functionality to detect context sensitive replacements
+
+Examples include strings that contain multiple character types that have
+context sensitive meaning when combined. For example ';p', '#1', '<3'
+
+"""
 
 
-## Looks for context sensitive replacements in a section
-#
-# For example password#1 would extract '#1'
-#
-# Variables:
-#
-#     section: The current section of the password to process
-#              This function will break up the section into multiple parts
-#              if a context sensitive string is found
-#
-# Returns:
-#    There are two return values:
-#
-#    parsing, found
-#
-#    parsing: A list of the sections to return
-#             E.g. input password is 'password#1'
-#             parsing should return:
-#                 [('password',None),('#1','X')]
-#
-#    found: The context sensitive string found parsing this section, or None
-#
+
 def detect_context_sensitive(section):
+    """
+    Looks for context sensitive replacements in a section
+
+    For example password#1 would extract '#1'
+
+    Variables:
+
+    section: The current section of the password to process
+    This function will break up the section into multiple parts
+    if a context sensitive string is found
+
+    Returns:
+        There are two return values:
+        parsing, found
+
+        parsing: A list of the sections to return
+        E.g. input password is 'password#1'
+        parsing should return:
+        [('password',None),('#1','X')]
+
+        found: The context sensitive string found parsing this section, or None
+
+    """
     # Note: context sensitive matching *is* case sensitive
     working_string = section[0]
     parsing = []
@@ -113,14 +115,17 @@ def detect_context_sensitive(section):
     return section, None
 
 
-## Finds context sensitive strings in the password
-#
-# Returns:
-#    Returns one list, conext_sensitive_list
-#
-#    context_sensitive_list: A list of the CS strings that were detected
-#
 def context_sensitive_detection(section_list):
+    """
+    Finds context sensitive strings in the password
+
+    Returns:
+        Returns one list, conext_sensitive_list
+
+        context_sensitive_list: A list of the CS strings that were detected
+
+    """
+
     context_sensitive_list = []
     ## Do a pass through and detect context sensitive strings
     #
@@ -133,13 +138,13 @@ def context_sensitive_detection(section_list):
 
         # Skip sections that have been processed earlier, for example
         # by keyboard walk detection
-        if section_list[index][1] == None:
+        if section_list[index][1] is None:
 
-            parsing, cs = detect_context_sensitive(section_list[index])
+            parsing, cs_string = detect_context_sensitive(section_list[index])
 
             # If a context sensitive string was detected
-            if cs:
-                context_sensitive_list.append(cs)
+            if cs_string:
+                context_sensitive_list.append(cs_string)
 
                 # This is a trick to use the list extend but at an index
                 del section_list[index]

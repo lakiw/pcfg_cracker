@@ -13,7 +13,7 @@ import unittest.mock
 
 ## Functions and classes to tests
 #
-from ..digit_detection import digit_detection
+from ..detection_rules.digit_detection import digit_detection
 
 
 ## Responsible for testing digit string detection

@@ -13,8 +13,8 @@ import unittest.mock
 
 ## Functions and classes to tests
 #
-from ..alpha_detection import alpha_detection
-from ..multiword_detector import MultiWordDetector
+from ..detection_rules.alpha_detection import alpha_detection
+from ..detection_rules.multiword_detector import MultiWordDetector
 
 
 ## Responsible for testing alpha (letter) string detection

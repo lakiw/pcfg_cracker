@@ -13,7 +13,7 @@ import unittest.mock
 
 ## Functions and classes to tests
 #
-from ..website_detection import website_detection
+from ..detection_rules.website_detection import website_detection
 
 
 ## Responsible for testing the website detection

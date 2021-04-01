@@ -13,7 +13,7 @@ import unittest.mock
 
 ## Functions and classes to tests
 #
-from ..email_detection import email_detection
+from ..detection_rules.email_detection import email_detection
 
 
 ## Responsible for testing the E-mail detection
