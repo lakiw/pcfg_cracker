@@ -14,16 +14,16 @@ import sys
 from collections import Counter
 
 # Local imports
-from lib_trainer.keyboard_walk import detect_keyboard_walk
-from lib_trainer.email_detection import email_detection
-from lib_trainer.website_detection import website_detection
-from lib_trainer.year_detection import year_detection
-from lib_trainer.context_sensitive_detection import context_sensitive_detection
-from lib_trainer.alpha_detection import alpha_detection
-from lib_trainer.digit_detection import digit_detection
-from lib_trainer.other_detection import other_detection
+from lib_trainer.detection_rules.keyboard_walk import detect_keyboard_walk
+from lib_trainer.detection_rules.email_detection import email_detection
+from lib_trainer.detection_rules.website_detection import website_detection
+from lib_trainer.detection_rules.year_detection import year_detection
+from lib_trainer.detection_rules.context_sensitive_detection import context_sensitive_detection
+from lib_trainer.detection_rules.alpha_detection import alpha_detection
+from lib_trainer.detection_rules.digit_detection import digit_detection
+from lib_trainer.detection_rules.other_detection import other_detection
 from lib_trainer.base_structure import base_structure_creation
-from lib_trainer.multiword_detector import MultiWordDetector
+from lib_trainer.detection_rules.multiword_detector import MultiWordDetector
 from .omen_scorer import OmenScorer
 
 

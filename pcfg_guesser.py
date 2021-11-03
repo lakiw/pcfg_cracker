@@ -178,7 +178,7 @@ def main():
 
         # Program and Contact Info
         'name':'PCFG Guesser',
-        'version': '4.1',
+        'version': '4.3',
         'author':'Matt Weir',
         'contact':'cweir@vt.edu',
 

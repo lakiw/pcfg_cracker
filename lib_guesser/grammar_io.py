@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 
 
-#############################################################################
-# Responsible for loading up a PCFG grammar from disk
-#
-#############################################################################
+"""
+
+Responsible for loading up a PCFG grammar from disk
+
+"""
 
 
 # Global imports
@@ -15,39 +16,43 @@ import json
 import codecs
 
 
-## Main function to load up a grammar from disk
-#
-# Note, will pass exceptions and errors back up to the calling program
-#
-# Input:
-#    rule_name: the name of the ruleset to load
-#
-#    base_directory: The directory to load the ruleset from
-#
-#    version: The version of the guess generator, used to tell if ruleset is
-#             valid for this version
-#
-# Output:
-#    grammar: A loaded PCFG Grammar, minus the (S)tart item and base structures
-#
-#             Mostly terminals, but some can be transforms like capitalizatoin
-#             masks.
-#
-#             Takes the form of a dictionary with the variable name, and
-#             a sub-dictionary of the form:
-#                {
-#                   'values':['11','51'],
-#                   'prob':0.3
-#                }
-#
-#    base_structures:    A list of (base structures, prob) tuples in 
-#                        probability order
-#
-#             For example [('D2L2',0.3), ('D4L3',0.2) ...]
-#
-#    ruleset_info: A dictionary containing general information about the ruleset
-#
 def load_grammar(rule_name, base_directory, version, skip_brute, skip_case, base_structure_folder):
+    """
+    Main function to load up a grammar from disk
+    
+    Note, will pass exceptions and errors back up to the calling program
+    
+    Inputs:
+        rule_name: the name of the ruleset to load
+    
+        base_directory: The directory to load the ruleset from
+    
+        version: The version of the guess generator, used to tell if ruleset is
+        valid for this version
+        
+        skip_brute: If brute force is not enabled
+        
+        skip_case: If case managling should not be enabled
+        
+        base_structure_folder: The folder where the base structure can be found
+    
+    Returns:
+        grammar: A loaded PCFG Grammar, minus the (S)tart item and base structures.
+        -Mostly terminals, but some can be transforms like capitalization masks.
+        -Takes the form of a dictionary with the variable name, and
+        a sub-dictionary of the form:
+            {
+                'values':['11','51'],
+                'prob':0.3
+            }
+            
+        base_structures: A list of (base structures, prob) tuples in 
+        probability order
+        -For example [('D2L2',0.3), ('D4L3',0.2) ...]
+
+        ruleset_info: A dictionary containing general information about the ruleset
+
+    """
 
     # Holds general information about the grammar
     ruleset_info = {
@@ -74,23 +79,25 @@ def load_grammar(rule_name, base_directory, version, skip_brute, skip_case, base
     return grammar, base_structures, ruleset_info
     
 
-## Loads the OMEN keyspace information from file
-#
-# This is useful for status outputs to let users know how many guesses
-# are generated for each OMEN level
-#
-# Will not catch exceptions. Passes file execeptions up to calling code
-#
-# Input:
-#    base_directory: The base directory to load the rules from
-#
-# Returns:
-#    omen_keyspace: A dictionary indexed by omen levels with the value being
-#                   the keyspace. Initially empty
-#                   Example:
-#                   {'1':5000, '2':300012, '3':981138888}
-#    
 def load_omen_keyspace(base_directory):
+    """
+    Loads the OMEN keyspace information from file
+
+    This is useful for status outputs to let users know how many guesses
+    are generated for each OMEN level
+    
+    Will not catch exceptions. Passes file execeptions up to calling code
+    
+    Inputs:
+        base_directory: The base directory to load the rules from
+    
+    Returns:
+        omen_keyspace: A dictionary indexed by omen levels with the value being
+        the keyspace. Initially empty
+        Example:
+            {'1':5000, '2':300012, '3':981138888}
+
+    """
     filename = os.path.join(base_directory,"Omen","omen_keyspace.txt")
 
     omen_keyspace = {}
@@ -111,7 +118,6 @@ def load_omen_keyspace(base_directory):
     return omen_keyspace    
                 
                 
-
 ## Loads the base structures for the grammar
 #
 # Input:
