@@ -65,13 +65,13 @@ def load_rules(base_directory, grammar):
         _load_alphabet(base_directory, "alphabet.txt", grammar)
 
         # Load the IP ngrams
-        _load_ngrams(base_directory, "IP.level", grammar, "ip", grammar['ngram'] - 1)
+        _load_ngrams(base_directory, "IP.level", grammar, "ip")
 
         # Load the EP ngrams
-        _load_ngrams(base_directory, "EP.level", grammar, "ep", grammar['ngram'] - 1)
+        _load_ngrams(base_directory, "EP.level", grammar, "ep")
 
         # Load the CP ngrams
-        _load_ngrams(base_directory, "CP.level", grammar, "cp", grammar['ngram'])
+        _load_ngrams(base_directory, "CP.level", grammar, "cp")
 
         # Load the length info
         _load_length(base_directory, "LN.level", grammar, "ln", grammar['ngram'])
@@ -98,9 +98,7 @@ def _load_config(base_directory, filename, grammar):
         grammar: A dictionary to save the grammar to
 
     Returns:
-        True: If the config file was able to be loaded
-
-        False: If the config file was unable to be loaded
+        None: Will raise an uncaught exception if an error occurs.
     """
     try:
         # Combine the directory and filename to get the full file path
@@ -110,13 +108,13 @@ def _load_config(base_directory, filename, grammar):
         config = configparser.ConfigParser()
 
         # Actually open up the config file
-        config.readfp(open(full_file_path))
+        config.read(full_file_path)
 
         grammar['alphabet_encoding'] = config.get('training_settings','encoding')
         grammar['ngram'] = config.getint('training_settings','ngram')
         grammar['max_level'] = 10
 
-    except IOError as msg:
+    except IOError:
         print("Could not open the config file for the ruleset specified. The rule directory may not exist", file=sys.stderr)
         print("Filename: " + full_file_path, file=sys.stderr)
         raise
@@ -139,9 +137,7 @@ def _load_alphabet(base_directory, filename, grammar):
         grammar: A dictionary to save the grammar to
 
     Returns:
-        True: If the alphabet file was able to be loaded
-
-        False: If the alphabet file was unable to be loaded
+        None: Will raise an uncaught exception if an error occurs.
     """
     try:
         full_file_path = os.path.join(base_directory, filename)
@@ -150,19 +146,19 @@ def _load_alphabet(base_directory, filename, grammar):
         # If that problem occurs, it strongly implies something happened during the training phase
         with codecs.open(full_file_path, 'r', encoding= grammar['alphabet_encoding'], errors= 'strict') as file:
             for line in file:
-               grammar['alphabet'].append(line.rstrip('\n\r'))
+                grammar['alphabet'].append(line.rstrip('\n\r'))
 
-    except IOError as msg:
+    except IOError:
         print("Could not open the config file for the ruleset specified. The rule directory may not exist", file=sys.stderr)
         print(f"Filename: {full_file_path}", file=sys.stderr)
         raise
-    except ValueError as msg:
+    except ValueError:
         print("Error reading a character from the alphabet file", file=sys.stderr)
         print("This implies there was some problem with a custom alphabet used during training", file=sys.stderr)
         raise
 
 
-def _load_ngrams(base_directory, filename, grammar, name, ngram_size):
+def _load_ngrams(base_directory, filename, grammar, name):
     """
     Reads the probability info for ngrams
 
@@ -179,12 +175,8 @@ def _load_ngrams(base_directory, filename, grammar, name, ngram_size):
         name: The key name to save the ngram info as. Also
         provides info on how to parse it, aka if the name is "ip".
 
-        ngram_size: The size of the ngram being parsed
-
     Returns:
-        True: If the ngram file was able to be loaded
-
-        False: If the ngram file was unable to be loaded
+        None: Will raise an uncaught exception if an error occurs.
     """
 
     # Initialize the ngram dictionary
@@ -276,9 +268,7 @@ def _load_length(base_directory, filename, grammar, name, min_size):
         is enforced.
 
     Returns:
-        True: If the length file was able to be loaded
-
-        False: If the length file was unable to be loaded
+        None: Will raise an uncaught exception if an error occurs.
     """
 
     # Initialize the level dictionary
@@ -318,11 +308,11 @@ def _load_length(base_directory, filename, grammar, name, min_size):
                 # Increment cur_length for the next length
                 cur_length += 1
 
-    except IOError as msg:
+    except IOError:
         print("Could not open the config file for the ruleset specified. The rule directory may not exist", file=sys.stderr)
         print(f"Filename: {full_file_path}", file=sys.stderr)
         raise
-    except ValueError as msg:
+    except ValueError:
         print(f"Error reading an item from the file: {full_file_path}", file=sys.stderr)
         print("This indicates there was a problem with the training program or the file was corrupted somehow", file=sys.stderr)
         raise

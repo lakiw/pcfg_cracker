@@ -1,18 +1,27 @@
 #!/usr/bin/env python3
 
 
-#########################################################################
-# Contains banner ascii art and displays for the training program
-#
-#########################################################################
+"""
+
+Contains banner ascii art and displays for the training program
+
+"""
 
 
 import sys
 
 
-## ASCII art for the banner
-#
 def print_banner():
+    """
+    ASCII art for the Pring-Ling Banner
+
+    Inputs:
+        None
+
+    Returns:
+        None
+    """
+
     print("",file=sys.stderr)
     print('''x              x       ____       _                       __    _            ''',file=sys.stderr)
     print(''':xx xxxxxxxx xx:      / __ \_____(_)___  ________        / /   (_)___  ____ _''',file=sys.stderr)
@@ -28,7 +37,7 @@ def print_banner():
     print('''    :xxxxxx:                                                                 ''',file=sys.stderr)
     print('''    :xxxxxx:                                                                 ''',file=sys.stderr)
     print('''    :xxxxxx:                                                                 ''',file=sys.stderr)
-    print('''   :xxxxxxxx:                                                                ''',file=sys.stderr)                   
+    print('''   :xxxxxxxx:                                                                ''',file=sys.stderr)
     print('''  :xxxxxxxxxx:                                                               ''',file=sys.stderr)
     print(''' :xxxxxxxxxxxx:                                                              ''',file=sys.stderr)
     print('''  :xxxxxxxxxx:                                                               ''',file=sys.stderr)

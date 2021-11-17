@@ -47,9 +47,8 @@ import os
 
 # Local imports
 from lib_princeling.banner_info import print_banner
-from lib_guesser.pcfg_grammar import PcfgGrammar
 from lib_princeling.wordlist_generation import create_prince_wordlist
-
+from lib_guesser.pcfg_grammar import PcfgGrammar
 
 def parse_command_line(program_info):
     """
@@ -132,7 +131,7 @@ def parse_command_line(program_info):
     ## Sanity checking of values
     #
     # Check to make sure limit makes sense
-    if program_info['max_size']!= None and program_info['max_size'] <= 0:
+    if program_info['max_size'] is not None and program_info['max_size'] <= 0:
         print("Error, max size must be greater than 0")
         return False
 
@@ -212,9 +211,7 @@ def main():
 
     create_prince_wordlist(
         pcfg,
-        program_info['max_size'],
-        base_directory,
-        program_info['output_file']
+        program_info['max_size']
         )
 
     pcfg.shutdown()

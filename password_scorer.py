@@ -52,7 +52,7 @@ import traceback
 
 # Local imports
 from lib_scorer.banner_info import print_banner
-from lib_scorer.pcfg_grammar import PcfgGrammar
+from lib_scorer.pcfg_grammar import PCFGPasswordParser
 from lib_scorer.grammar_io import load_grammar
 from lib_scorer.file_output import FileOutput
 from lib_trainer.trainer_file_input import TrainerFileInput
@@ -63,14 +63,22 @@ def parse_command_line(program_info):
     Parses the command line
 
     Responsible for parsing the command line.
-
-# If you have any command line options that you want to add, they go here.
-#
-# All results are returned as a dictionary in 'program_info'
-#
-# If successful, returns True, returns False if value error, program exits if
-# argparse catches a problem.
-#
+    If you have any command line options that you want to add, they go here.
+    All results are returned as a dictionary in 'program_info'
+    
+    If successful, returns True, returns False if value error, program exits if
+    argparse catches a problem.
+    
+    Inputs:
+        program_info: A python dictionary that contains information about
+        the program, and variables which cotain default values for
+        command line options
+        
+    Returns:
+        True: If the command line was parsed correctly
+        
+        False: If an error occured parsing the command line
+    
     """
 
     # Keeping the title text to be generic to make re-using code easier
@@ -80,8 +88,8 @@ def parse_command_line(program_info):
         program_info['version']
     )
 
-    ## Standard options
-    #
+    # Standard options
+
     # The rule name to use when scoring the inpput.
     parser.add_argument(
         '--rule',
@@ -144,8 +152,8 @@ def parse_command_line(program_info):
     program_info['limit'] = args.limit
     program_info['max_omen_level'] = args.max_omen
 
-    ## Sanity checking of values
-    #
+    # Sanity checking of values
+
     # Check to make sure limit makes sense
     if program_info['limit'] < 0 or program_info['limit'] > 1.0:
         print("Error, limit must be a value between 1.0 and 0.0")
@@ -159,6 +167,12 @@ def parse_command_line(program_info):
 def main():
     """
     Main function, starts everything off
+    
+    Inputs:
+        None
+        
+    Returns:
+        None
     """
 
     # Information about this program
@@ -177,7 +191,7 @@ def main():
 
         # OMEN Options
         #
-        # Note, pickng 9 as the default because the keyspace when training
+        # Note, picking 9 as the default because the keyspace when training
         # on rockyou for level 9 is roughly 600 million which seems reasonable
         'max_omen_level':9
 
@@ -200,33 +214,32 @@ def main():
                         'Rules',
                         program_info['rule_name'])
 
-    ## Create the grammar object
-    #
-    # Does not load the grammar yet
-    grammar = PcfgGrammar(limit = program_info['limit'])
+    # Create the pw_parser object
+    # Does not load the pcfg grammar yet
+    pw_parser = PCFGPasswordParser(limit = program_info['limit'])
 
-    # Attempt to load the rules file into the grammar
+    # Attempt to load the rules file into the pw_parser
     print("Loading Rule: " + str(program_info['rule_name']))
-    if not load_grammar(grammar, base_directory):
+    if not load_grammar(pw_parser, base_directory):
         print("Exiting...")
         return
 
     # Initialize the multiword detector
     print("Initializing Multi-Word Detector")
-    grammar.create_multiword_detector()
+    pw_parser.create_multiword_detector()
 
     # Initalize the OMEN scorer
     print("Initializing the OMEN scorer")
-    grammar.create_omen_scorer( base_directory, program_info['max_omen_level'])
+    pw_parser.create_omen_scorer( base_directory, program_info['max_omen_level'])
 
     # Initialize the file input to read input values from
     # Re-using the TrainerFileInput from the trainer
     file_input = TrainerFileInput(
                     program_info['input_file'],
-                    grammar.encoding)
+                    pw_parser.encoding)
 
     # Open file for output
-    writer = FileOutput(program_info['output_file'], grammar.encoding)
+    writer = FileOutput(program_info['output_file'], pw_parser.encoding)
 
     # Start processing input
     print("Processing input wordlist")
@@ -237,7 +250,7 @@ def main():
         input_value = file_input.read_password()
         while input_value:
 
-            result = grammar.parse(input_value)
+            result = pw_parser.parse(input_value)
 
             writer.write_data(result)
 
