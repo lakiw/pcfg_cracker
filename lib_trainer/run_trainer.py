@@ -66,7 +66,7 @@ def run_trainer(program_info, base_directory):
     print("What we are learning:")
     print("A) Identify words for use in multiword detection")
     print("B) Identify alphabet for Markov chains")
-    print("C) Duplicate password detectin, (duplicates are good!)")
+    print("C) Duplicate password detection, (duplicates are good!)")
     print("-------------------------------------------------")
     print("")
     print("Printing out status after every million passwords parsed")
@@ -197,21 +197,8 @@ def run_trainer(program_info, base_directory):
     # and then the keyspace for each level
     omen_trainer.apply_smoothing()
     omen_keyspace = calc_omen_keyspace(omen_trainer)
-    
-    # Add in the probability of OMEN Markov to the PCFG base structure if the
-    # trainer is adding Markov brute force to the grammar
-    if program_info['coverage'] != 0:
-        # Make sure there are valid OMEN parses, otherwise no sense creating
-        # a brute force rule
-        if omen_keyspace.most_common(1) != []:
-            # Adding the Markov/Omen numbers in as addition to the currently parsed
-            # passwords vs. resetting the counts/probabilities of what was already
-            # parsed
-            markov_instances = (num_valid_passwords /  program_info['coverage']) - num_valid_passwords
-            pcfg_parser.count_base_structures['M'] = markov_instances
-            
+           
     # Perform third loop through training data
-
     # Re-Initialize the file input to read passwords from
     file_input = TrainerFileInput(
                     program_info['training_file'], 
@@ -253,6 +240,36 @@ def run_trainer(program_info, base_directory):
         print("Exiting...")
         return    
 
+    # Print statisticts to the screen
+    print_statistics(pcfg_parser)
+
+    # Insert OMEN/Markov into the base_structure grammar based on the coverage
+    # Skip this step if coverage is 1 (aka specifically turning off OMEN)
+    if program_info['coverage'] != 1:
+    
+        # Make sure there are valid OMEN parses, otherwise no sense creating
+        # a brute force rule. Also for now, print out an error and exit. This
+        # is annoying but hopefully it shouldn't happen and if it does that
+        # would be really good to know. So I don't want it to fail and be ignored
+        print(omen_keyspace.most_common(1))
+        if not omen_keyspace.most_common(1):
+            print("Error. The trainer was unable to create any Markov/OMEN NGrams for some reason")
+            print("If you want to re-try this without using Markov/OMEN, rerun the trainer with")
+            print("the argument '--coverage 1")
+            print("Exiting without saving grammar")
+            return False
+        
+        # If we only should generate guesses using OMEN/Markov delete all the other base structures
+        if program_info['coverage'] == 0:
+            pcfg_parser.count_base_structures.clear()
+            pcfg_parser.count_base_structures['M'] = 1
+            
+        # Need to add a count to Markov base structure so that it happens at
+        # the percentage that the coverage value suggests
+        else:
+            markov_instances = (num_valid_passwords / program_info['coverage']) - num_valid_passwords
+            pcfg_parser.count_base_structures['M'] = markov_instances
+
     print()
     print("-------------------------------------------------")
     print("Saving Data")
@@ -285,8 +302,5 @@ def run_trainer(program_info, base_directory):
             ):
         print("Error, something went wrong saving the pcfg data to disk")
         return False
-
-    # Print statisticts to the screen
-    print_statistics(pcfg_parser)
     
     return True

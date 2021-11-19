@@ -81,7 +81,6 @@ class PCFGPasswordParser:
         self.count_raw_base_structures = Counter()
         self.count_prince = Counter()
 
-
     def parse(self, password):
         """
         Main function called to parse an individual password

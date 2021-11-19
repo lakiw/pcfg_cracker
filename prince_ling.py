@@ -56,14 +56,18 @@ def parse_command_line(program_info):
 
     Note: This is a fairly standardized format that I use in many of my programs
 
-    Variables:
-
+    Inputs:
         program_info: A dictionary that contains the default values of
         command line options. Results overwrite the default values and the
         dictionary is returned after this function is done.
 
-    If successful, returns True, returns False if value error, program exits if
-    argparse catches a problem.
+    Returns:
+        True: If the command line was parsed sucessfully
+
+        False: If a value error occurs
+
+        (Program Exit): If argparse is given the -h option
+
     """
 
     # Keeping the title text to be generic to make re-using code easier
@@ -73,8 +77,6 @@ def parse_command_line(program_info):
         program_info['version']
     )
 
-    ## Standard options
-    #
     # The rule name to use for generating the wordlist
     parser.add_argument(
         '--rule',
@@ -128,8 +130,7 @@ def parse_command_line(program_info):
     # Advanced options
     program_info['skip_case'] = args.skip_case
 
-    ## Sanity checking of values
-    #
+    # Sanity checking of values
     # Check to make sure limit makes sense
     if program_info['max_size'] is not None and program_info['max_size'] <= 0:
         print("Error, max size must be greater than 0")
@@ -142,6 +143,11 @@ def main():
     """
     Main function, starts everything off
 
+    Inputs:
+        None
+
+    Returns:
+        None
     """
 
     # Information about this program
@@ -149,7 +155,7 @@ def main():
 
         # Program and Contact Info
         'name':'PRINCE-LING',
-        'version': '4.1',
+        'version': '4.3',
         'author':'Matt Weir',
         'contact':'cweir@vt.edu',
 
@@ -160,12 +166,11 @@ def main():
 
         # Advanced Options
         'skip_case':False,
-
-    }
+        }
 
     print_banner()
     print("Version: " + str(program_info['version']),file=sys.stderr)
-    print()
+    print("",file=sys.stderr)
 
     # Parsing the command line
     if not parse_command_line(program_info):
@@ -186,7 +191,7 @@ def main():
                         program_info['rule_name']
                         )
 
-    ## Create the grammar
+    # Create the grammar
     #
     # Note, if the ruleset can not be loaded, (for example it doesn't exist),
     # it will throw an exception.
@@ -202,8 +207,8 @@ def main():
             )
 
     except Exception as msg:
-        print(msg)
-        print("Exiting")
+        print(msg,file=sys.stderr)
+        print("Exiting",file=sys.stderr)
         return
 
     # Set up the wordlist save option, either stdout or write to file
