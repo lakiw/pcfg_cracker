@@ -123,7 +123,6 @@ def load_omen_keyspace(base_directory):
     return omen_keyspace
 
 
-
 def _load_base_structures(base_structures, base_directory, skip_brute, base_structure_folder):
     """
     Loads the base structures for the grammar

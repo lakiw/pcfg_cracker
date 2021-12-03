@@ -65,14 +65,18 @@ def parse_command_line(program_info):
 
     Note: This is a fairly standardized format that I use in many of my programs
 
-    Variables:
+    Inputs:
 
         program_info: A dictionary that contains the default values of
         command line options. Results overwrite the default values and the
         dictionary is returned after this function is done.
 
-    If successful, returns True, returns False if value error, program exits if
-    argparse catches a problem.
+    Returns:
+        True: If the command line was parsed successfully
+
+        False: If an error occured parsing the command line
+
+        (Program Exits): If the --help option is specified on the command line
     """
 
     # Keeping the title text to be generic to make re-using code easier
@@ -171,6 +175,12 @@ def parse_command_line(program_info):
 def main():
     """
     Main function, starts everything off
+
+    Inputs:
+        None
+
+    Returns:
+        None
     """
 
     # Information about this program
@@ -287,7 +297,7 @@ def create_save_config(program_info):
     """
     Creates the configparser object that will be used to save/load sessions
 
-    Variables:
+    Inputs:
         program_info: A dictionary containing information about the current session
 
     Returns:
@@ -317,7 +327,7 @@ def load_save(save_filename, program_info):
     """
     Loads a configparser object containing info about a saved guessing session
 
-    Variables:
+    Inputs:
         base_directory: The directory to load the save file from
 
         program_info: A dictionary containing information about the current session

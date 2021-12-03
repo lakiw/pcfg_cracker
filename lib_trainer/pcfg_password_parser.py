@@ -38,10 +38,12 @@ class PCFGPasswordParser:
         """
         Initializes the class and all the data structures
 
-        Variables:
+        Inputs:
             multiword_detector: A previously trained multi word detector
             that has had the base_words established for it
 
+        Returns:
+            PCFGPasswordParser
         """
 
         # Save the multiword detector
@@ -85,13 +87,13 @@ class PCFGPasswordParser:
         """
         Main function called to parse an individual password
 
-        Variables:
+        Inputs:
             password: (String) The password to parse
 
         Returns:
             True: If everything worked correctly
-            False: If there was a problem parsing the password
 
+            False: If there was a problem parsing the password
         """
 
         # Since keyboard combos can look like many other parsings, filter them
@@ -182,14 +184,15 @@ class PCFGPasswordParser:
         For example, if the individual counts are broken up by length of input
         Aka A1 = 'a', A3 = 'cat', A5 = 'chair'
 
-        Variables:
-
+        Inputs:
             self: Since this is a class private function
 
             input_counter: (Counter) The Python Counter object to update
 
             input_list: (List) A list of items to update in the counter
 
+        Returns:
+            None
         """
 
         # Go through every item in the list to insert it in the counter

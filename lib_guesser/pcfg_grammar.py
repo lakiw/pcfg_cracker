@@ -40,7 +40,7 @@ class PcfgGrammar:
         """
         Initializes the class and all the data structures
 
-        Input:
+        Inputs:
             rule_name: The name of the ruleset to load the grammar from
 
             base_directory: The directory to load the rule from
@@ -63,6 +63,8 @@ class PcfgGrammar:
                     different base structure folders for a given ruleset to target
                     specific password complexity requirements
 
+        Returns:
+            PcfgGrammar
         """
 
         # Debugging and Status Information
@@ -126,12 +128,11 @@ class PcfgGrammar:
         This is mostly a wrapper to hide the recursive calls from the calling
         function. Will print guesses to stdout.
 
-        Input Values:
+        Inputs:
             pt: The parse tree, which is a list of tuples
 
-        Return Value:
+        Returns:
             num_guesses: The number of guesses generated
-
         """
         return self._recursive_guesses('',pt)
 
@@ -146,13 +147,16 @@ class PcfgGrammar:
         Note, these will *NOT* be in true probability order. That will be up
         to whatever makes use of this list to sort them as desired
 
-        Return Values:
+        Inputs:
+            None
+
+        Returns:
             pt_list: A list of the parse tree items. This is a dictionary with
-                the following keys:
-                    'prob': The probability of the parse tree (float)
-                    'pt': The parse tree, which is a list of tuples indexed into the
-                        grammar
-                    'base_prob': The probability of the base structure
+            the following keys:
+                'prob': The probability of the parse tree (float)
+                'pt': The parse tree, which is a list of tuples indexed into the
+                grammar
+                'base_prob': The probability of the base structure
         """
 
         pt_list = []
@@ -181,15 +185,14 @@ class PcfgGrammar:
         Recursivly generates guesses from a parse tree
         Will print out guesses to stdout
 
-        Input Values:
+        Inputs:
             cur_guess: The current guess being generated
 
             pt: The parse tree, which is a list of tuples. Will recursivly work though the pt to
             fill out parts to cur_guess.
 
-        Return Value:
+        Returns:
             num_guesses: The number of guesses generated
-
         """
 
         num_guesses = 0
@@ -274,7 +277,7 @@ class PcfgGrammar:
         Making this its own functions so that the load/restore and generate guesses
         from a normal session options can re-use this code
 
-        Input:
+        Inputs:
             markov_cracker: An OMEN MarkovCracker instance
 
         Returns:
@@ -317,7 +320,7 @@ class PcfgGrammar:
         Need to have error handling and want to centerlize all the calls to this so I don't
         accidently forget some printout somewhere else
 
-        Input:
+        Inputs:
             guess: The string to print out to stdout
 
         Returns:

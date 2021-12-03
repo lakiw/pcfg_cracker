@@ -52,7 +52,7 @@ import traceback
 
 # Local imports
 from lib_scorer.banner_info import print_banner
-from lib_scorer.pcfg_grammar import PCFGPasswordParser
+from lib_scorer.pcfg_password_scorer import PCFGPasswordScorer
 from lib_scorer.grammar_io import load_grammar
 from lib_scorer.file_output import FileOutput
 from lib_trainer.trainer_file_input import TrainerFileInput
@@ -180,7 +180,7 @@ def main():
 
         # Program and Contact Info
         'name':'PCFG Password Scorer',
-        'version': '4.1',
+        'version': '4.3',
         'author':'Matt Weir',
         'contact':'cweir@vt.edu',
 
@@ -216,7 +216,7 @@ def main():
 
     # Create the pw_parser object
     # Does not load the pcfg grammar yet
-    pw_parser = PCFGPasswordParser(limit = program_info['limit'])
+    pw_parser = PCFGPasswordScorer(limit = program_info['limit'])
 
     # Attempt to load the rules file into the pw_parser
     print("Loading Rule: " + str(program_info['rule_name']))
@@ -252,7 +252,7 @@ def main():
 
             result = pw_parser.parse(input_value)
 
-            writer.write_data(result)
+            writer.write(result)
 
             if result[1] == 'o':
                 false_negative += 1

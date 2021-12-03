@@ -40,14 +40,15 @@ def run_trainer(program_info, base_directory):
 
     This function is also responsible for saving the grammar to disk
 
-    Variables:
+    Inputs:
         program_info: A dictionary containing all of the command line
         option results
 
         base_directory: The base directory to save the resulting grammar to
 
-    Return:
+    Returns:
         True: If the operations completed sucessfully
+
         False: If any errors occured
     """
 

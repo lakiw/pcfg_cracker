@@ -20,8 +20,7 @@ def calculate_and_save_counter(filename, item_counter, encoding):
     """
     Saves data for an individual Python Counter of pcfg data
 
-    Variables:
-
+    Inputs:
         filename: (String) The full path and filename to save the data to disk
 
         item_counter: (Counter) The counter containing all of the data for this
@@ -29,9 +28,9 @@ def calculate_and_save_counter(filename, item_counter, encoding):
 
         encoding: (String) The encoding to save the data as. Aka 'ascii'
 
-    Return:
-
+    Returns:
         True: If it completed successfully
+
         False: If any errors occured
 
     """
@@ -58,17 +57,16 @@ def save_indexed_counters(folder, counter_list, encoding):
     """
     Cleans up a rules directory and saves length indexed Python counter objects
 
-    Variables:
-
+    Inputs:
         folder: (String) The full path to the folder to save the data to
 
         counter_list: (List[Counter]) A list of length indexed counters
 
         encoding: (String) The encoding to save the data as. Aka 'ascii'
 
-    Return:
-
+    Returns:
         True: If it completed successfully
+
         False: If any errors occured
 
     """
@@ -101,7 +99,7 @@ def save_pcfg_data(base_directory, pcfg_parser, encoding, save_sensitive):
 
     This is the top level function to call to save all of the pcfg data to disk
 
-    Variables:
+    Inputs:
 
         base_directory: The base directory to save the data to
 
@@ -109,9 +107,9 @@ def save_pcfg_data(base_directory, pcfg_parser, encoding, save_sensitive):
 
         encoding: The encoding to save the data as
 
-    Return:
-
+    Returns:
         True: If it completed successfully
+
         False: If any errors occured
 
     """

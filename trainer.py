@@ -61,14 +61,16 @@ def parse_command_line(program_info):
 
     Note: This is a fairly standardized format that I use in many of my programs
 
-    Variables:
-
+    Inputs:
         program_info: A dictionary that contains the default values of
         command line options. Results overwrite the default values and the
         dictionary is returned after this function is done.
+    Returns:
+        True: If successfully
 
-    If successful, returns True, returns False if value error, program exits if
-    argparse catches a problem.
+        False: If a value error occurs
+
+        (Special: Program Exits): If Argparse is given the --help option
     """
 
     # Keeping the title text to be generic to make re-using code easier
@@ -253,6 +255,11 @@ def main():
     encoding of the training set, creating the initial folders
     and then kicking off the training via run_trainer()
 
+    Inputs:
+        None
+
+    Returns:
+        None
     """
 
     # Information about this program
