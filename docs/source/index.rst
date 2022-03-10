@@ -26,7 +26,10 @@ Academic Papers:
 ====================================
 .. include:: papers.rst
 
-Main ReadMe:
-============
-.. include:: ../../readme.rst
+Design Principles:
+====================================
+.. include:: design_principles.rst
 
+PCFG "Next" Function Design:
+====================================
+.. include:: next_function.rst
