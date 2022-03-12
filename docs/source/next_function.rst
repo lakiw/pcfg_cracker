@@ -2,7 +2,7 @@
   :width: 400
   :alt: Getty the Goblin Picture 7
   
-This section of the Developer's Guide is geared for researchers and developers and focuses on the "Next" algorithm which is the core algorithm behind the PCFG guesser. In a nutshell, the "Next" algorithm determines what the next guess to generate should be for a given PCFG. The current Next algorithm in the PCFG is tailored to generating guesses in probability order. Therefore it'll start by generating the most probible guess, followed by the second most probable guess, and so on. That is great for a password cracking attack, but it has some significant performance downsides. Which is another way of saying it is slow and requires more and more memory the longer it is run. Now not all Next algorithms have to follow this path, which is why this is a good area for improvements. For example a limit based Next algorithm that generates guesses in "mostly" probability order might have much better performance characteristics.
+This section of the Developer's Guide is geared for researchers and developers and focuses on the "Next" algorithm which is the core algorithm behind the PCFG guesser. In a nutshell, the "Next" algorithm determines what the next guess to generate should be for a given PCFG. The current Next algorithm in the PCFG is tailored to generating guesses in probability order. This means it'll start by generating the most probible guess, followed by the second most probable guess, and so on. That is great for a password cracking attack, but it has some significant performance downsides. Which is another way of saying it is slow and requires increasing memory the longer it is run. Now not all Next algorithms have to follow this path, which is why this is a good area for improvements. For example a limit based Next algorithm that generates guesses in "mostly" probability order might have much better performance characteristics.
 
   
 Definitions:
@@ -94,7 +94,7 @@ Desired Goals of the "Next" Algorithm:
   
 2. Generate parse trees in probability order
 
-   - Start by generating the most probable terminal/guess first, then the second most probable one, and so on.
+  - Start by generating the most probable terminal/guess first, then the second most probable one, and so on.
    
 3. Minimize memory and runnint time requirements
 
@@ -103,7 +103,7 @@ Note: Achiving all three goals at once remains an open problem.
 Current Approaches for Designing a "Next" Algorithm:
 ----------------------------------------------------
 
-At a high level, all the current approaches for designing a Next function for a PCFG based password modeling program rely upon turning the PCFG into a tree search problem.
+At a high level, all the current approaches for designing a Next function for a PCFG based password cracker rely upon turning the PCFG into a tree search problem.
 
 - Once you do this, you can start to apply tradtional search techniques such as Depth First Search (DFS), Breadth First Search (BFS), etc.
     
@@ -136,7 +136,7 @@ Lets consider a PCFG grammar as a Tree with the root node being A\ :sub:`1`\B\ :
   
 As you can see, many leafs are effectively duplicates of each other. This is why you usually see PCFGs represented as a DAG instead of a Tree. This also causes problems for our "Next" function since duplicates are something we want to avoid if possible. Therefore most of the discussion you'll see about converting a DAG to a Tree will focus on how to "trim" branches of the tree above to eliminate duplicate guesses.
 
-PCFG v0 Next Alogorithm
+PCFG v0 Next Alogorithm:
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The very first approach we took when investigating if PCFGs could be used to represent human generated passwords was to generate all possible passwords up to a given probability, save them to disk, sort them in probability order, and then print them. This effort was lead by Bill Glodek and was the basis for his Thesis. The actual algorithm is described in section 3.4.2 of his Thesis, and the code is in the Appendix of his Thesis, but let me try and simplify the description for this guide:
@@ -167,5 +167,77 @@ The upside of this approach is that it is simple. Also, once the initial wordlis
 
 The challenge is the memory requirements are onerous as you need to save then sort every single guess before you even start a password cracking attack. If you don't mind terabytes of wordlists, and spending hours/days generating the initial wordlist, this approach is still totally viable.
 
-PCFG v1 Next Algorithm
-~~~~~~~~~~~~~~~~~~~~~~
+PCFG Next Algorithm v1:
+~~~~~~~~~~~~~~~~~~~~~~~
+
+The PCFG "Next" algorithm version 1 is the approach described in the original PCFG S&P paper. It rests on the idea of assigning a pivot value to each node to prune branches and convert a DAG to a Tree. The pivot value specifies what children/leafs can be created by a particular node. A child can only be created if the transition position is equal to or greater than the pivot value. So for example, a root node of A\ :sub:`1`\B\ :sub:`1`\C :sub:`1`\ would be assigned a pivot value of 0, which means it can create children for all of its transitions. Its child A\ :sub:`2`\B\ :sub:`1`\C :sub:`1`\ would likewise inherit the pivot value of 0 and could create all of its own children as well. On the other hand, the child A\ :sub:`1`\B\ :sub:`2`\C :sub:`1`\ would be assigned a pivot value of 1, since it was created by incrementing the second transition. Therefore it could only create children for its B and C transistion. Therfore it creates trees such as the one below:
+
+.. image:: image/next_algorithm_v1.png
+  :width: 400
+  :alt: Tree created by the PCFG V1 Next Algorithm
+  
+Once the PCFG has been converted to a Tree, the next step is to use it to generate guesses in probability order. The easiest way to do that with a priority queue. The priority queue is initialized with the root node in it. You then pop the most probable node off the queue, geneerate guesses from it, and then push all the children from that node back into the queue. This continues until you've cracked the password, or you run out of nodes to traverse. Therefore the priority queue will hold all of the nodes of the current breadth first search of the Tree. This can be seen in the following diagram.
+
+.. image:: image/next_algorithm_v1_pq.png
+  :width: 400
+  :alt: Tree created by the PCFG V1 Next Algorithm
+
+The reason why this is the Version 1 of the "Next" algorithm and not just the "Next" algorithm can be summed up by the term: "memory usage". To put it simply, a lot of very low probability nodes get pushed into the priority queue which causes it to expand very fast because the tree is so heavily weighted to the leftmost nodes. Looking back to the previous picture of the Tree, you can see a node on the left will have significantly more children than the right side. This means that when one of those nodes gets popped and its children get pushed onto the priority queue this may include a lot of very low probability children that will hang out in the priority queue for a significant amount of time. Think of those nodes as a trust fund children that are able to show up simply because their parents had a high probability, and they just hangs out in the priority queue not contributing anything and taking up resources.
+
+PCFG Next Algorithm v2 (Adoption Algorithm):
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The second version of the "Next" algorithm is the Adoption algorithm. I originally called the "Deadbeat Dad" algoirithm, but I'm regretting the negative connotations so I'm renaming it. The key idea behind this approach is that a node can have multiple different parents (that old DAG vs. Tree issue), so a child should only be pushed into the priority queue if its least most probable parent was just popped from the queue. This relies on the assumption that a child's probability can't be greater than its parents. In the current PCFG code, this approach is implimented by generating all the children for any node popped from the queue, and then walking back up the Tree/DAG and generating all the parents for those children. If a child has a lower probability parent than the parent that was just popped, it is left for that lower probability parent to "adopt" that child later. If the recently popped parent is the lowest probability parent for a child node though, that child is then pushed into the priority queue. Ties in parent probability are resolved by the arbitrary but deterministic approach of selecting the righmost node to be the parent. Admittedly this approach requires a lot more computation than the Version 1 "Next" algorithm. The memory savings and correspondenly faster priority queue pushes make the Version 2 approach better algorithm for most use-cases though. This can be seen in the following graph.
+
+.. image:: image/v1_vs_v2_memory_usage.png
+  :width: 400
+  :alt: Graph showing that the Version 2 of the Next function is significantly better than Version 1
+  
+  
+Suggested Research Areas and Open Questions:
+----------------------------------------------------
+
+The current Version 2 "Adoption" algorithm is computationally expensive and even though its memory usage is better than the Version 1 "Next" algoirthm, it still grows quite large for longer cracking sessions. Therefore there is still a lot of room for improvement when it comes to weaponizing a PCFG for use in password cracking attacks.
+
+Improving the Breadth First Search (Priority Queue):
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+- There’s been a lot of research into better BFS algorithms in the last ten years since the v2 “next” algorithm was written
+- There’s some promising approaches beyond using a PQ
+- Lots of improvements are possible, but memory management is still a running concern for alternate BFS implementations that I’ve looked at
+- Long story short, this is a problem that I keep expecting to have been solved in other contexts, either in general tree BFS, DAG BFS, or PCFG BFS
+- Memory management is a killer. Most “AI” solvers I’ve looked at tend to use a combination of Depth First Search (DFS) and BFS to compensate
+- If you come up with a better solution, I will be **very** interested in it
+
+Other Approaches:
+~~~~~~~~~~~~~~~~~~
+
+- Dropping the “Probability Order” Requirement
+
+  - If you no longer care about generating guesses in true probability order, there are multitude of **much** faster “Next” algorithms you can use.
+
+  - Basically you are no longer using BFS. Other approaches can be using DFS which has very limited memory and computational requirements.
+  
+  - This can be seen in John the Ripper’s –Markov mode
+  
+- Dropping “Probability" Altogether
+
+  - Rather than calculate the true probability of each PCFG terminal, you can quantize each transition and use addition + limits, much like OMEN and JtR’s –Markov algorithm.
+  
+  - Now you are doing addition of INTs, vs. multiplication of FLOATs, which speeds things up.
+  
+  - In fact, PCFGs can use the underlying algorithm in OMEN with very little modification. Instead of length, choose a base structure as a starting point. Since the CF in PCFG stands for “context free” this allows for even more optimizations compared to other Markov based approaches
+
+
+Summary:
+~~~~~~~~
+
+- There’s a lot of ways to generate guesses with Context Free Grammars
+
+- The speed/memory trade-offs occur when specifying requirements for generating probable guesses first
+
+- Most other current guessing algorithms can be adapted to use Context Free Grammars if desired
+
+- Feel free to think outside the box. Don’t let current implementations that utilize pqueues and large memory requirements limit your thinking!
+
+
+

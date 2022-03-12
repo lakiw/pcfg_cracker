@@ -28,6 +28,8 @@ Ok, if you had any command prompt windows open, you'll now need to close and reo
 
 Next, in a terminal or command prompt navigate to the ./docs directory and run: `make latexpdf`. The build may require installing additional LaTeX packages. I had to install what felt like 50 of them for the basic "hello world" pdf example. I swear I am not knowingly installing any malware or backdoors on your computer with this. If all of this worked you should now be able to view the pdf in docs\\build\\latex\\pcfgdevelopersguide.pdf
 
+If you recieve an error saying that an image can not be found while building the PDF, my experience is that MiKTex has gotten confused. In the MiKTex GUI/console, click on Tasks and select "Refresh file name database". If this doesn't fix the problem, update all the packages in MiKTex and then refresh the file name database again.
+
 Building a PDF Dev Guide on Linux:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
