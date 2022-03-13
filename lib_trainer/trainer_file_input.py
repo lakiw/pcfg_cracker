@@ -15,8 +15,12 @@ def get_confirmation(warningtext):
     """
     Prints a warning message and asks for user confirmation
 
-    Return Values:
+    Inputs:
+        warningtext: (String) The warning to display to the user
+
+    Returns:
         True: User selected Yes
+        
         False: User selected No
 
     """
@@ -50,7 +54,7 @@ def detect_file_encoding(training_file, file_encoding, max_passwords = 10000):
     so people can run this tool without installing it if they don't want to
     use this feature
 
-    Variables:
+    Inputs:
         training_file: (String) The path+name of the file to open
 
         file_encoding: (List) A list to return the possible/recommended file
@@ -59,6 +63,12 @@ def detect_file_encoding(training_file, file_encoding, max_passwords = 10000):
         max_passwords: (Int) The maximum number of passwords to parse to
         identify the encoding of the file. This is an optimization so this
         function doesn't have to parse the whole file.
+        
+    Returns:
+        True: The function executed sucesfully
+        
+        False: An error occured, or the user did not have the chardet library
+        and decided to not accept the default 'ascii' setting
 
     """
 
@@ -126,9 +136,13 @@ def check_valid(input_password):
     Additionaly grammar checks may be run later to futher exclude passwords#
     This just features that will likely be universal rejections
 
-    Returns
-        TRUE if the password is valid
-        FALSE if invalid
+    Inputs:
+        input_password: (String) The input password to parse
+
+    Returns:
+        TRUE: If the password is valid
+        
+        FALSE: If the password is invalid
 
     """
 
@@ -173,6 +187,14 @@ class TrainerFileInput:
 
         Passes file exceptions back up if they occur
         Eg: if the file doesn't exist
+        
+        Inputs:
+            filename: (String) The filename of the training file to open
+            
+            encoding: (String) The file encoding to use when parsing the file
+            
+        Returns:
+            TrainingFileInput: (Object)
 
         """
 
@@ -209,9 +231,15 @@ class TrainerFileInput:
 
     def read_password(self):
         """
-        Returns one password from the training set
-
-        If there are no more passwords returns None
+        Returns one password from the training set. If there are no more passwords returns None
+        
+        Inputs:
+            None
+            
+        Returns:
+            clean_password: (String) The next password
+            
+            None: IF there are no more passwords to parse
 
         """
 

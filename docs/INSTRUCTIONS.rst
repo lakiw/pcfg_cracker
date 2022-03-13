@@ -2,18 +2,20 @@
   :width: 400
   :alt: Getty the Goblin Picture 2
 
-How to build/update the Developer's Guide
+How to Build/Update the Developer's Guide
 ------------------------------------------
 
-Sphinx is used to create the Developer's Guide. To install Sphinx:
+Sphinx is used to create the Developer's Guide. To install Sphinx (the following assumes that python3 matches your Python 3 environment):
 
-`python -m pip install sphinx`
+`python3 -m pip install sphinx`
 
 To create an HTML viewable version of the Developer's Guide run:
 
 `sphinx-build -b html docs\source docs\build`
 
 Then you can view the Developer's Guide at docs\build\index.html
+
+Note: You may see some docstring related warnings. Those are expected and ok. I wanted to document several different Python dictionaries in the docstrings and I'm not sure how to do that without Sphinx complaining.
 
 To create a PDF of the Developer's Guide you will need a LaTeX distribuion, the latexmk package, and likely PERL as well.
 

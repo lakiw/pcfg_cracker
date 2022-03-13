@@ -4,14 +4,21 @@
 """
 
 Name: PCFG Guesser
-  --Probabilistic Context Free Grammar (PCFG) Password Guessing Program
-  --Alt Title: Pretty Cool Fuzzy Guesser (PCFG)
+  
+  Probabilistic Context Free Grammar (PCFG) Password Guessing Program
+  
+  Alt Title: Pretty Cool Fuzzy Guesser (PCFG)
 
- Written by Matt Weir
+Written by Matt Weir
+
 Initial backend algorithm developed by Matt Weir, Sudhir Aggarwal, and Breno de Medeiros
+
 Special thanks to Bill Glodek for collaboration on original proof of concept
+
 Special thanks to the National Institute of Justice and the NW3C for support with the initial reasearch
+
 Huge thanks to Florida State University's ECIT lab where the original version was developed
+
 And the list goes on and on... And thank you whoever is reading this. Be good!
 
 Copyright 2021 Matt Weir

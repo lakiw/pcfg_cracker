@@ -4,11 +4,12 @@
 """
 
 Name: PCFG Trainer
--- Training program that creates Probabilistic Context Free Grammars (PCFGs)
-   from plaintext passwords
 
--- Can also be used to generate statistical data and dictionaries for other
-   cracking methods such as MASK attacks and OMEN
+    Training program that creates Probabilistic Context Free Grammars (PCFGs)
+    from plaintext passwords
+
+    Can also be used to generate statistical data and dictionaries for other
+    cracking methods such as MASK attacks and OMEN
 
 Copyright 2021 Matt Weir
 

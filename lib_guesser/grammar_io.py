@@ -23,6 +23,7 @@ def load_grammar(rule_name, base_directory, version, skip_brute, skip_case, base
     Note, will pass exceptions and errors back up to the calling program
 
     Inputs:
+        
         rule_name: the name of the ruleset to load
 
         base_directory: The directory to load the ruleset from
@@ -37,18 +38,19 @@ def load_grammar(rule_name, base_directory, version, skip_brute, skip_case, base
         base_structure_folder: The folder where the base structure can be found
 
     Returns:
+        
         grammar: A loaded PCFG Grammar, minus the (S)tart item and base structures.
-        -Mostly terminals, but some can be transforms like capitalization masks.
-        -Takes the form of a dictionary with the variable name, and
+        Mostly terminals, but some can be transforms like capitalization masks.
+        Takes the form of a dictionary with the variable name, and
         a sub-dictionary of the form:
             {
                 'values':['11','51'],
                 'prob':0.3
             }
-
+        
         base_structures: A list of (base structures, prob) tuples in
-        probability order
-        -For example [('D2L2',0.3), ('D4L3',0.2) ...]
+        probability order.
+        For example [('D2L2',0.3), ('D4L3',0.2) ...]
 
         ruleset_info: A dictionary containing general information about the ruleset
 
@@ -94,13 +96,14 @@ def load_omen_keyspace(base_directory):
     Will not catch exceptions. Passes file execeptions up to calling code
 
     Inputs:
+        
         base_directory: The base directory to load the rules from
 
     Returns:
+        
         omen_keyspace: A dictionary indexed by omen levels with the value being
         the keyspace. Initially empty
-        Example:
-            {'1':5000, '2':300012, '3':981138888}
+        Example: {'1':5000, '2':300012, '3':981138888}
 
     """
     filename = os.path.join(base_directory,"Omen","omen_keyspace.txt")
@@ -128,6 +131,7 @@ def _load_base_structures(base_structures, base_directory, skip_brute, base_stru
     Loads the base structures for the grammar
 
     Inputs:
+        
         base_structures: A list to return the data in
         Entries take the form of a dictionary with the following fields:
             'prob': The probability of the base structure
@@ -144,6 +148,7 @@ def _load_base_structures(base_structures, base_directory, skip_brute, base_stru
         PRINCE dictionary generation
 
     Returns:
+        
         True: Config was loaded and parsed correctly
 
         False: Config failed to load
@@ -242,6 +247,7 @@ def _load_terminals(ruleset_info, grammar, base_directory, config, skip_case):
     This includes things like alpha strings, digits, keyboard patterns, etc
 
     Inputs:
+        
         ruleset_info: A dictionary containing some general information about the
         ruleset
 
@@ -258,6 +264,7 @@ def _load_terminals(ruleset_info, grammar, base_directory, config, skip_case):
         skip_case: (Bool) If True, capitalization masks are all set to lowercase
 
     Returns:
+        
         True: Config was loaded and parsed correctly
 
         False: Config failed to load
@@ -345,6 +352,7 @@ def _load_config(ruleset_info, base_directory, config):
     Loads the main config from a ruleset
 
     Inputs:
+        
         ruleset_info: A dictionary to save results in. Also will have the 'version'
         of the pcfg guesser, to do a quick version check
 
@@ -354,6 +362,7 @@ def _load_config(ruleset_info, base_directory, config):
         can make use of this config as well
 
     Returns:
+        
         True: Config was loaded and parsed correctly
 
         False: Config failed to load
@@ -401,6 +410,7 @@ def _load_from_multiple_files(grammar, config, base_directory, encoding):
     Loads grammar information from multiple files for length specified terminals
 
     Inputs:
+        
         grammar: A Python dictionary to save the grammar to
 
         config: The grammar/ruleset config
@@ -410,6 +420,7 @@ def _load_from_multiple_files(grammar, config, base_directory, encoding):
         encoding: What file encoding was used to save the grammar/ruleset
 
     Returns:
+        
         True: If everything was loaded ok
 
         False: If an error occured loading the ruleset
@@ -438,6 +449,7 @@ def _load_from_file(grammar_section, filename, encoding):
     Loads grammar information from a file
 
     Inputs:
+        
         grammar_section: A Python List to save the current grammar from this file to
 
         filename: The full filename of the grammar file to open/process
@@ -445,6 +457,7 @@ def _load_from_file(grammar_section, filename, encoding):
         encoding: The encoding to use to parse the file
 
     Returns:
+        
         True: If everything was loaded ok
 
         False: If an error occured loading the ruleset

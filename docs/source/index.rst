@@ -33,3 +33,31 @@ Design Principles:
 PCFG "Next" Function Design:
 ====================================
 .. include:: next_function.rst
+
+Modifying/Extending the PCFG Trainer
+====================================
+.. include:: pcfg_trainer.rst
+
+Modifying/Extending the PCFG Guesser
+====================================
+.. include:: pcfg_guesser.rst
+
+Honeywords:
+====================================
+.. include:: honeywords.rst
+
+Trainer Code Documentation:
+====================================
+.. include:: trainer_code.rst
+
+PCFG Guesser Code Documentation:
+====================================
+.. include:: pcfg_guesser_code.rst
+
+PRINCE-LING Code Documentation:
+====================================
+.. include:: princeling_code.rst
+
+Password Scorer Code Documentation:
+====================================
+.. include:: scorer_code.rst
