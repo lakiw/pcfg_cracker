@@ -10,23 +10,9 @@ In short: A collection of tools to perform research into how humans generate pas
 
 ## Documentation
 
-### Academic Papers:
-Original 2009 IEEE Security and Privacy paper on PCFGs for password cracking:
-[https://ieeexplore.ieee.org/abstract/document/5207658](https://ieeexplore.ieee.org/abstract/document/5207658)
+Sphinx is used to dynamically create a Developer's Guide based on docstrings in the code. To build the Developer's Guide, refer to the instructions in /doc/INSTRUCTIONS.rst
 
-My 2010 dissertation which describes several advanced features such as the updated "next" algorithm:
-[https://diginole.lib.fsu.edu/islandora/object/fsu%3A175769](https://diginole.lib.fsu.edu/islandora/object/fsu%3A175769)
-
-Comparative Analysis of Three Language Spheres: Are Linguistic and Cultural Differences Reflected in Password Selection Habits? Authors: Keika Mori, Takuya Watanabe, Yunao Zhou, Ayako Akiyama Hasegawa, Mitsuaki Akiyama and Tatsuya Mori:
-https://nsl.cs.waseda.ac.jp/wp-content/uploads/2019/07/EuroUSEC19-mori.pdf
-
-### Wiki
-Since it does not require pushing new versions to update it, the wiki is a source of random notes about this project:
-[https://github.com/lakiw/pcfg_cracker/wiki](https://github.com/lakiw/pcfg_cracker/wiki)
-
-### Documents Folder
-Several documents can also be found in the Documents folder of this repository.
- - **pcfg_next_function_overview.pptx:** A slide deck talking about the PCFG next function. The intended audience for this is developers and academic researchers.
+A pre-built Developer's Guide PDF can also be found in /doc/build/latex/pcfgdevelopersguide.pdf. Note, I'm not going to rebuild this guide between major releases to make the git history cleaner. Aka committing PDFs gets real messy real quick. This means the pre-build guide it may be slightly out of date so if you are using it to help you write/modify code it's recommended to build the guide yourself vs. using the prebuilt one.
 
 ## Overview
 

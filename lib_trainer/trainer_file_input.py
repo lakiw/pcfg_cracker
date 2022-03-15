@@ -40,7 +40,7 @@ def get_confirmation(warningtext):
         print("Valid options: [Y]es or [N]o")
 
 
-def detect_file_encoding(training_file, file_encoding, max_passwords = 10000):
+def detect_file_encoding(training_file, file_encoding, max_passwords = 500000):
     """
     Used for autodetecting file encoding of the training password set
 
@@ -72,7 +72,7 @@ def detect_file_encoding(training_file, file_encoding, max_passwords = 10000):
 
     """
 
-    ##Try to import chardet
+    # Try to import chardet
     #
     # If that package is not installed print out a warning and use is ok,
     # then use ascii as the default values
@@ -99,6 +99,16 @@ def detect_file_encoding(training_file, file_encoding, max_passwords = 10000):
         cur_count = 0
         with open(training_file, 'rb') as file:
             for line in file.readlines():
+            
+                # Check for a $HEX[] encoded password 
+                end_bracket_pos = line.find(bytes("]", "ascii"))
+                if line.startswith(bytes("$HEX[","ascii")) and end_bracket_pos:
+                    try:
+                        line = bytes.fromhex(line[5:end_bracket_pos].decode("ascii"))
+                    except:
+                        continue
+
+                # Now try to detect encoding of line
                 detector.feed(line)
                 if detector.done:
                     break
@@ -119,6 +129,14 @@ def detect_file_encoding(training_file, file_encoding, max_passwords = 10000):
         print("If you think another file encoding might have been used please ")
         print("manually specify the file encoding and run the training program again")
         print()
+
+        # Manually overriding ASCII to UTF-8 to deal with $HEX[] encoded files
+        if file_encoding[0] is "ascii":
+            print("Overriding ASCII and converting it to UTF-8 to deal with $HEX[] encoded training files")
+            print("If you really want to have an ASCII encoded file you can specify it on the command line")
+            print("But there shouldn't be any downside with using UTF-8")
+            file_encoding[0] = "utf-8"
+
     except KeyError as error:
         print("Error encountered with file encoding autodetection")
         print("Error : " + str(error))
@@ -262,6 +280,17 @@ class TrainerFileInput:
                     self.file.close()
                     return None
 
+                # Remove newlines but leave whitespace
+                clean_password = password.rstrip('\r\n')                
+
+                # Check for a $HEX[] encoded password    
+                if clean_password.startswith("$HEX[") and clean_password.endswith("]"):
+                    try:
+                        clean_password = bytes.fromhex(clean_password[5:-1]).decode(self.encoding)
+                    except:
+                        self.num_encoding_errors += 1
+                        continue
+                    
                 ## Check the encoding of the file
                 #
                 # Re-encode it and detect surrogates, this way we can
@@ -272,7 +301,7 @@ class TrainerFileInput:
                 # has helped with troubleshooting in the past
                 #
                 try:
-                    password.encode(self.encoding)
+                    clean_password.encode(self.encoding)
                 except UnicodeEncodeError as msg:
                     if msg.reason == 'surrogates not allowed':
                         self.num_encoding_errors += 1
@@ -281,9 +310,6 @@ class TrainerFileInput:
                         #print("")
                         self.num_encoding_errors += 1
                     continue
-
-                # Remove newlines but leave whitespace
-                clean_password = password.rstrip('\r\n')
 
                 # Checks to see if the password is valid
                 if not check_valid(clean_password):

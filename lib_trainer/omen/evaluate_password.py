@@ -118,7 +118,7 @@ def _rec_calc_keyspace(omen_trainer, level, length, ip):
     return omen_trainer.grammar[ip]['keyspace_cache'][length][level]
 
 
-def calc_omen_keyspace(omen_trainer, max_level = 18):
+def calc_omen_keyspace(omen_trainer, max_level = 18, max_keyspace = 10000000000):
     """
     Finds the keyspace for OMEN levels
 
@@ -134,6 +134,14 @@ def calc_omen_keyspace(omen_trainer, max_level = 18):
         of same dataset so in real life my gut feeling would be
         something like 10% would be higher than 18. Still the
         keyspace grows so large that calculating it isn't worth it
+        
+        max_keyspace: (INT) The maximum keyspace to search. This also is
+        a cut-off for when to stop calculating the keyspace. The
+        reasoning for this was that too large of a keyspace there
+        was memory issues when running the training in a Windows
+        cmd prompt. Also, it's unlikely that a super large keyspace
+        OMEN level would actually be employed in a PCFG style cracking
+        session.
 
     Return Values:
         keyspace: An Python Counter object with the levels and associate keyspace
@@ -170,6 +178,10 @@ def calc_omen_keyspace(omen_trainer, max_level = 18):
                                                 level_minus_ip - length_info[0],
                                                 length - omen_trainer.ngram + 1,
                                                 ip)
+                        
+                        # Break if the keyspace is growing too much
+                        if keyspace[level] > max_keyspace:
+                            return keyspace
 
         print("OMEN Keyspace for Level : " + str(level) + " : " + str(keyspace[level]))
 

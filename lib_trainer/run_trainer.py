@@ -252,7 +252,6 @@ def run_trainer(program_info, base_directory):
         # a brute force rule. Also for now, print out an error and exit. This
         # is annoying but hopefully it shouldn't happen and if it does that
         # would be really good to know. So I don't want it to fail and be ignored
-        print(omen_keyspace.most_common(1))
         if not omen_keyspace.most_common(1):
             print("Error. The trainer was unable to create any Markov/OMEN NGrams for some reason")
             print("If you want to re-try this without using Markov/OMEN, rerun the trainer with")
