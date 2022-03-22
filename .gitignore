@@ -25,3 +25,4 @@ docs/build/latex/*
 # Don't commit save files
 *.sav
 *.omn
+*.bak
