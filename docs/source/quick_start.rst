@@ -80,7 +80,7 @@ There are many cases where you may want to estimate the probability of a passwor
 Prince-Ling Wordlist Generator
 ------------------------------
 
-**Name:** PRINCE Language Idexed N-Grams (Prince-Ling)
+**Name:** PRINCE Language Indexed N-Grams (Prince-Ling)
 
 **Overview:** Constructs customized wordlists based on an already trained PCFG ruleset/grammar for use in PRINCE style combinator attacks. The idea behind this was since the PCFG trainer is already breaking up a training set up passwords into individual parsings, that information could be leveraged to make targeted wordlists for other attacks.
 
@@ -94,7 +94,7 @@ Prince-Ling Wordlist Generator
 
   - **–rule**: Name of the PCFG ruleset to create the PRINCE wordlist from
 
-  - **–size**: Number of words to create for the PRINCE wordlist. Note, if not specified, Prince-Ling will generate all possible words which can be quite large depending on if case_mangling is enabled. (Case mangling increases the keyspace enourmously)
+  - **–size**: Number of words to create for the PRINCE wordlist. Note, if not specified, Prince-Ling will generate all possible words which can be quite large depending on if case_mangling is enabled. (Case mangling increases the keyspace enormously)
   
   - **–output**: Output filename to write entrees to. Note, if not specified, Prince-Ling will output words to stdout, which may cause problems depending on what shell you are using when printing non-ASCII characters.
   

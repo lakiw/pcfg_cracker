@@ -5,13 +5,13 @@
 Overview:
 ---------
 
-The PCFG trainer is the core of the PCFG toolset. The trainer determines what the grammar looks like, and how subsiquent tools and attacks model human generated password creation strategies. Areas of innovation include:
+The PCFG trainer is the core of the PCFG toolset. The trainer determines what the grammar looks like, and how subsequent tools and attacks model human generated password creation strategies. Areas of innovation include:
 
-- New managling rules can be added to the trainer. For example, l33t sp33k substitution could be implimented.
+- New mangling rules can be added to the trainer. For example, l33t sp33k substitution could be implemented.
 
-- Probability smoothing could be applied to reduce the amount of transitions. For example, if a transistion A is found 10002 times in the training set, and transision B is found 10003 times in the training set, the trainer could smooth their probabilities so they occur with the same frequency in the generated grammar. This can significantly speed up cracking attacks using the grammar
+- Probability smoothing could be applied to reduce the amount of transitions. For example, if a transition A is found 10002 times in the training set, and transition B is found 10003 times in the training set, the trainer could smooth their probabilities so they occur with the same frequency in the generated grammar. This can significantly speed up cracking attacks using the grammar
 
-- Coverage can also be determined by the trainer. Aka how often do you try transisions that were not seen in the training set. For example, if the number '18632' is not in the training set, you may still want your grammar to generate it at a low probability.
+- Coverage can also be determined by the trainer. Aka how often do you try transitions that were not seen in the training set. For example, if the number '18632' is not in the training set, you may still want your grammar to generate it at a low probability.
 
 - Finally existing mangling rule detection can be improved. For example the keyboard walk detection currently has a lot of false positives, while at the same time it only detects walks without gaps. Therefore it would detect '1qaz' as a keyboard walk, but it would not detect '1z2x3c'
 
@@ -26,7 +26,7 @@ To run the unittests:
 
   - Note: Change "python3" to whatever name you use for your python 3 environment
   
-2. Some of the tests are "noisy" as I haven't figured out how to supress their outputs to stdout, but the last two lines you should see 70+ unit tests ran succesfully with an "OK" in the last line. If you encounter any errors that implies some of the training functionality has become broken.
+2. Some of the tests are "noisy" as I haven't figured out how to suppress their outputs to stdout, but the last two lines you should see 70+ unit tests ran successfully with an "OK" in the last line. If you encounter any errors that implies some of the training functionality has become broken.
 
 3. If you want to add or modify any unit tests you can find them in the: pcfg_cracker\lib_trainer\unit_tests directory
 
@@ -42,7 +42,7 @@ When thinking about where to start when describing the current PCFG training pro
 
 - **(Pre-training Phase)**:
 
-  - If the --encoding flag is not passed to the trainer, the first thing it does is read through a subset of the training set and attempt to autodetect the encoding of the training file by using the chardet python package. It then interprets all subsiquent passes through the training set using this character encoding
+  - If the --encoding flag is not passed to the trainer, the first thing it does is read through a subset of the training set and attempt to auto-detect the encoding of the training file by using the chardet python package. It then interprets all subsequent passes through the training set using this character encoding
   
   
 - **First Pass**: This pass is meant to learn all the base features of the training set that more traditional "mangling" detection rules can utilize. Therefore this run happens prior to any PCFG grammar transitions being created/learned/defined.
@@ -51,7 +51,7 @@ When thinking about where to start when describing the current PCFG training pro
   
   - The trainer identifies the alphabet to use for constructing Markov chains
   
-  - Duplicate password detecion is performed. Duplicates a good, so if no duplicates are found in the training set it can print an warning to the user of this tool. In the future, this may also be used in some of the probability smoothing functionality.
+  - Duplicate password detection is performed. Duplicates a good, so if no duplicates are found in the training set it can print an warning to the user of this tool. In the future, this may also be used in some of the probability smoothing functionality.
   
  
 - **Second Pass**: This pass is where the core grammar for the PCFG is created from the training set
@@ -60,11 +60,11 @@ When thinking about where to start when describing the current PCFG training pro
   
   - The trainer also learns NGrams for Markov based transitions. It is currently using the OMEN algorithm for this.
   
-- **Third Pass**: In this pass it re-runs throught the training list to perform any post-processing that may be necissary
+- **Third Pass**: In this pass it re-runs through the training list to perform any post-processing that may be necessary
 
   - The trainer learns what Markov (OMEN) probabilities the training passwords would be created at. This is an OMEN specific task to assign probabilities to each of the different OMEN levels
   
-- **(Final Summary)**: Once all the passes through the training set are perfomed the following happens
+- **(Final Summary)**: Once all the passes through the training set are performed the following happens
 
   - The PCFG grammar is finalized and written to disk
   
@@ -73,7 +73,7 @@ When thinking about where to start when describing the current PCFG training pro
 Learning Mangling Rules
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-The "pcfg_parser" is the top level object/class that takes as input each individual word from the training set and then idendifies the mangling rules associated with it. During this stage, each input password is parsed independently from other training passwords, which is why all the pre-processing needs to happen before this.
+The "pcfg_parser" is the top level object/class that takes as input each individual word from the training set and then identifies the mangling rules associated with it. During this stage, each input password is parsed independently from other training passwords, which is why all the pre-processing needs to happen before this.
 
 - The current PCFG grammar's root nodes are centered around the idea of "base structures" These are high level definitions of what type of transition to take for each chunk of the password. Initially a "section_list" that represents this base structure is initialized to be undefined for the length of the training password. What that means is that every character in the training password is initialized as "undefined" as the trainer does not know how it was generated.
 
@@ -81,9 +81,9 @@ The "pcfg_parser" is the top level object/class that takes as input each individ
 
   - For example, the keyboard walk detection might identify the string '1qaz' as a keyboard walk
   
-  - By default the Alpha and Digit detection would classify '1qaz' as a D1A3 (One digit followd by a three letter word)
+  - By default the Alpha and Digit detection would classify '1qaz' as a D1A3 (One digit followed by a three letter word)
   
-  - Therefore its important that the keyboard walk detection occurs before the Alpha and Digit detection and takes precidence over them.
+  - Therefore its important that the keyboard walk detection occurs before the Alpha and Digit detection and takes precedence over them.
 
 - As a string/sub-section of the training input is classified, it updates the "section_list" with that classification. Therefore subsequent mangling detection techniques are only run against the undefined sub-sections.
 
