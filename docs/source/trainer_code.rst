@@ -133,3 +133,33 @@ year_detection.py
 .. automodule:: lib_trainer.detection_rules.year_detection
    :members:
    :noindex:
+   
+alphabet_generator.py
+-----------------------
+.. automodule:: lib_trainer.omen.alphabet_generator
+   :members:
+   :noindex:
+   
+alphabet_lookup.py
+-----------------------
+.. automodule:: lib_trainer.omen.alphabet_lookup
+   :members:
+   :noindex:
+   
+evaluate_password.py
+-----------------------
+.. automodule:: lib_trainer.omen.evaluate_password
+   :members:
+   :noindex:
+   
+omen_file_output.py
+-----------------------
+.. automodule:: lib_trainer.omen.omen_file_output
+   :members:
+   :noindex:
+
+smoothing.py
+-----------------------
+.. automodule:: lib_trainer.omen.smoothing
+   :members:
+   :noindex:
