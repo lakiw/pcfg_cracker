@@ -153,10 +153,15 @@ class PcfgGrammar:
         Returns:
             pt_list: A list of the parse tree items. This is a dictionary with
             the following keys:
-                'prob': The probability of the parse tree (float)
-                'pt': The parse tree, which is a list of tuples indexed into the
-                grammar
-                'base_prob': The probability of the base structure
+
+            .. code-block:: python
+            
+                {
+                    'prob': The probability of the parse tree (float),
+                    'pt': The parse tree, which is a list of tuples indexed into the grammar,
+                    'base_prob': The probability of the base structure,
+                }
+
         """
 
         pt_list = []
@@ -501,6 +506,8 @@ class PcfgGrammar:
         Returns:
             guess_status: Dictionary with the following keys depending on if
             is is an OMEN parse tree or not
+
+            .. code-block:: python
 
                 -Omen PT: {
                     'pt':[('M',1)],

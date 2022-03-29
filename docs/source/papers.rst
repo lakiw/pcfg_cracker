@@ -1,6 +1,6 @@
-.. image:: image/getty_5.jpg
+.. image:: image/getty_6.jpg
   :width: 400
-  :alt: Getty the Goblin Picture 5
+  :alt: Getty the Goblin Picture 6
   
 
 Original 2009 IEEE Security and Privacy paper on PCFGs for password

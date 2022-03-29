@@ -1,6 +1,6 @@
-.. image:: image/getty_7.jpg
+.. image:: image/getty_8.jpg
   :width: 400
-  :alt: Getty the Goblin Picture 7
+  :alt: Getty the Goblin Picture 8
   
 This section of the Developer's Guide is geared for researchers and developers and focuses on the "Next" algorithm which is the core algorithm behind the PCFG guesser. In a nutshell, the "Next" algorithm determines what the next guess to generate should be for a given PCFG. The current Next algorithm in the PCFG is tailored to generating guesses in probability order. This means it'll start by generating the most probable guess, followed by the second most probable guess, and so on. That is great for a password cracking attack, but it has some significant performance downsides. Which is another way of saying it is slow and requires increasing memory the longer it is run. Now not all Next algorithms have to follow this path, which is why this is a good area for improvements. For example a limit based Next algorithm that generates guesses in "mostly" probability order might have much better performance characteristics.
 
@@ -153,7 +153,7 @@ The very first approach we took when investigating if PCFGs could be used to rep
   
   - A\ :sub:`2`\B\ :sub:`2`\C :sub:`1`\
   
-  - A\ :sub:`3`\B\ :sub:`2`\C :sub:`2`\
+  - A\ :sub:`3`\B\ :sub:`2`\C :sub:`1`\
   
   - A\ :sub:`1`\B\ :sub:`3`\C :sub:`1`\
   

@@ -1,6 +1,6 @@
-.. image:: image/getty_13.jpg
+.. image:: image/getty_14.jpg
   :width: 400
-  :alt: Getty the Goblin Picture 13
+  :alt: Getty the Goblin Picture 14
   
 prince_ling.py
 ---------------

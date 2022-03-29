@@ -1,6 +1,6 @@
-.. image:: image/getty_12.jpg
+.. image:: image/getty_13.jpg
   :width: 400
-  :alt: Getty the Goblin Picture 12
+  :alt: Getty the Goblin Picture 13
   
 pcfg_guesser.py
 ---------------

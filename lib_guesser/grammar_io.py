@@ -43,6 +43,9 @@ def load_grammar(rule_name, base_directory, version, skip_brute, skip_case, base
         Mostly terminals, but some can be transforms like capitalization masks.
         Takes the form of a dictionary with the variable name, and
         a sub-dictionary of the form:
+        
+        .. code-block:: python
+
             {
                 'values':['11','51'],
                 'prob':0.3

@@ -22,6 +22,10 @@ Quick Start Guide
 ============================
 .. include:: quick_start.rst
 
+Advanced Example (Building the Russian Training RuleSet)
+========================================================
+.. include:: advanced_example.rst
+
 Academic Papers:
 ====================================
 .. include:: papers.rst

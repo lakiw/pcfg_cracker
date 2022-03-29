@@ -1,6 +1,6 @@
-.. image:: image/getty_14.jpg
+.. image:: image/getty_15.jpg
   :width: 400
-  :alt: Getty the Goblin Picture 14
+  :alt: Getty the Goblin Picture 15
   
 password_scorer.py
 -------------------

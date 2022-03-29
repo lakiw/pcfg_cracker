@@ -1,6 +1,6 @@
-.. image:: image/getty_10.jpg
+.. image:: image/getty_11.jpg
   :width: 400
-  :alt: Getty the Goblin Picture 10
+  :alt: Getty the Goblin Picture 11
 
 Honeywords Overview
 -------------------

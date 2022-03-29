@@ -1,6 +1,6 @@
-.. image:: image/getty_8.jpg
+.. image:: image/getty_9.jpg
   :width: 400
-  :alt: Getty the Goblin Picture 8
+  :alt: Getty the Goblin Picture 9
   
 Overview:
 ---------

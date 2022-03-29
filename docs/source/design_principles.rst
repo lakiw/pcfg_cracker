@@ -1,6 +1,6 @@
-.. image:: image/getty_6.jpg
+.. image:: image/getty_7.jpg
   :width: 400
-  :alt: Getty the Goblin Picture 6
+  :alt: Getty the Goblin Picture 7
   
 I felt it may be helpful to lay out some design principles for this particular PCFG implementation. None of these are hard rules, but they will influence any merge requests I accept. I also hope they explain certain architectural choices I've made when developing this code. Note, these policies only apply to this particular PCFG implementation. For example in the C compiled version of the PCFG is by its very nature going to be harder to install and run than the Python version in this repository.
 

@@ -15,8 +15,6 @@ To create an HTML viewable version of the Developer's Guide run:
 
 Then you can view the Developer's Guide at docs\build\index.html
 
-Note: You may see some docstring related warnings, (in grammar_io, and PcfgGrammar, and OMEN.smoothing). Those are expected and ok. I wanted to document several different Python dictionaries in the docstrings and I'm not sure how to do that without Sphinx complaining.
-
 To create a PDF of the Developer's Guide you will need a LaTeX distribution, the latexmk package, and likely PERL as well.
 
 Building a PDF Dev Guide on Windows:

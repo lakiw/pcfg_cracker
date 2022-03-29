@@ -1,6 +1,6 @@
-.. image:: image/getty_11.jpg
+.. image:: image/getty_12.jpg
   :width: 400
-  :alt: Getty the Goblin Picture 11
+  :alt: Getty the Goblin Picture 12
 
 trainer.py
 ----------

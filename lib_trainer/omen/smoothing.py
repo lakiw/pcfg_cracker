@@ -20,37 +20,43 @@ def smooth_grammar(grammar, ip_total, ep_total):
 
     Will update the grammar and return it with the levels assicated with each transition
 
-    --The input grammar has the format (example for ngram=4)--##
-    {
-        'aaa': {       //the starting charaters
-            ip_count: 5,    //the number of times they have shown up in the ip (begining)
-            ep_count: 3,    //the number of times they have shown up in the ep (end)
-            cp_count: 100,  //the number of times they have shown up total in passwords (for cp)
-            next_letter:{   //the next letter for cp
-                a:5           //represents the cp 'aaaa' with the count of the times that cp has been seen
-                b:12,         //represents the cp 'aaab'
-                ...,
+    --The input grammar has the format (example for ngram=4)
+    
+    .. code-block:: python
+        
+        {
+            'aaa': {       //the starting charaters
+                ip_count: 5,    //the number of times they have shown up in the ip (begining)
+                ep_count: 3,    //the number of times they have shown up in the ep (end)
+                cp_count: 100,  //the number of times they have shown up total in passwords (for cp)
+                next_letter:{   //the next letter for cp
+                    a:5           //represents the cp 'aaaa' with the count of the times that cp has been seen
+                    b:12,         //represents the cp 'aaab'
+                    ...,
+                },
             },
-        },
-        ...,
-    }
+            ...,
+        }
 
-    --The output grammar will have the following format (example for ngram=4)--##
-    {
-        'aaa': {       //the starting charaters
-            ip_count: 5,    //the number of times they have shown up in the ip (begining)
-            ip_level: 2,    //the smoothed level for the ip
-            ep_count: 3,    //the number of times they have shown up in the ep (end)
-            ep_level: 5,    //The smoothed level for the ep
-            cp_count: 100,  //the number of times they have shown up total in passwords (for cp)
-            next_letter:{   //the next letter for cp
-                a:(1,5)       //represents the cp 'aaaa' with smoothed level 1, seen 5 times
-                b:(0,12),     //represents the cp 'aaab' with smoothed level 0, seen 12 times
-                ...,
+    --The output grammar will have the following format (example for ngram=4)
+    
+    .. code-block:: python
+    
+        {
+            'aaa': {       //the starting charaters
+                ip_count: 5,    //the number of times they have shown up in the ip (begining)
+                ip_level: 2,    //the smoothed level for the ip
+                ep_count: 3,    //the number of times they have shown up in the ep (end)
+                ep_level: 5,    //The smoothed level for the ep
+                cp_count: 100,  //the number of times they have shown up total in passwords (for cp)
+                next_letter:{   //the next letter for cp
+                    a:(1,5)       //represents the cp 'aaaa' with smoothed level 1, seen 5 times
+                    b:(0,12),     //represents the cp 'aaab' with smoothed level 0, seen 12 times
+                    ...,
+                },
             },
-        },
-        ...,
-    }
+            ...,
+        }
 
     """
 
