@@ -54,7 +54,7 @@ class Test_File_Input_Checks(unittest.TestCase):
             assert get_confirmation("test 'n' confirmation") == False
             
    
-    ## Verify detect_file_encoding returns ASCII
+    ## Verify detect_file_encoding for ASCII is overridden and returns UTF-8
     #
     def test_detect_file_encoding_ascii(self):
         
@@ -67,7 +67,8 @@ class Test_File_Input_Checks(unittest.TestCase):
             possible_file_encodings = []     
             assert detect_file_encoding("test_file", possible_file_encodings) == True
             
-            assert possible_file_encodings[0] == 'ascii'
+            # Note, currently overriding ASCII to be utf-8 instead
+            assert possible_file_encodings[0] == 'utf-8'
             
     
     ## Verify detect_file_encoding returns UTF-16
