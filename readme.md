@@ -12,7 +12,7 @@ In short: A collection of tools to perform research into how humans generate pas
 
 Sphinx is used to dynamically create a Developer's Guide based on docstrings in the code. To build the Developer's Guide, refer to the instructions in /doc/INSTRUCTIONS.rst
 
-A pre-built Developer's Guide PDF can also be found in /doc/build/latex/pcfgdevelopersguide.pdf. Note, I'm not going to rebuild this guide between major releases to make the git history cleaner. Aka committing PDFs gets real messy real quick. This means the pre-build guide it may be slightly out of date so if you are using it to help you write/modify code it's recommended to build the guide yourself vs. using the prebuilt one.
+A pre-built Developer's Guide PDF can also be found in /doc/build/latex/pcfgdevelopersguide.pdf. Note, I'm not going to rebuild this guide between major releases to make the git history cleaner. Aka committing PDFs gets real messy real quick. This means the pre-build guide it may be slightly out of date so if you are using it to help you write/modify code it's recommended to build the guide yourself instead of using the prebuilt one.
 
 ## Overview
 
