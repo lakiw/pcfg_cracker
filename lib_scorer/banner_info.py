@@ -1,15 +1,24 @@
 #!/usr/bin/env python3
 
 
-#########################################################################
-# Contains banner ascii art and displays for the training program
-#
-#########################################################################
+"""
+
+Contains banner ascii art and displays for the training program
+
+"""
 
 
-## ASCII art for the banner
-#
 def print_banner():
+    """
+    ASCII art for the password scorer banner
+
+    Inputs:
+        None
+
+    Returns:
+        None
+    """
+
     print()
 
     print(''' _________________________________________\ ''')
@@ -19,6 +28,3 @@ def print_banner():
     print('''|:__('|)_________________________________:|''')
     print('''     "|                                   /''')
     print()
-    
-    
-    

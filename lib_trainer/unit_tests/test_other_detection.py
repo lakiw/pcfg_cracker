@@ -16,7 +16,7 @@ import unittest.mock
 
 ## Functions and classes to tests
 #
-from ..other_detection import other_detection
+from ..detection_rules.other_detection import other_detection
 
 
 ## Responsible for testing other string detection

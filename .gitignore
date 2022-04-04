@@ -16,6 +16,13 @@ Rules/*
 # Don't ignore the default ruleset
 !Rules/Default
 
+# Don't include the build files for documents
+docs/build/*
+!docs/build/latex
+docs/build/latex/*
+!docs/build/latex/pcfgdevelopersguide.pdf
+
 # Don't commit save files
 *.sav
 *.omn
+*.bak

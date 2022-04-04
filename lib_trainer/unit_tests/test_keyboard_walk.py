@@ -13,7 +13,7 @@ import unittest.mock
 
 ## Functions and classes to tests
 #
-from ..keyboard_walk import detect_keyboard_walk
+from ..detection_rules.keyboard_walk import detect_keyboard_walk
 
 
 ## Responsible for testing the the Keyboard Walk Detection

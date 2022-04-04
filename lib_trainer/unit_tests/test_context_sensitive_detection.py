@@ -13,7 +13,7 @@ import collections
 
 ## Functions and classes to tests
 #
-from ..context_sensitive_detection import context_sensitive_detection
+from ..detection_rules.context_sensitive_detection import context_sensitive_detection
 
 
 ## Responsible for testing the context sensitive string detection

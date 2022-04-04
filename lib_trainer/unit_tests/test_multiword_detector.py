@@ -13,7 +13,7 @@ import unittest.mock
 
 ## Functions and classes to tests
 #
-from ..multiword_detector import MultiWordDetector
+from ..detection_rules.multiword_detector import MultiWordDetector
 
 
 ## Responsible for testing multi-word detection

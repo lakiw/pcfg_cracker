@@ -13,7 +13,7 @@ import unittest.mock
 
 ## Functions and classes to tests
 #
-from ..year_detection import year_detection
+from ..detection_rules.year_detection import year_detection
 
 
 ## Responsible for testing the year detection
