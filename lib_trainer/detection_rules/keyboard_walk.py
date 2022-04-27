@@ -11,28 +11,101 @@ a lot of dicitonary words that look like keyboard walks
 """
 
 
+def _get_us_keyboard():
+    """
+    Returns a dictionary of key mappings for a US keyboard. 
+    Abstracting this out to make adding non-US QWERTY keyboard easier to add.
+    
+    Inputs:
+        None
+        
+    Returns:
+        key_mapping: (dictionary) A dictionary containing the key mappings
+        
+        .. code-block:: python
+            {
+                'row1':[values from top row of keyboard],
+                's_row1':[values from top row of keyboard + shift],
+                'row2':[values from second row of keyboard],
+                's_row2':[values from second row of keyboard + shift],
+                'row3':[values from third row of keyboard],
+                's_row3':[values from third row of keyboard + shift],
+                'row4':[values from bottom row of keyboard],
+                's_row4':[values from bottom row of keyboard + shift],
+            }
+    """
+    
+    keyboard_mapping = {
+        'row1':['1','2','3','4','5','6','7','8','9','0','-','=']
+        's_row1':['!','@','#','$','%','^','&','*','(',')','_','+']
+
+        'row2':['q','w','e','r','t','y','u','i','o','p','[',']','\\']
+        's_row2':['Q','W','E','R','T','Y','U','I','O','P','{','}','|']
+
+        'row3':['a','s','d','f','g','h','j','k','l',';','\'']
+        's_row3':['A','S','D','F','G','H','J','K','L',':','"']
+
+        'row4':['z','x','c','v','b','n','m',',','.','/']
+        's_row4':['Z','X','C','V','B','N','M','<','>','?']
+        }
+        
+    return keyboard_mapping
+
+
+def _get_jcuken_keyboard():
+    """
+    Returns a dictionary of key mappings for a Russian JCUKEN keyboard. 
+    Abstracting this out to make adding non-US QWERTY keyboard easier to add.
+    
+    Note: I found a lot of variation of many of the punctuation characters
+    across different keyboard variations. I'm going with the layout described
+    in kwprocessor: https://github.com/hashcat/kwprocessor/blob/master/keymaps/ru.keymap
+    My reasoning is that's been vetted the most and has the most buy-in from the
+    password cracking community.    
+    
+    Inputs:
+        None
+        
+    Returns:
+        key_mapping: (dictionary) A dictionary containing the key mappings
+        
+        .. code-block:: python
+            {
+                'row1':[values from top row of keyboard],
+                's_row1':[values from top row of keyboard + shift],
+                'row2':[values from second row of keyboard],
+                's_row2':[values from second row of keyboard + shift],
+                'row3':[values from third row of keyboard],
+                's_row3':[values from third row of keyboard + shift],
+                'row4':[values from bottom row of keyboard],
+                's_row4':[values from bottom row of keyboard + shift],
+            }
+    """
+    
+    # Leaving off the leading 'ё' for the first row
+    keyboard_mapping = {
+        'row1':['1','2','3','4','5','6','7','8','9','0','-','=']
+        's_row1':['!','"','№',';','%',':','?','*','(',')','_','+']
+
+        'row2':['й','ц','у','к','е','н','г','ш','щ','з','х','ъ','\\']
+        's_row2':['Й','Ц','У','К','Е','Н','Г','Ш','Щ','З','Х','Ъ','/']
+
+        'row3':['ф','ы','в','а','п','р','о','л','д','ж','э']
+        's_row3':['Ф','Ы','В','А','П','Р','О','Л','Д','Ж','Э']
+
+        'row4':['я','ч','с','м','и','т','ь','б','ю']
+        's_row4':['Я','Ч','С','М','И','Т','Ь','Б','Ю',',']
+        }
+        
+    return keyboard_mapping
+
+
 def find_keyboard_row_column(char):
     """
     Finds the keyboard row and column of a character
 
-    This is currently configured for a standard US QWERTY KeyboardInterrupt
-    If other keyboard layouts are desired they could be added later
-
     """
 
-    # I'm leaving off '`' but it is rarely used in keyboard combos and
-    # it makes the code cleaner
-    row1=['1','2','3','4','5','6','7','8','9','0','-','=']
-    s_row1=['!','@','#','$','%','^','&','*','(',')','_','+']
-
-    row2=['q','w','e','r','t','y','u','i','o','p','[',']','\\']
-    s_row2=['Q','W','E','R','T','Y','U','I','O','P','{','}','|']
-
-    row3=['a','s','d','f','g','h','j','k','l',';','\'']
-    s_row3=['A','S','D','F','G','H','J','K','L',':','"']
-
-    row4=['z','x','c','v','b','n','m',',','.','/']
-    s_row4=['Z','X','C','V','B','N','M','<','>','?']
 
     if char in row1:
         return (0,row1.index(char))
@@ -225,6 +298,18 @@ def detect_keyboard_walk(password, min_keyboard_run = 4):
 
     # The current section list of parsing
     section_list = []
+    
+    # A list of all the keyboard layouts. The ordering matters for what order they are checked
+    # aka if a key appears in multiple keyboard layouts, it will start a mapping with the first
+    # layout the key is found in. Yes this can lead to false positives, but when training on
+    # large datasets, it's hard to standardize on one keyboard layout...
+    #
+    # Note, this ordering can be changed as the password is processed if a key on a later keyboard
+    # is found as part of the password analysis
+    keyboards = []
+    
+    keyboards.append(_get_us_keyboard())
+    keyboards.append(_get_jcuken_keyboard())
 
     # Loop through each character to find the combos
     for index, value in enumerate(password):
