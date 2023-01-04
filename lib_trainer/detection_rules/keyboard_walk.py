@@ -24,6 +24,7 @@ def _get_us_keyboard():
         
         .. code-block:: python
             {
+                'name':"The name of the keyboard used",
                 'row1':[values from top row of keyboard],
                 's_row1':[values from top row of keyboard + shift],
                 'row2':[values from second row of keyboard],
@@ -36,17 +37,20 @@ def _get_us_keyboard():
     """
     
     keyboard_mapping = {
-        'row1':['1','2','3','4','5','6','7','8','9','0','-','=']
-        's_row1':['!','@','#','$','%','^','&','*','(',')','_','+']
+    
+        'name':"qwerty",
+    
+        'row1':['1','2','3','4','5','6','7','8','9','0','-','='],
+        's_row1':['!','@','#','$','%','^','&','*','(',')','_','+'],
 
-        'row2':['q','w','e','r','t','y','u','i','o','p','[',']','\\']
-        's_row2':['Q','W','E','R','T','Y','U','I','O','P','{','}','|']
+        'row2':['q','w','e','r','t','y','u','i','o','p','[',']','\\'],
+        's_row2':['Q','W','E','R','T','Y','U','I','O','P','{','}','|'],
 
-        'row3':['a','s','d','f','g','h','j','k','l',';','\'']
-        's_row3':['A','S','D','F','G','H','J','K','L',':','"']
+        'row3':['a','s','d','f','g','h','j','k','l',';','\''],
+        's_row3':['A','S','D','F','G','H','J','K','L',':','"'],
 
-        'row4':['z','x','c','v','b','n','m',',','.','/']
-        's_row4':['Z','X','C','V','B','N','M','<','>','?']
+        'row4':['z','x','c','v','b','n','m',',','.','/'],
+        's_row4':['Z','X','C','V','B','N','M','<','>','?'],
         }
         
     return keyboard_mapping
@@ -71,6 +75,7 @@ def _get_jcuken_keyboard():
         
         .. code-block:: python
             {
+                'name':'The name of the keyboard mapping',
                 'row1':[values from top row of keyboard],
                 's_row1':[values from top row of keyboard + shift],
                 'row2':[values from second row of keyboard],
@@ -84,92 +89,182 @@ def _get_jcuken_keyboard():
     
     # Leaving off the leading 'ё' for the first row
     keyboard_mapping = {
-        'row1':['1','2','3','4','5','6','7','8','9','0','-','=']
-        's_row1':['!','"','№',';','%',':','?','*','(',')','_','+']
+    
+        'name':'jcuken',
+    
+        'row1':['1','2','3','4','5','6','7','8','9','0','-','='],
+        's_row1':['!','"','№',';','%',':','?','*','(',')','_','+'],
 
-        'row2':['й','ц','у','к','е','н','г','ш','щ','з','х','ъ','\\']
-        's_row2':['Й','Ц','У','К','Е','Н','Г','Ш','Щ','З','Х','Ъ','/']
+        'row2':['й','ц','у','к','е','н','г','ш','щ','з','х','ъ','\\'],
+        's_row2':['Й','Ц','У','К','Е','Н','Г','Ш','Щ','З','Х','Ъ','/'],
 
-        'row3':['ф','ы','в','а','п','р','о','л','д','ж','э']
-        's_row3':['Ф','Ы','В','А','П','Р','О','Л','Д','Ж','Э']
+        'row3':['ф','ы','в','а','п','р','о','л','д','ж','э'],
+        's_row3':['Ф','Ы','В','А','П','Р','О','Л','Д','Ж','Э'],
 
-        'row4':['я','ч','с','м','и','т','ь','б','ю']
-        's_row4':['Я','Ч','С','М','И','Т','Ь','Б','Ю',',']
+        'row4':['я','ч','с','м','и','т','ь','б','ю'],
+        's_row4':['Я','Ч','С','М','И','Т','Ь','Б','Ю',','],
         }
         
     return keyboard_mapping
 
 
-def find_keyboard_row_column(char):
+def find_keyboard_row_column(char, keyboards):
     """
     Finds the keyboard row and column of a character
+    
+    Inputs:
+        char: (char) The character to find
+        
+        keyboards: (list) The list of keyboards to search
+        
+    Returns:
+        pos_list: (dictionary) A dictionary of all possible positions it could be for different
+        keyboard types. Each keyboard finding is saved as the following dictionary
+        .. code-block:: python
+            "The name of the keyboard used":{
+                'row':"(int) The row of the key",
+                'pos':"(int) The position of key in the row"
+            }
 
     """
 
+    pos_list = {}
 
-    if char in row1:
-        return (0,row1.index(char))
+    for board in keyboards:
+        if char in board['row1']:
+            pos_list[board['name']] = {
+                'row':1,
+                'pos':board['row1'].index(char)
+                }
+            continue
 
-    if char in s_row1:
-        return (0,s_row1.index(char))
+        if char in board['s_row1']:
+            pos_list[board['name']] = {
+                'row':1,
+                'pos':board['s_row1'].index(char)
+                }
+            continue
 
-    if char in row2:
-        return (1,row2.index(char))
+        if char in board['row2']:
+            pos_list[board['name']] = {
+                'row':2,
+                'pos':board['row2'].index(char)
+                }
+            continue
 
-    if char in s_row2:
-        return (1,s_row2.index(char))
+        if char in board['s_row2']:
+            pos_list[board['name']] = {
+                'row':2,
+                'pos':board['s_row2'].index(char)
+                }
+            continue
 
-    if char in row3:
-        return (2,row3.index(char))
+        if char in board['row3']:
+            pos_list[board['name']] = {
+                'row':3,
+                'pos':board['row3'].index(char)
+                }
+            continue
 
-    if char in s_row3:
-        return (2,s_row3.index(char))
+        if char in board['s_row3']:
+            pos_list[board['name']] = {
+                'row':3,
+                'pos':board['s_row3'].index(char)
+                }
+            continue
 
-    if char in row4:
-        return (3,row4.index(char))
+        if char in board['row4']:
+            pos_list[board['name']] = {
+                'row':4,
+                'pos':board['row4'].index(char)
+                }
+            continue
 
-    if char in s_row4:
-        return (3,s_row4.index(char))
+        if char in board['s_row4']:
+            pos_list[board['name']] = {
+                'row':4,
+                'pos':board['s_row4'].index(char)
+                }
+            continue
 
-    # Default value for keys that are not checked + non-ASCII chars
-    return None
+    # Note: pos_list may be empty for characters that don't have any directy
+    # keyboard mappings
+    return pos_list
 
 
 def is_next_on_keyboard(past, current):
     """
 
     Finds if a new key is next to the previous key
+    
+    Inputs:
+        past: (dictionary) A dict of all the keyboard locations for the previous character
+        
+        current: (dictionary) A dict of all the keyboard locations on the current keyboard
+        
+    Returns:
+        current_runs: (dictionary) A list of all the keyboards this run is happening on
+
 
     """
+    
+    current_runs = {}
+    
     # Check to see if either past or current keys are not valid
     if (past is None) or (current is None):
-        return False
+        return []
 
-    # Adding exclusion for repeated characters, aka '112233'
-    if (current[0] == past[0]) and (current[1] == past[1]):
-        return False
+    # Loop through the past keyboards that were detected
+    for past_name, past_data in past.items():
+    
+        # Quick fail if both characters were not found in the same dictionary
+        if past_name not in current:
+            continue
+            
+        cur_data = current[past_name]
+        
+        # Adding exclusion for repeated characters, aka '112233'
+        if (cur_data['row'] == past_data['row']) and (cur_data['pos'] == past_data['pos']):
+            continue
 
-    # If they both occur on the same row (easy)
-    if current[0] == past[0]:
-        if (current[1] == past[1]) or (current[1] == past[1]-1) or (current[1] == past[1]+1):
-            return True
+        # If they both occur on the same row (easy)
+        if cur_data['row'] == past_data['row']:
+            if (cur_data['pos'] == past_data['pos'] - 1) or (cur_data['pos'] == past_data['pos'] + 1):
+                current_runs[past_name] = {
+                    'past_row': past_data['row'],
+                    'past_pos': past_data['pos'],
+                    'cur_row': cur_data['row'],
+                    'cur_pos': cur_data['pos']
+                    }
+                continue
 
-    ## If it occurs one row down from the past combo
-    #
-    # Gets a bit weird since they "rows" don't exactly line up
-    # aka 'w' (pos 1) is next to 'a' (pos 0) and 's' (pos 1)
-    #
-    elif current[0] == past[0]+1:
-        if (current[1] == past[1]) or (current[1] == past[1]-1):
-            return True
+        ## If it occurs one row down from the past combo
+        #
+        # Gets a bit weird since they "rows" don't exactly line up
+        # aka 'w' (pos 1) is next to 'a' (pos 0) and 's' (pos 1)
+        #
+        elif cur_data['row'] == past_data['row'] + 1:
+            if (cur_data['pos'] == past_data['pos']) or (cur_data['pos'] == past_data['pos'] - 1):
+                current_runs[past_name] = {
+                    'past_row': past_data['row'],
+                    'past_pos': past_data['pos'],
+                    'cur_row': cur_data['row'],
+                    'cur_pos': cur_data['pos']
+                    }
+                continue
 
-    # If it occurs one row up from the past combo
-    elif current[0] == past[0]-1:
-        if (current[1] == past[1]) or (current[1] == past[1]+1):
-            return True
+        # If it occurs one row up from the past combo
+        elif cur_data['row'] == past_data['row'] - 1:
+            if (cur_data['pos'] == past_data['pos'] ) or (cur_data['pos']  == past_data['pos'] + 1):
+                current_runs[past_name] = {
+                    'past_row': past_data['row'],
+                    'past_pos': past_data['pos'],
+                    'cur_row': cur_data['row'],
+                    'cur_pos': cur_data['pos']
+                    }
+                continue
 
-    ##-- The two keys are not adjacent according to the checked keyboard
-    return False
+    return current_runs
 
 
 def interesting_keyboard(combo):
@@ -192,11 +287,6 @@ def interesting_keyboard(combo):
 
     """
 
-
-    # Length check
-    if len(combo) < 3:
-        return False
-
     ## Filter combos that start with "likely" partial words
     #
     # These occur from common english words that look like keyboard combos
@@ -216,6 +306,14 @@ def interesting_keyboard(combo):
 
     if (combo[0] == 'y'):
         return False
+        
+    if (combo[0] == '1') and (combo[1] == '2') and (combo[2] == '3'):
+        return False
+        
+    ## Filter combos that end with "likely partial words"
+    #
+    if (combo[-1] == '3') and (combo[-2] == '2') and (combo[-3] == '1') and (combo[-4] not in ['q','Q']):
+        return False
 
     ## Reject words that look like keyboard combos
     #
@@ -233,6 +331,11 @@ def interesting_keyboard(combo):
         "fred",
         "were",
         "pop",
+        
+        #jcuken false positives
+        "123;",
+        "234;",
+        "й123"
     ]
     full_lower_word = ''.join(combo).lower()
 
@@ -268,7 +371,7 @@ def detect_keyboard_walk(password, min_keyboard_run = 4):
     Variables:
 
         password: The current section of the password to process
-        When first called this will be the whole process.
+        When first called this will be the whole password.
         This function calls itself recursively so will then parse
         smaller chunks of this password as it goes along
 
@@ -288,16 +391,22 @@ def detect_keyboard_walk(password, min_keyboard_run = 4):
     """
 
     # The keyboard position of the last key processed
-    past_pos = None
+    past_pos_list = {}
 
     # The current keyboard combo
     cur_combo = []
+    
+    # List of all the keyboards involved in this run
+    keyboard_run_list = []
 
     # The current found list
     found_list = []
 
     # The current section list of parsing
     section_list = []
+    
+    # List of all keyboards that have been involved in a keyboard walk
+    detected_keyboards = []
     
     # A list of all the keyboard layouts. The ordering matters for what order they are checked
     # aka if a key appears in multiple keyboard layouts, it will start a mapping with the first
@@ -315,13 +424,40 @@ def detect_keyboard_walk(password, min_keyboard_run = 4):
     for index, value in enumerate(password):
 
         # Find the current location of the key on the keyboard
-        pos = find_keyboard_row_column(value)
+        pos_list = find_keyboard_row_column(value, keyboards)
+        
+        # Save statistics about keyboards detected
+        # Initialize based on the first character found
+        if index == 0:
+            for board in pos_list:
+                if board not in detected_keyboards:
+                    detected_keyboards.append(board)
+        # Now remove any keyboards that don't match as the parsing continues
+        # This means the list of potential keyboards only shrinks after the first
+        # character, never grows. This is more restrictive than the current keyboard
+        # walk detection, so may want to revisit this if problems occur.
+        else:
+            detected_keyboards = [key for key in detected_keyboards if key in pos_list]
 
         # Check to see if a run is occuring, (two keys next to each other)
-        is_run = is_next_on_keyboard(past_pos, pos)
-
+        current_runs = is_next_on_keyboard(past_pos_list, pos_list)
+        
+        past_pos_list = pos_list.copy()
+        
+        # Set up the keyboard_run_list to ensure that the runs only apply to the current keyboard detected at the start
+        if not keyboard_run_list:
+            # Note, if current_runs is empty this will be a slightly costly noopt. I could make another if
+            # statement here, but I figured it was worth the cost to keep the code cleaner
+            keyboard_run_list = current_runs.copy()
+        
+        # Remove runs that are not part of the current run
+        else:
+            for key in list(keyboard_run_list):
+                if key not in current_runs:
+                    keyboard_run_list.pop(key, None)
+        
         # If it is a run, keep it going!
-        if is_run is True:
+        if keyboard_run_list:
             cur_combo.append(value)
 
         # The keyboard run has stopped
@@ -348,21 +484,20 @@ def detect_keyboard_walk(password, min_keyboard_run = 4):
                     # If not the last section, go recursive and call it with
                     # what's remaining
                     if index != (len(password)):
-                        temp_section, temp_found = detect_keyboard_walk(password[index:])
+                        temp_section, temp_found, temp_detected_keyboards = detect_keyboard_walk(password[index:])
 
                         # update info if needed
                         section_list.extend(temp_section)
                         if temp_found:
                             found_list.extend(temp_found)
+                            
+                        detected_keyboards = [key for key in temp_detected_keyboards if key in detected_keyboards]
 
                         # Now return since we don't want to parse the same data twice
-                        return section_list, found_list
+                        return section_list, found_list, detected_keyboards 
 
             # Start a new run
             cur_combo = [value]
-
-        # What was new is now old. Update the previous position
-        past_pos = pos
 
     # Update the last run if needed
     if len(cur_combo) >= min_keyboard_run:
@@ -392,4 +527,11 @@ def detect_keyboard_walk(password, min_keyboard_run = 4):
     else:
         section_list.append((password,None))
 
-    return section_list, found_list
+    return section_list, found_list, detected_keyboards
+
+
+if __name__ == "__main__":
+    section_list, found_list, detected_keyboards = detect_keyboard_walk("123;")
+    print(section_list)
+    print(found_list)
+    print(detected_keyboards)

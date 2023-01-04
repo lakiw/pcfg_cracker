@@ -99,7 +99,7 @@ class PCFGPasswordParser:
         # Since keyboard combos can look like many other parsings, filter them
         # out first
 
-        section_list, found_walks = detect_keyboard_walk(password)
+        section_list, found_walks, keyboard_list = detect_keyboard_walk(password)
 
         self._update_counter_len_indexed(self.count_keyboard, found_walks)
 
