@@ -584,7 +584,7 @@ class PcfgGrammar:
             return self.get_status(pt[1:],cur_guess = new_guess)
 
 
-    def restore_prob_order(self, pt_item, max_prob, min_prob, save_function, left_index=0):
+    def restore_prob_order(self, pt_item, max_prob, min_prob, save_function):
         """
         Walks through the pt_item restoring children using save_function
 
@@ -592,7 +592,8 @@ class PcfgGrammar:
         kicks off the recursive restore. I eventually need to come back to this
         and create a non-recursive version of this since it's caused some problems
         when restoring longer sessions from large grammars. The problem is
-        it will hit Python's recursion limit and crash
+        it will hit Python's recursion limit and crash. I'm minimizing this by
+        increasing Python's recursion limit but that fix does not bring me joy.
 
         Inputs:
             pt_item: A pt_item to parse
@@ -608,9 +609,6 @@ class PcfgGrammar:
 
             save_function: The function to call to save valid children
 
-            left_index: The index to find children at. The orig calling function should
-            not use this
-
         Returns:
             True: It was successful
 
@@ -619,7 +617,7 @@ class PcfgGrammar:
         recursion_depth = 10**6
         try:
             sys.setrecursionlimit(recursion_depth)
-            self._recursive_restore_prob_order(child_item, max_prob, min_prob, save_function, left_index = pos)
+            self._recursive_restore_prob_order(pt_item, max_prob, min_prob, save_function)
         except RecursionError:
             print ("Recursion error with restorting the save file",file=sys.stderr)
             print (f"Max recusion depth of {recursion_depth} exceeded",file=sys.stderr)
