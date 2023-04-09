@@ -476,7 +476,7 @@ def _load_from_file(grammar_section, filename, encoding):
             debug_count = 0
             error_flag = False
             # Read though all the lines in the file
-            for value in file:
+            for line in file:
 
                 # There was a problem with the previous line, so skip this line
                 # as it probably is just the probability info. Error flag
@@ -486,11 +486,11 @@ def _load_from_file(grammar_section, filename, encoding):
                     continue
 
                 debug_count +=1
-                value2 = value
+
                 # There "shouldn't" be encoding errors in the rules files, but
                 # might as well check to be on the safe side
                 try:
-                    value.encode(encoding)
+                    line.encode(encoding)
 
                 except UnicodeEncodeError as error_code:
                     if error_code.reason == 'surrogates not allowed':
@@ -501,16 +501,17 @@ def _load_from_file(grammar_section, filename, encoding):
                     continue
 
                 # Split up the tab seperated items and then save their values
-                split_values = value.rstrip().split("\t")
+                split_values = line.rstrip().split("\t")
 
                 # Sanity checking to make sure the file is well formed
                 try:
                     value = split_values[0]
                     prob = float(split_values[1])
-                except Exception:
-                    print (f"Exception parsing file: {filename}",file=sys.stderr)
+                except Exception as msg:
+                    print (f"A exception occured parsing file: {filename}",file=sys.stderr)
                     print (f"Line: {debug_count}",file=sys.stderr)
-                    print (f"Value (HEX): {value2.encode('utf-8').hex()}", file=sys.stderr)
+                    print (f"Value (HEX): {line.encode('utf-8').hex()}", file=sys.stderr)
+                    print (f"Exception Results: {msg}", file=sys.stderr)
                     print ("Ignorning line and continuing" ,file=sys.stderr)
                     error_flag = True
                     continue

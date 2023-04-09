@@ -265,7 +265,7 @@ class PcfgQueue:
         Returns:
             None
         """
-        self.pcfg.restore_prob_order(
+        load_success = self.pcfg.restore_prob_order(
             base_item,
             self.max_probability,
             self.min_probability,

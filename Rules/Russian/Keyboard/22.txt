@@ -1,0 +1,5 @@
+0987654321qwertyuiop[]	0.2
+1qazxswedcvfrtgbnhyujm	0.2
+8765432werftgyhujhgfgh	0.2
+q2w3e4r5t6y7u8i9o0p-[=	0.2
+2w3e4r5t6y7u8i9o0p-[=]	0.2

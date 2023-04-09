@@ -34,7 +34,7 @@ class Test_Keyboard_Walk_Checks(unittest.TestCase):
     ## Test the full password is a keyboard walk
     #
     def test_single_keyboard_walk(self):
-        section_list, found_list = detect_keyboard_walk("1qaz")
+        section_list, found_list, keyboard_list = detect_keyboard_walk("1qaz")
         
         assert section_list == [('1qaz', 'K4')]
         assert found_list == ['1qaz']
@@ -43,7 +43,7 @@ class Test_Keyboard_Walk_Checks(unittest.TestCase):
     ## Test two back to back keyboard walks
     #
     def test_single_keyboard_walk(self):
-        section_list, found_list = detect_keyboard_walk("1qaz2wsx")
+        section_list, found_list, keyboard_list = detect_keyboard_walk("1qaz2wsx")
       
         assert section_list == [('1qaz', 'K4'),('2wsx', 'K4')]
         assert found_list == ['1qaz','2wsx']
@@ -52,7 +52,7 @@ class Test_Keyboard_Walk_Checks(unittest.TestCase):
     ## Test no keyboard walks
     #
     def test_no_keyboard_walks(self):
-        section_list, found_list = detect_keyboard_walk("test123test123")
+        section_list, found_list, keyboard_list = detect_keyboard_walk("test123test123")
 
         assert section_list == [('test123test123', None)]
         assert found_list == []
@@ -61,7 +61,7 @@ class Test_Keyboard_Walk_Checks(unittest.TestCase):
     ## Test keyboard walk and non-keyboard walk
     #
     def test_keyboard_walk_no_keyboard_walk(self):
-        section_list, found_list = detect_keyboard_walk("1qaztest123")
+        section_list, found_list, keyboard_list = detect_keyboard_walk("1qaztest123")
 
         assert section_list == [('1qaz', 'K4'),('test123', None)]
         assert found_list == ['1qaz']
@@ -70,7 +70,7 @@ class Test_Keyboard_Walk_Checks(unittest.TestCase):
     ## Test non-keyboard walk and then keyboard-walk
     #
     def test_no_keyboard_walk_keyboard_walk(self):
-        section_list, found_list = detect_keyboard_walk("test1231qaz")
+        section_list, found_list, keyboard_list = detect_keyboard_walk("test1231qaz")
         
         assert section_list == [('test123', None),('1qaz', 'K4')]
         assert found_list == ['1qaz']
@@ -79,7 +79,7 @@ class Test_Keyboard_Walk_Checks(unittest.TestCase):
     ## Test invalid keyboard walk + some non-keyboard walks
     #
     def test_invalid_keyboard_walk_and_non_keyboard_walk(self):
-        section_list, found_list = detect_keyboard_walk("tty789test")
+        section_list, found_list, keyboard_list = detect_keyboard_walk("tty789test")
 
         assert section_list == [("tty789test", None)]
         assert found_list == []

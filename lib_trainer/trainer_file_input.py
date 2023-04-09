@@ -187,6 +187,13 @@ def check_valid(input_password):
     if u"\u2028" in input_password:
         return False
 
+    # UTF-8 NEL Line seperator 'C285' eg unicode character '0085'
+    # I coupld probably replace with a newline, but given how this tends to
+    # show up in XML data it can highlight a weirder issue going on with inputs.
+    # So dropping it vs. trying to fix it up for now.
+    if u"\u0085" in input_password:
+        return False
+
     return True
 
 

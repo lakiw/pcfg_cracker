@@ -1,0 +1,16 @@
+1q2w3e4r5t6y7u8	0.1
+;lkjhgfdsazxcvb	0.1
+987654321qwerty	0.1
+poiuytrewq12345	0.1
+1234567890-=][p	0.05
+QW@3er45ty67ui8	0.05
+qwertyuiop09876	0.05
+1qasw23edfr45tg	0.05
+qwertyuiop[]=-0	0.05
+p0o9i8u7y6t5r4e	0.05
+7676yhnmju76yhn	0.05
+1qazxsw21qazXSW	0.05
+1QaZxSw@3EdCvFr	0.05
+2345678765432qw	0.05
+0987654321qwert	0.05
+1q2w34r5t67u8i9	0.05

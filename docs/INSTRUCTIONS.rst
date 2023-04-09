@@ -9,13 +9,17 @@ Sphinx is used to create the Developer's Guide. To install Sphinx (the following
 
 `python3 -m pip install sphinx`
 
+For the following commands you should run them from the \docs\ directory.
+
 To create an HTML viewable version of the Developer's Guide run:
 
 `sphinx-build -b html docs\source docs\build`
 
 Then you can view the Developer's Guide at docs\build\index.html
 
-To create a PDF of the Developer's Guide you will need a LaTeX distribution, the latexmk package, and likely PERL as well.
+To create a PDF of the Developer's Guide you will need a LaTeX distribution, the latexmk package, and likely PERL as well. Instructions for how to do that are below. Once you have compleated that you can generate the PDF of the guide by running:
+
+`make latexpdf`
 
 Building a PDF Dev Guide on Windows:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
