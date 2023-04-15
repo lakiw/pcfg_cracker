@@ -15,6 +15,7 @@ import sys
 import os
 import copy
 import codecs
+import random
 
 # Local imports
 from .grammar_io import load_grammar, load_omen_keyspace
@@ -829,3 +830,53 @@ class PcfgGrammar:
         """
         if self.output_filename:
             self.output_file.close()
+
+
+    def random_walk(self):
+        """
+        Performs a weighted random walk of the grammar and returns a pt_item
+
+        Inputs:
+            None
+
+        Returns:
+            pt_item: The parse tree that specifies the item found in the walk
+
+        """
+
+        # Initialize the pt_item
+        pt_item = {
+            'base_prob': 1.0,
+            'pt': []
+        }
+
+        # First find the base structure
+        prob_target = random.random()
+        cur_prob = 0
+        for item in self.base:
+            cur_prob += item['prob']
+
+            # Found the matching base structure to select
+            if cur_prob >= prob_target:
+                for replacement in item['replacements']:
+                    pt_item['pt'].append((replacement,0))
+
+                break
+
+        # Now go through each item and perform a random walk for it as well
+        for pointer, item in enumerate(pt_item['pt']):
+            prob_target = random.random()
+            cur_prob = 0
+            pt_type = item[0]
+            max_index = len(self.grammar[pt_type])
+            
+            for index in range (0, max_index):
+                cur_prob += self.grammar[pt_type][index]['prob'] * len(self.grammar[pt_type][index]['values'])
+                if cur_prob >= prob_target:
+                    pt_item['pt'][pointer] = (item[0], index)
+                    break
+        
+        # Calculate the probability
+        pt_item['prob'] = self._find_prob(pt_item['pt'], pt_item['base_prob'])
+
+        return pt_item
