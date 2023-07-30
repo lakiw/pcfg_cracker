@@ -122,7 +122,7 @@ class PcfgGrammar:
         self.output_file = None
 
 
-    def create_guesses(self, pt):
+    def create_guesses(self, pt, is_honeyword=False):
         """
         Generates Guesses From a Parse Tree
 
@@ -132,10 +132,18 @@ class PcfgGrammar:
         Inputs:
             pt: The parse tree, which is a list of tuples
 
+            is_honeyword: (bool) If this is a honeyword generation. If true
+            only one password guess will be generated.
+
         Returns:
             num_guesses: The number of guesses generated
         """
-        return self._recursive_guesses('',pt)
+
+        if not is_honeyword:
+            return self._recursive_guesses('', pt)
+        
+        else:
+            return self._honeyword_recursive_guess('', pt)
 
 
     def initalize_base_structures(self):
@@ -270,6 +278,89 @@ class PcfgGrammar:
 
                 else:
                     num_guesses += self._recursive_guesses(new_guess, pt[1:])
+
+        return num_guesses
+
+
+    def _honeyword_recursive_guess(self, cur_guess, pt):
+        """
+        Recursivly generates a single random guess from a parse tree
+        from all of the possible guesses it could generate
+
+        Will print out guesses to stdout
+
+        Inputs:
+            cur_guess: The current guess being generated
+
+            pt: The parse tree, which is a list of tuples. Will recursivly work though the pt to
+            fill out parts to cur_guess.
+
+        Returns:
+            num_guesses: The number of guesses generated. Will be 0 or 1.
+        """
+
+        num_guesses = 0
+
+        # Get the transistion category for the current rule, aka 'A' for alpha
+        category = pt[0][0][0]
+
+        # Get the type for the transistion, Aka A10 for 10 letter long alpha
+        pt_type = pt[0][0]
+
+        # Get he index into the transition, aka the 2nd most probable A10
+        index = pt[0][1]
+
+        # If it is a Markov guess
+        if category == 'M':
+            # Not currently supported for honeywords
+            return 0
+
+        # If it is a capitalization mask
+        elif category == 'C':
+
+            mask_len = len(self.grammar[pt_type][index]['values'][0])
+
+            # Split off the part of the word we need to modify with the mask
+            start_word = [cur_guess[:- mask_len]]
+            end_word = cur_guess[- mask_len:]
+
+            mask = random.choice(self.grammar[pt_type][index]['values'])
+
+            # Apply the capitalization mask
+            new_end = []
+            index = 0
+            for item in mask:
+                if item == 'L':
+                    new_end.append(end_word[index])
+                else:
+                    new_end.append(end_word[index].upper())
+                index += 1
+
+            # Recombine the capitalization mask with what came before
+            new_guess = ''.join(start_word + new_end)
+
+            # Figure out if the guess is ready to be printed out or if
+            # there is more to do
+            if len(pt) == 1:
+                num_guesses += 1
+                self.print_guess(new_guess)
+
+            else:
+                num_guesses += self._honeyword_recursive_guess(new_guess, pt[1:])
+
+        # If it is any striaght replacement, (digits, letters, etc)
+        else:
+            item = random.choice(self.grammar[pt_type][index]['values'])
+            new_guess = cur_guess + item
+
+            # Figure out if the guess is ready to be printed out or if
+            # there is more to do
+            if len(pt) == 1:
+                num_guesses += 1
+                self.print_guess(new_guess)
+
+            else:
+                num_guesses += self._honeyword_recursive_guess(new_guess, pt[1:])
 
         return num_guesses
 

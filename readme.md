@@ -8,7 +8,7 @@ In short: A collection of tools to perform research into how humans generate pas
 ## Tool Versions
 **Trainer:** 4.4
 
-**Guesser:** 4.3
+**Guesser:** 4.5
 
 **PRINCE_LING:** 4.3
 

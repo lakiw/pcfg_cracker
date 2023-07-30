@@ -66,7 +66,7 @@ class HoneywordSession:
             pt_item = self.pcfg.random_walk()
 
             try:
-                num_generated_guesses = self.pcfg.create_guesses(pt_item['pt'])
+                num_generated_guesses = self.pcfg.create_guesses(pt_item['pt'], is_honeyword=True)
 
             # The receiving program is no longer accepting guesses
             # Usually occurs after all passwords have been cracked
