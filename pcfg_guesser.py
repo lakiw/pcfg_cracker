@@ -64,6 +64,7 @@ import datetime
 from lib_guesser.banner_info import print_banner
 from lib_guesser.pcfg_grammar import PcfgGrammar
 from lib_guesser.cracking_session import CrackingSession
+from lib_guesser.honeyword_session import HoneywordSession
 
 
 def parse_command_line(program_info):
@@ -161,6 +162,18 @@ def parse_command_line(program_info):
         default = program_info['debug']
     )
 
+    parser.add_argument(
+        '--mode',
+        '-m',
+        help = "Method in which guesses are generated Default is '" +
+            program_info['cracking_mode'] +
+            "' Supported Modes: " + str(program_info['supported_modes']),
+        metavar = 'MODE',
+        required = False,
+        default = program_info['cracking_mode'],
+        choices = program_info['supported_modes']
+    )
+
     # Parse all the args and save them
     args=parser.parse_args()
 
@@ -172,6 +185,7 @@ def parse_command_line(program_info):
     # Advanced Options
     program_info['skip_brute'] = args.skip_brute
     program_info['skip_case'] = args.skip_case
+    program_info['cracking_mode'] = args.mode
 
     # Debugging Options
     program_info['debug'] = args.debug
@@ -195,7 +209,7 @@ def main():
 
         # Program and Contact Info
         'name':'PCFG Guesser',
-        'version': '4.4',
+        'version': '4.5',
         'author':'Matt Weir',
         'contact':'cweir@vt.edu',
 
@@ -203,6 +217,10 @@ def main():
         'rule_name':'Default',
         'session_name':'default_run',
         'load_session':False,
+
+        # Cracking Mode options
+        'cracking_mode':'true_prob_order',
+        'supported_modes':['true_prob_order', 'random_walk', 'honeywords'],
 
         # Advanced Options
         'skip_brute': False,
@@ -229,21 +247,6 @@ def main():
                         program_info['session_name'] + '.sav'
                         )
 
-    # Check to see if we need to load up a previous guessing session
-    if program_info['load_session']:
-        print("Restoring previous session: " + program_info['session_name'],file=sys.stderr)
-        save_config = load_save(save_filename, program_info)
-
-        # Check to make sure it is valid
-        if save_config is None:
-            print("Exiting...",file=sys.stderr)
-            return
-
-
-    # Create a new save config
-    else:
-        save_config = create_save_config(program_info)
-
     # Get the base directory to load all of the rules from
     #
     # Don't want to use the relative path since who knows where someone is
@@ -257,7 +260,7 @@ def main():
                         program_info['rule_name']
                         )
 
-    ## Create the grammar
+    # Create the grammar
     #
     # Note, if the ruleset can not be loaded, (for example it doesn't exist),
     # it will throw an exception.
@@ -278,26 +281,48 @@ def main():
         print("Exiting")
         return
 
-    # Check to make the ruleset is the same if restoring a guessing session
-    if save_config.has_option('rule_info','uuid'):
-        # Looks like the rule was changed since the last session
-        if save_config['rule_info']['uuid'] != pcfg.ruleset_info['uuid']:
-            print("Error: The UUID of the save file and the loaded rules do not match",file=sys.stderr)
-            print("       This normally happens if you retrain a ruleset and then try to restore an old session",file=sys.stderr)
-            print("       Expected UUID: " + str(save_config['rule_info']['uuid']), file=sys.stderr)
-            print("       Found UUID: " + str(pcfg.ruleset_info['uuid']), file=sys.stderr)
-            print("Exiting...",file=sys.stderr)
-            return
+    # Initiate cracking mode specific features
+    if program_info['cracking_mode'] == 'true_prob_order':
+        # Check to see if we need to load up a previous guessing session
+        if program_info['load_session']:     
+            print("Restoring previous session: " + program_info['session_name'],file=sys.stderr)
+            save_config = load_save(save_filename, program_info)
 
-    # Initalize the rule UUID for a new guessing session
-    else:
-        save_config.set('rule_info', 'uuid', pcfg.ruleset_info['uuid'])
+            # Check to make sure it is valid
+            if save_config is None:
+                print("Exiting...",file=sys.stderr)
+                return
 
-    # Initalize the cracking session
-    current_cracking_session = CrackingSession(pcfg, save_config, save_filename)
+        # Create a new save config
+        # It's easeir to just create a default config even if a non-supported guessing mode like honeywords was selected
+        else:
+            save_config = create_save_config(program_info)
 
-    # Setup is done, now start generating rules
-    current_cracking_session.run(load_session = program_info['load_session'])
+        # Check to make the ruleset is the same if restoring a guessing session
+        if save_config.has_option('rule_info','uuid'):
+            # Looks like the rule was changed since the last session
+            if save_config['rule_info']['uuid'] != pcfg.ruleset_info['uuid']:
+                print("Error: The UUID of the save file and the loaded rules do not match",file=sys.stderr)
+                print("       This normally happens if you retrain a ruleset and then try to restore an old session",file=sys.stderr)
+                print("       Expected UUID: " + str(save_config['rule_info']['uuid']), file=sys.stderr)
+                print("       Found UUID: " + str(pcfg.ruleset_info['uuid']), file=sys.stderr)
+                print("Exiting...",file=sys.stderr)
+                return
+
+        # Initalize the rule UUID for a new guessing session
+        else:
+            save_config.set('rule_info', 'uuid', pcfg.ruleset_info['uuid'])
+
+        # Initalize the cracking session
+        current_cracking_session = CrackingSession(pcfg, save_config, save_filename)
+
+        # Setup is done, now start generating rules
+        current_cracking_session.run(load_session = program_info['load_session'])
+
+    elif program_info['cracking_mode'] in ['random_walk', 'honeywords']:
+        current_cracking_session = HoneywordSession(pcfg, program_info['cracking_mode'])
+        # Setup is done, now start generating rules
+        current_cracking_session.run()
 
 
 def create_save_config(program_info):
