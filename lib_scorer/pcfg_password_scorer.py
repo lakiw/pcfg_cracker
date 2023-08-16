@@ -168,7 +168,7 @@ class PCFGPasswordScorer:
 
         # Since keyboard combos can look like many other parsings, filter them
         # out first
-        section_list, found_walks = detect_keyboard_walk(password)
+        section_list, found_walks, detected_keyboards = detect_keyboard_walk(password)
 
         found_emails, found_providers = email_detection(section_list)
         found_urls, found_hosts, found_prefixes = website_detection(section_list)
@@ -242,7 +242,7 @@ class PCFGPasswordScorer:
         # PCFG cut-off limit OR the OMEN score is equal to or below the OMEN
         # cut-off limit
         #
-        if cur_prob > self.limit or omen_score <= self.omen.max_omen_level:
+        if cur_prob > self.limit or (omen_score <= self.omen.max_omen_level and omen_score >= 0):
             category = 'p'
 
         return (password, category, cur_prob, omen_score)
