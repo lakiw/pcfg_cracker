@@ -48,7 +48,7 @@ class CrackingSession:
         # The actual Priority queue. Will be defined when run() is called
         self.pqueue = None
 
-    def run(self, load_session = False):
+    def run(self, load_session = False, limit = 0):
         """
         Starts the cracking session and starts generating guesses
         """
@@ -103,6 +103,9 @@ class CrackingSession:
                 num_generated_guesses = self.pcfg.restore_omen(omen_guess_num, self.report.pt_item)
                 self.report.num_guesses += num_generated_guesses
 
+        # Variable to keep track of guesses created in current run.
+        num_guess_current = 0
+
         # Keep running while the p_queue.next_function still has items in it
         while True:
 
@@ -135,6 +138,11 @@ class CrackingSession:
                 print("Exiting...",file=sys.stderr)
                 break
 
+            # Check if the guesses generated exceeds the set limit for this run
+            if num_guess_current >= limit and limit != 0:
+                print("Limit reached. Exiting...", file=sys.stderr)
+                break
+
             # Update stats after the save might occur so we don't double count
             # them when restoring a session
             self.report.num_parse_trees += 1
@@ -145,6 +153,8 @@ class CrackingSession:
                 self.report.num_guesses += num_generated_guesses
 
                 self.report.probability_coverage += pt_item['prob'] * num_generated_guesses
+
+                num_guess_current += num_generated_guesses
 
             # The receiving program is no longer accepting guesses
             # Usually occurs after all passwords have been cracked

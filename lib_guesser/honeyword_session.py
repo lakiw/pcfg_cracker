@@ -45,12 +45,15 @@ class HoneywordSession:
         else:
             self.random_seed = random.randint(0,1000000000000)
 
-    def run(self):
+    def run(self, limit=0):
         """
         Starts the cracking session and starts generating guesses
         """
 
         print ("Starting to generate honeyword guesses",file=sys.stderr)
+
+        # Variable to keep track of guesses created in current run.
+        num_guess_current = 0
 
         # Keep running while the p_queue.next_function still has items in it
         while True:
@@ -66,7 +69,13 @@ class HoneywordSession:
             pt_item = self.pcfg.random_walk()
 
             try:
+                # Check if the guesses generated exceeds the set limit for this run
+                if num_guess_current >= limit != 0:
+                    print("Limit reached. Exiting...", file=sys.stderr)
+                    break
+
                 num_generated_guesses = self.pcfg.create_guesses(pt_item['pt'], is_honeyword=True)
+                num_guess_current += num_generated_guesses
 
             # The receiving program is no longer accepting guesses
             # Usually occurs after all passwords have been cracked

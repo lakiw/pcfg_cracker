@@ -129,6 +129,14 @@ def parse_command_line(program_info):
         default = program_info['load_session']
     )
 
+    parser.add_argument(
+        '--limit',
+        '-n',
+        help='Generate X guesses from start of current session',
+        type=int,
+        default=program_info['limit']
+    )
+
     ## Advanced options
     #
     parser.add_argument(
@@ -181,6 +189,7 @@ def parse_command_line(program_info):
     program_info['rule_name'] = args.rule
     program_info['session_name'] = args.session
     program_info['load_session'] = args.load
+    program_info['limit'] = args.limit
 
     # Advanced Options
     program_info['skip_brute'] = args.skip_brute
@@ -217,6 +226,7 @@ def main():
         'rule_name':'Default',
         'session_name':'default_run',
         'load_session':False,
+        'limit': 0,
 
         # Cracking Mode options
         'cracking_mode':'true_prob_order',
@@ -317,12 +327,12 @@ def main():
         current_cracking_session = CrackingSession(pcfg, save_config, save_filename)
 
         # Setup is done, now start generating rules
-        current_cracking_session.run(load_session = program_info['load_session'])
+        current_cracking_session.run(load_session = program_info['load_session'], limit = program_info['limit'])
 
     elif program_info['cracking_mode'] in ['random_walk', 'honeywords']:
         current_cracking_session = HoneywordSession(pcfg, program_info['cracking_mode'])
         # Setup is done, now start generating rules
-        current_cracking_session.run()
+        current_cracking_session.run(limit = program_info['limit'])
 
 
 def create_save_config(program_info):
