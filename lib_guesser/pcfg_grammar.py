@@ -122,7 +122,7 @@ class PcfgGrammar:
         self.output_file = None
 
 
-    def create_guesses(self, pt, is_honeyword=False):
+    def create_guesses(self, pt, is_honeyword=False, limit=None):
         """
         Generates Guesses From a Parse Tree
 
@@ -135,15 +135,18 @@ class PcfgGrammar:
             is_honeyword: (bool) If this is a honeyword generation. If true
             only one password guess will be generated.
 
+            limit: (None/Int) If it is not None, limit is a number that decrements
+            which specifies how many guesses remain to be generated. Ignored if None
+
         Returns:
             num_guesses: The number of guesses generated
         """
 
         if not is_honeyword:
-            return self._recursive_guesses('', pt)
+            return self._recursive_guesses('', pt, limit)
         
         else:
-            return self._honeyword_recursive_guess('', pt)
+            return self._honeyword_recursive_guess('', pt, limit)
 
 
     def initalize_base_structures(self):
@@ -194,7 +197,7 @@ class PcfgGrammar:
         return pt_list
 
 
-    def _recursive_guesses(self, cur_guess, pt):
+    def _recursive_guesses(self, cur_guess, pt, limit=None):
         """
         Recursivly generates guesses from a parse tree
         Will print out guesses to stdout
@@ -204,6 +207,9 @@ class PcfgGrammar:
 
             pt: The parse tree, which is a list of tuples. Will recursivly work though the pt to
             fill out parts to cur_guess.
+
+            limit: (None/Int) If it is not None, limit is a number that decrements
+            which specifies how many guesses remain to be generated. Ignored if None
 
         Returns:
             num_guesses: The number of guesses generated
@@ -230,7 +236,7 @@ class PcfgGrammar:
             # Initalize counter used for status reports and save files
             self.omen_guess_num = 0
 
-            return self.omen_generate_guesses(markov_cracker)
+            return self.omen_generate_guesses(markov_cracker, limit)
 
         # If it is a capitalization mask
         elif category == 'C':
@@ -262,8 +268,18 @@ class PcfgGrammar:
                     num_guesses += 1
                     self.print_guess(new_guess)
 
+                    # Check the limit
+                    if limit:
+                        limit = limit - 1
+                        if limit <= 0:
+                            return num_guesses
+
                 else:
-                    num_guesses += self._recursive_guesses(new_guess, pt[1:])
+                    num_guesses += self._recursive_guesses(new_guess, pt[1:], limit)
+                    if limit:
+                        limit = limit - num_guesses
+                        if limit <= 0:
+                            return num_guesses
 
         # If it is any striaght replacement, (digits, letters, etc)
         else:
@@ -276,13 +292,24 @@ class PcfgGrammar:
                     num_guesses += 1
                     self.print_guess(new_guess)
 
+                    # Check the limit
+                    if limit:
+                        limit = limit - 1
+                        if limit == 0:
+                            return num_guesses
+
                 else:
-                    num_guesses += self._recursive_guesses(new_guess, pt[1:])
+                    num_guesses += self._recursive_guesses(new_guess, pt[1:], limit)
+                    
+                    if limit:
+                        limit = limit - num_guesses
+                        if limit <= 0:
+                            return num_guesses
 
         return num_guesses
 
 
-    def _honeyword_recursive_guess(self, cur_guess, pt):
+    def _honeyword_recursive_guess(self, cur_guess, pt, limit = None):
         """
         Recursivly generates a single random guess from a parse tree
         from all of the possible guesses it could generate
@@ -294,6 +321,9 @@ class PcfgGrammar:
 
             pt: The parse tree, which is a list of tuples. Will recursivly work though the pt to
             fill out parts to cur_guess.
+
+            limit: (None/Int) If it is not None, limit is a number that decrements
+            which specifies how many guesses remain to be generated. Ignored if None
 
         Returns:
             num_guesses: The number of guesses generated. Will be 0 or 1.
@@ -344,9 +374,20 @@ class PcfgGrammar:
             if len(pt) == 1:
                 num_guesses += 1
                 self.print_guess(new_guess)
+                
+                # Check the limit
+                if limit:
+                    limit = limit - 1
+                    if limit <= 0:
+                        return num_guesses
 
             else:
-                num_guesses += self._honeyword_recursive_guess(new_guess, pt[1:])
+                num_guesses += self._honeyword_recursive_guess(new_guess, pt[1:], limit)
+                
+                if limit:
+                    limit = limit - num_guesses
+                    if limit <= 0:
+                        return num_guesses
 
         # If it is any striaght replacement, (digits, letters, etc)
         else:
@@ -358,14 +399,23 @@ class PcfgGrammar:
             if len(pt) == 1:
                 num_guesses += 1
                 self.print_guess(new_guess)
+                # Check the limit
+                if limit:
+                    limit = limit - 1
+                    if limit <= 0:
+                        return num_guesses
 
             else:
-                num_guesses += self._honeyword_recursive_guess(new_guess, pt[1:])
+                num_guesses += self._honeyword_recursive_guess(new_guess, pt[1:], limit)
+                if limit:
+                    limit = limit - num_guesses
+                    if limit <= 0:
+                        return num_guesses
 
         return num_guesses
 
 
-    def omen_generate_guesses(self, markov_cracker):
+    def omen_generate_guesses(self, markov_cracker, limit=None):
         """
         Generates OMEN Guesses
 
@@ -373,6 +423,9 @@ class PcfgGrammar:
 
         Making this its own functions so that the load/restore and generate guesses
         from a normal session options can re-use this code
+
+        limit: (None/Int) If it is not None, limit is a number that decrements
+        which specifies how many guesses remain to be generated. Ignored if None
 
         Inputs:
             markov_cracker: An OMEN MarkovCracker instance
@@ -388,6 +441,11 @@ class PcfgGrammar:
 
             # Output the results
             self.print_guess(guess)
+            # Check the limit
+            if limit:
+                limit = limit - 1
+                if limit <= 0:
+                    return num_guesses
 
             # Update counter used for status reports and save files
             self.omen_guess_num += 1

@@ -48,7 +48,7 @@ class CrackingSession:
         # The actual Priority queue. Will be defined when run() is called
         self.pqueue = None
 
-    def run(self, load_session = False, limit = 0):
+    def run(self, load_session = False, limit = None):
         """
         Starts the cracking session and starts generating guesses
         """
@@ -103,14 +103,10 @@ class CrackingSession:
                 num_generated_guesses = self.pcfg.restore_omen(omen_guess_num, self.report.pt_item)
                 self.report.num_guesses += num_generated_guesses
 
-        # Variable to keep track of guesses created in current run.
-        num_guess_current = 0
-
         # Keep running while the p_queue.next_function still has items in it
         while True:
 
-            ## Get the next item from the pqueue
-            #
+            # Get the next item from the pqueue
             pt_item = self.pqueue.next()
 
             # If the pqueue is empty, there are no more guesses to make
@@ -138,23 +134,23 @@ class CrackingSession:
                 print("Exiting...",file=sys.stderr)
                 break
 
-            # Check if the guesses generated exceeds the set limit for this run
-            if num_guess_current >= limit and limit != 0:
-                print("Limit reached. Exiting...", file=sys.stderr)
-                break
-
             # Update stats after the save might occur so we don't double count
             # them when restoring a session
             self.report.num_parse_trees += 1
             self.report.pt_item = pt_item
 
             try:
-                num_generated_guesses = self.pcfg.create_guesses(pt_item['pt'])
+                num_generated_guesses = self.pcfg.create_guesses(pt_item['pt'], limit)
                 self.report.num_guesses += num_generated_guesses
 
-                self.report.probability_coverage += pt_item['prob'] * num_generated_guesses
+                # Check if a limit was defined
+                if limit:
+                    limit = limit - num_generated_guesses
+                    if limit <= 0:
+                        print("Limit reached. Exiting...",file=sys.stderr)
+                        break
 
-                num_guess_current += num_generated_guesses
+                self.report.probability_coverage += pt_item['prob'] * num_generated_guesses
 
             # The receiving program is no longer accepting guesses
             # Usually occurs after all passwords have been cracked

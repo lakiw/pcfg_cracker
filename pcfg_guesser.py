@@ -129,16 +129,16 @@ def parse_command_line(program_info):
         default = program_info['load_session']
     )
 
+    # Advanced options
+
     parser.add_argument(
         '--limit',
         '-n',
-        help='Generate X guesses from start of current session',
+        help='Generate N guesses and then exit. This can be used for wordlist generation and/or research evaluation',
         type=int,
         default=program_info['limit']
     )
 
-    ## Advanced options
-    #
     parser.add_argument(
         '--skip_brute',
         help='Do not perform Markov based guesses using OMEN. This is useful ' +
@@ -158,8 +158,7 @@ def parse_command_line(program_info):
         default = program_info['skip_case']
     )
 
-    ## Debugging and research information
-    #
+    # Debugging and research information
     parser.add_argument(
         '--debug',
         '-d',
@@ -189,15 +188,20 @@ def parse_command_line(program_info):
     program_info['rule_name'] = args.rule
     program_info['session_name'] = args.session
     program_info['load_session'] = args.load
-    program_info['limit'] = args.limit
 
     # Advanced Options
+    program_info['limit'] = args.limit
     program_info['skip_brute'] = args.skip_brute
     program_info['skip_case'] = args.skip_case
     program_info['cracking_mode'] = args.mode
 
     # Debugging Options
     program_info['debug'] = args.debug
+
+    # Check validity of options
+    if program_info['limit'] and program_info['limit'] <= 0:
+        print(f"The guess --limit/-n must be a positive number. The value specified was {program_info['limit']}")
+        return False
 
     return True
 
@@ -218,7 +222,7 @@ def main():
 
         # Program and Contact Info
         'name':'PCFG Guesser',
-        'version': '4.5',
+        'version': '4.6',
         'author':'Matt Weir',
         'contact':'cweir@vt.edu',
 
@@ -226,7 +230,7 @@ def main():
         'rule_name':'Default',
         'session_name':'default_run',
         'load_session':False,
-        'limit': 0,
+        'limit': None,
 
         # Cracking Mode options
         'cracking_mode':'true_prob_order',
@@ -262,7 +266,7 @@ def main():
     # Don't want to use the relative path since who knows where someone is
     # invoking this script from
     #
-    # Also aiming to make this OS independent/
+    # Also aiming to make this OS independent
     #
     base_directory = os.path.join(
                         os.path.dirname(os.path.realpath(__file__)),
