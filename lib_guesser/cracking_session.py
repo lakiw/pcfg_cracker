@@ -48,7 +48,7 @@ class CrackingSession:
         # The actual Priority queue. Will be defined when run() is called
         self.pqueue = None
 
-    def run(self, load_session = False):
+    def run(self, load_session = False, limit = None):
         """
         Starts the cracking session and starts generating guesses
         """
@@ -106,8 +106,7 @@ class CrackingSession:
         # Keep running while the p_queue.next_function still has items in it
         while True:
 
-            ## Get the next item from the pqueue
-            #
+            # Get the next item from the pqueue
             pt_item = self.pqueue.next()
 
             # If the pqueue is empty, there are no more guesses to make
@@ -141,8 +140,15 @@ class CrackingSession:
             self.report.pt_item = pt_item
 
             try:
-                num_generated_guesses = self.pcfg.create_guesses(pt_item['pt'])
+                num_generated_guesses = self.pcfg.create_guesses(pt_item['pt'], limit)
                 self.report.num_guesses += num_generated_guesses
+
+                # Check if a limit was defined
+                if limit:
+                    limit = limit - num_generated_guesses
+                    if limit <= 0:
+                        print("Limit reached. Exiting...",file=sys.stderr)
+                        break
 
                 self.report.probability_coverage += pt_item['prob'] * num_generated_guesses
 
