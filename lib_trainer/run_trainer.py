@@ -74,13 +74,17 @@ def run_trainer(program_info, base_directory):
     print("------------")
                     
     # Initialize the alphabet generator to learn the alphabet
-    ag = AlphabetGenerator(program_info['alphabet_size'], program_info['ngram'])
+    ag = AlphabetGenerator(
+                        program_info['alphabet_size'],
+                        program_info['ngram'],
+                        program_info['prefixcount'])
     
     # Intitialize the multi-word detector
     multiword_detector = MultiWordDetector(
                             threshold = 5,
                             min_len = 4,
-                            max_len = 21)
+                            max_len = 21,
+                            prefixcount=program_info['prefixcount'])
 
     # Loop until we hit the end of the file
     try:
@@ -123,7 +127,7 @@ def run_trainer(program_info, base_directory):
     print()
 
     # Perform duplicate detection and warn user if no duplicates were found
-    if not file_input.duplicates_found:
+    if not file_input.duplicates_found and not program_info['prefixcount']:
         print()
         print("WARNING:")
         print(f"   No duplicate passwords were detected in the first {file_input.num_to_look_for_duplicates} parsed passwords")
@@ -156,11 +160,12 @@ def run_trainer(program_info, base_directory):
     omen_trainer = AlphabetLookup(
         alphabet = program_info['alphabet'], 
         ngram = program_info['ngram'],
-        max_length = program_info['max_len']
+        max_length = program_info['max_len'],
+        prefixcount=program_info['prefixcount']
         )
     
     # Initialize the PCFG Password parse
-    pcfg_parser = PCFGPasswordParser(multiword_detector)
+    pcfg_parser = PCFGPasswordParser(multiword_detector, prefixcount=program_info['prefixcount'])
     
     # Loop until we hit the end of the file
     try:

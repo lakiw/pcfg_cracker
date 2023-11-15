@@ -16,7 +16,7 @@ less likely.
 """
 
 
-def prince_evaluation(count_prince, section_list):
+def prince_evaluation(count_prince, section_list, n=1):
     """
     Save any statistics that would be useful to generating PRINCE wordlists
 
@@ -37,4 +37,4 @@ def prince_evaluation(count_prince, section_list):
 
     #Loop through the section list and add it to the PRINCE counts
     for item in section_list:
-        count_prince[item[1]] += 1
+        count_prince[item[1]] += n

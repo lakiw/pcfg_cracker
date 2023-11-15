@@ -34,7 +34,7 @@ class PCFGPasswordParser:
     a time.
     """
 
-    def __init__(self, multiword_detector):
+    def __init__(self, multiword_detector, prefixcount=False):
         """
         Initializes the class and all the data structures
 
@@ -82,6 +82,7 @@ class PCFGPasswordParser:
         self.count_base_structures = Counter()
         self.count_raw_base_structures = Counter()
         self.count_prince = Counter()
+        self.prefixcount = prefixcount
 
     def parse(self, password):
         """
@@ -95,13 +96,23 @@ class PCFGPasswordParser:
 
             False: If there was a problem parsing the password
         """
+        if self.prefixcount == True:
+            # Something lstrip might cause some issues when a paragraph seperator is in a password
+            # We simply ignore those lines.
+            try:
+                n = int(password.lstrip().split(' ')[0])
+                password = ' '.join(password.lstrip().split(' ')[1:])
+            except ValueError:
+                return False
+        else:
+            n = 1
 
         # Since keyboard combos can look like many other parsings, filter them
         # out first
 
         section_list, found_walks, keyboard_list = detect_keyboard_walk(password)
 
-        self._update_counter_len_indexed(self.count_keyboard, found_walks)
+        self._update_counter_len_indexed(self.count_keyboard, found_walks, n=n)
 
         # Identify e-mail and web sites before doing other string parsing
         # this is because they can have digits + special characters
@@ -109,18 +120,18 @@ class PCFGPasswordParser:
         found_emails, found_providers = email_detection(section_list)
 
         for email in found_emails:
-            self.count_emails[email] += 1
+            self.count_emails[email] += n
         for provider in found_providers:
-            self.count_email_providers[provider] += 1
+            self.count_email_providers[provider] += n
 
         found_urls, found_hosts, found_prefixes = website_detection(section_list)
 
         for url in found_urls:
-            self.count_website_urls[url] += 1
+            self.count_website_urls[url] += n
         for host in found_hosts:
-            self.count_website_hosts[host] += 1
+            self.count_website_hosts[host] += n
         for prefix in found_prefixes:
-            self.count_website_prefixes[prefix] += 1
+            self.count_website_prefixes[prefix] += n
 
         # Identify years in the dataset. This is done before other parsing
         # because parsing after this may classify years as another type
@@ -128,7 +139,7 @@ class PCFGPasswordParser:
         found_years = year_detection(section_list)
 
         for year in found_years:
-            self.count_years[year] += 1
+            self.count_years[year] += n
 
         # Need to classify context sensitive replacements before doing the
         # straight type classifications, (alpha, digit, etc), but want to doing
@@ -137,7 +148,7 @@ class PCFGPasswordParser:
         found_context_sensitive_strings = context_sensitive_detection(section_list)
 
         for cs_string in found_context_sensitive_strings:
-            self.count_context_sensitive[cs_string] += 1
+            self.count_context_sensitive[cs_string] += n
 
         # Identify pure alpha strings in the dataset
 
@@ -146,38 +157,38 @@ class PCFGPasswordParser:
             self.multiword_detector
             )
 
-        self._update_counter_len_indexed(self.count_alpha, found_alpha_strings)
-        self._update_counter_len_indexed(self.count_alpha_masks, found_mask_list)
+        self._update_counter_len_indexed(self.count_alpha, found_alpha_strings, n=n)
+        self._update_counter_len_indexed(self.count_alpha_masks, found_mask_list, n=n)
 
         # Identify pure digit strings in the dataset
 
         found_digit_strings = digit_detection(section_list)
 
-        self._update_counter_len_indexed(self.count_digits, found_digit_strings)
+        self._update_counter_len_indexed(self.count_digits, found_digit_strings, n=n)
 
         # Categorize everything else as other
 
         found_other_strings = other_detection(section_list)
 
-        self._update_counter_len_indexed(self.count_other, found_other_strings)
+        self._update_counter_len_indexed(self.count_other, found_other_strings, n=n)
 
         # Calculate the counts of the individual sections for PRINCE dictionary
         # creation
 
-        prince_evaluation(self.count_prince, section_list)
+        prince_evaluation(self.count_prince, section_list, n=n)
 
         # Now after all the other parsing is done, create the base structures
 
         is_supported, base_structure = base_structure_creation(section_list)
 
         if is_supported:
-            self.count_base_structures[base_structure] += 1
+            self.count_base_structures[base_structure] += n
 
-        self.count_raw_base_structures[base_structure] += 1
+        self.count_raw_base_structures[base_structure] += n
 
         return True
 
-    def _update_counter_len_indexed(self, input_counter, input_list):
+    def _update_counter_len_indexed(self, input_counter, input_list, n=1):
         """
         Updates a Python Counter object when the item is lenght indexed
 
@@ -199,10 +210,10 @@ class PCFGPasswordParser:
         for item in input_list:
             # First try a blind insertion into the list
             try:
-                input_counter[len(item)][item] +=1
+                input_counter[len(item)][item] += n
 
             # If that length index doesn't exist, it'll throw an exception some
             # now create it
             except:
                 input_counter[len(item)] = Counter()
-                input_counter[len(item)][item] +=1
+                input_counter[len(item)][item] += n

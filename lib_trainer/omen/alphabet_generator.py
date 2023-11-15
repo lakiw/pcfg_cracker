@@ -18,7 +18,7 @@ class AlphabetGenerator:
 
     """
 
-    def __init__(self, alphabet_size, ngram):
+    def __init__(self, alphabet_size, ngram, prefixcount = False):
         """
         Initialize the alphabet generator
 
@@ -32,6 +32,7 @@ class AlphabetGenerator:
         """
         self.alphabet_size = alphabet_size
         self.ngram = ngram
+        self.prefixcount = prefixcount
 
         ## Dictionary used for quick lookups during training
         #
@@ -45,6 +46,17 @@ class AlphabetGenerator:
         """
         Parse one password
         """
+        # Remove the digit when prefixcount is anbled and save it seperate
+        if self.prefixcount == True:
+            # Something lstrip might cause some issues when a paragraph seperator is in a password
+            # We simply ignore those lines.
+            try:
+                n = int(password.lstrip().split(' ')[0])
+                password = ' '.join(password.lstrip().split(' ')[1:])
+            except ValueError:
+                return False
+        else:
+            n = 1
 
         # Make sure it is long enough
         # This is to weed out things like weird one character line breaks
@@ -61,11 +73,11 @@ class AlphabetGenerator:
 
             # If we have seen this letter before
             if letter in self.dictionary:
-                self.dictionary[letter] += 1
+                self.dictionary[letter] += n
 
             # If this is the first time we've seen this letter
             else:
-                self.dictionary[letter] = 1
+                self.dictionary[letter] = n
 
         return
 

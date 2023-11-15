@@ -21,7 +21,7 @@ class AlphabetLookup:
 
     """
 
-    def __init__(self, alphabet, ngram, min_length = 1, max_length = 21):
+    def __init__(self, alphabet, ngram, min_length = 1, max_length = 21, prefixcount = False):
         """
         Basic initialization function
 
@@ -85,10 +85,24 @@ class AlphabetLookup:
         # as a simple list vs dictionary
         self.ln_lookup = [0]* max_length
 
+        # prefixcount value
+        self.prefixcount = prefixcount 
+
     def parse(self, password):
         """
         Parses the input password and updates the global counts
         """
+        # Remove the digit when prefixcount is anbled and save it seperate
+        if self.prefixcount == True:
+            # Something lstrip might cause some issues when a paragraph seperator is in a password
+            # We simply ignore those lines.
+            try:
+                n = int(password.lstrip().split(' ')[0])
+                password = ' '.join(password.lstrip().split(' ')[1:])
+            except ValueError:
+                return False
+        else:
+            n = 1
 
         # Reject if too short or too long
         pw_len = len(password)
@@ -97,8 +111,8 @@ class AlphabetLookup:
 
         # Update the length counts
         # List is 0 indexed so subtract -1 from actual length
-        self.ln_lookup[pw_len - 1] += 1
-        self.ln_counter += 1
+        self.ln_lookup[pw_len - 1] += n
+        self.ln_counter += n
 
         ## Loop through the entire password
         #
@@ -131,8 +145,8 @@ class AlphabetLookup:
             ## Handle if it is the IP
             #
             if i == 0:
-                index['ip_count'] += 1
-                self.ip_counter += 1
+                index['ip_count'] += n
+                self.ip_counter += n
 
             ## Handle the CP info
             #
@@ -142,18 +156,18 @@ class AlphabetLookup:
                 if end_char not in index['next_letter']:
                     # Check if this char is in the alphabet
                     if self.is_in_alphabet(end_char):
-                        index['next_letter'][end_char] = 1
-                        index['cp_count'] += 1
+                        index['next_letter'][end_char] = n
+                        index['cp_count'] += n
                 # Have seen this before
                 else:
-                    index['next_letter'][end_char] += 1
-                    index['cp_count'] += 1
+                    index['next_letter'][end_char] += n
+                    index['cp_count'] += n
 
             ##Handle the EP info
             #
             else:
-                index['ep_count'] += 1
-                self.ep_counter +=1
+                index['ep_count'] += n
+                self.ep_counter += n
 
         return
 

@@ -28,7 +28,7 @@ class MultiWordDetector:
 
     """
 
-    def __init__(self, threshold = 5, min_len = 4, max_len = 21):
+    def __init__(self, threshold = 5, min_len = 4, max_len = 21, prefixcount=False):
         """
         Initialize the Multi-word detector
 
@@ -63,6 +63,7 @@ class MultiWordDetector:
         # a multiword we can walk down it trying to find matches
         #
         self.lookup = {}
+        self.prefixcount = prefixcount
 
     def train(self, input_password):
         """
@@ -77,6 +78,17 @@ class MultiWordDetector:
         words, they shouldn't take up a lot of space
 
         """
+        # Remove the digit when prefixcount is anbled and save it seperate
+        if self.prefixcount == True:
+            # Something lstrip might cause some issues when a paragraph seperator is in a password
+            # We simply ignore those lines.
+            try:
+                n = int(input_password.lstrip().split(' ')[0])
+                input_password = ' '.join(input_password.lstrip().split(' ')[1:])
+            except ValueError:
+                return False
+        else:
+            n = 1
 
         # Quick bail out if the input password is too short or too long
         if len(input_password) < self.min_len:
@@ -121,10 +133,10 @@ class MultiWordDetector:
                     if run_len >= self.min_len:
                         # If the word hasn't been seen before
                         if "count" not in index:
-                            index["count"] = 1
+                            index["count"] = n
 
                         else:
-                            index["count"] += 1
+                            index["count"] += n
 
                     # Reset the index and run length
                     run_len = 0
@@ -136,10 +148,10 @@ class MultiWordDetector:
             if run_len >= self.min_len:
                 # If the word hasn't been seen before
                 if "count" not in index:
-                    index["count"] = 1
+                    index["count"] = n
 
                 else:
-                    index["count"] += 1
+                    index["count"] += n
 
             # Reset the index and run length
             run_len = 0
