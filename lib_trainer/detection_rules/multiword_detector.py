@@ -64,7 +64,9 @@ class MultiWordDetector:
         #
         self.lookup = {}
 
-    def train(self, input_password):
+    # The set_threshold can be used to always set the min value when the word is first
+    # encountered. This is usefull when you have a pretrained word list.
+    def train(self, input_password, set_threshold=False):
         """
         Trains on an input passwords
 
@@ -121,8 +123,10 @@ class MultiWordDetector:
                     if run_len >= self.min_len:
                         # If the word hasn't been seen before
                         if "count" not in index:
-                            index["count"] = 1
-
+                            if set_threshold:
+                                index["count"] = self.threshold
+                            else:
+                                index["count"] = 1
                         else:
                             index["count"] += 1
 
@@ -136,7 +140,10 @@ class MultiWordDetector:
             if run_len >= self.min_len:
                 # If the word hasn't been seen before
                 if "count" not in index:
-                    index["count"] = 1
+                    if set_threshold:
+                        index["count"] = self.threshold
+                    else:
+                        index["count"] = 1
 
                 else:
                     index["count"] += 1

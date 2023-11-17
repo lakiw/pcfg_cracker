@@ -57,7 +57,8 @@ def run_trainer(program_info, base_directory):
     # Initialize the file input to read passwords from
     file_input = TrainerFileInput(
                     program_info['training_file'],
-                    program_info['encoding'])
+                    program_info['encoding'],
+                    program_info['prefixcount'])
                     
     # Used for progress_bar
     num_parsed_so_far = 0
@@ -82,10 +83,21 @@ def run_trainer(program_info, base_directory):
                             min_len = 4,
                             max_len = 21)
 
+    if program_info['multiword']:
+        print("-------------------------------------------------")
+        print("Pretraining multiword detection.")
+        print("-------------------------------------------------")
+        print("")
+        multiword_input = TrainerFileInput(
+            program_info['multiword'],
+            program_info['encoding']
+        )
+        for multiword in multiword_input.read_password():
+            multiword_detector.train(multiword, set_threshold=True)
+
     # Loop until we hit the end of the file
     try:
-        password = file_input.read_password()
-        while password:
+        for password in file_input.read_password():
 
             # Print status indicator if needed
             num_parsed_so_far += 1
@@ -97,9 +109,6 @@ def run_trainer(program_info, base_directory):
             
             # Train multiword detector
             multiword_detector.train(password)
-
-            # Get the next password
-            password = file_input.read_password()
 
     except Exception as msg:
         print(f"Exception: {msg}")
@@ -137,7 +146,8 @@ def run_trainer(program_info, base_directory):
     # Re-Initialize the file input to read passwords from
     file_input = TrainerFileInput(
                     program_info['training_file'], 
-                    program_info['encoding'])
+                    program_info['encoding'],
+                    program_info['prefixcount'])
                     
     # Reset progress_bar
     num_parsed_so_far = 0
@@ -164,8 +174,7 @@ def run_trainer(program_info, base_directory):
     
     # Loop until we hit the end of the file
     try:
-        password = file_input.read_password()
-        while password:
+        for password in file_input.read_password():
         
             # Print status indicator if needed
             num_parsed_so_far += 1
@@ -177,9 +186,6 @@ def run_trainer(program_info, base_directory):
             
             # Parse the pcfg info
             pcfg_parser.parse(password)
-            
-            # Get the next password
-            password = file_input.read_password()
                         
     except Exception as msg:
         traceback.print_exc(file=sys.stdout)
@@ -203,7 +209,8 @@ def run_trainer(program_info, base_directory):
     # Re-Initialize the file input to read passwords from
     file_input = TrainerFileInput(
                     program_info['training_file'], 
-                    program_info['encoding'])
+                    program_info['encoding'],
+                    program_info['prefixcount'])
                     
     # Reset progress_bar
     num_parsed_so_far = 0
@@ -220,8 +227,7 @@ def run_trainer(program_info, base_directory):
     omen_levels_count = Counter()
     ## Loop until we hit the end of the file
     try:
-        password = file_input.read_password()
-        while password:
+        for password in file_input.read_password():
         
             # Print status indicator if needed
             num_parsed_so_far += 1
@@ -231,9 +237,6 @@ def run_trainer(program_info, base_directory):
             # Find OMEN level of password
             level = find_omen_level(omen_trainer,password)
             omen_levels_count[level] += 1
-            
-            # Get the next password
-            password = file_input.read_password()
         
     except Exception as msg:
         traceback.print_exc(file=sys.stdout)

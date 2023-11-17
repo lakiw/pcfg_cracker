@@ -36,6 +36,7 @@ from ..trainer_file_input import TrainerFileInput
 # + Check Valid password: invalid password, blank
 # + Check Valid password: invalid password, tab in password
 # + Read Input Passwords (FULL): Check to make sure correct number are read
+# + Read Prefix Passwords (FULL): Check to make sure correct number are read when prefixed with a count
 #
 class Test_File_Input_Checks(unittest.TestCase):
 
@@ -137,19 +138,53 @@ class Test_File_Input_Checks(unittest.TestCase):
             unittest.mock.mock_open(read_data=test_data)
         ):
         
-            file_input = TrainerFileInput("test_file",'ascii')
+            file_input = TrainerFileInput("test_file",'ascii',False)
         
             # Loop through all of the passwords
-            password = file_input.read_password()
-            while password:
-                password = file_input.read_password()                     
+            for password in file_input.read_password():
+                continue
             
         # Verify the number of passwords read and the raw results
         print("Num passwords:" + str(file_input.num_passwords))
         assert file_input.num_passwords == 8
         
         assert file_input.duplicates_found == True
+
+    def test_read_input_passwords_prefix(self):
+    
+        # Set up input
+        raw_test_data = "5 test1\n" \
+            "5 test2\r\n" \
+            "\r\n" \
+            "invalid1\t" \
+            "5 test3\n" \
+            "\n" \
+            "5 space1 \n" \
+            "5 space2\n" \
+            "5 sp ace3\n" \
+            "5 duplicate\n" \
+            "5 duplicate\r\r\n" \
+            "5 test4"
+        
+        test_data = raw_test_data
+        
+        # Patch file open and read data
+        with unittest.mock.patch(
+            'codecs.open', 
+            unittest.mock.mock_open(read_data=test_data)
+        ):
+        
+            file_input = TrainerFileInput("test_file",'ascii', prefixcount=True)
+        
+            # Loop through all of the passwords
+            for password in file_input.read_password():
+                continue
             
+        # Verify the number of passwords read and the raw results
+        assert file_input.num_passwords == 40
+        
+        assert file_input.duplicates_found == True
+
 
 if __name__ == '__main__':
     unittest.main()             

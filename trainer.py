@@ -133,6 +133,18 @@ def parse_command_line(program_info):
         action='store_true'
     )
 
+   # Prefix count
+    parser.add_argument(
+        '--prefixcount',
+        help = 'When enabled lines must be prefixed with a occurrences counter. Example:' +
+        '5 password123!. Meaning that password123! was 5 times in the dataset. This can happen ' +
+        'for dataset which were sorted and uniqued with sort | uniq -c | sort -rn for example. Default: ' +
+        str(program_info['prefixcount']),
+        default = program_info['prefixcount'],
+        action = 'store_true',
+        required = False,
+    )
+
     ## OMEN Options
     #
     # ngram is the size of the conditional probabilty strings to compare
@@ -206,6 +218,16 @@ def parse_command_line(program_info):
         default = program_info['coverage'],
         type = float
     )
+
+    # Multiword training file
+    parser.add_argument(
+        '--multiword',
+        '-m',
+        help = '<ADVANCED> File containing words to pre-train multiword detection',
+        metavar = 'MULTIWORD',
+        required = False,
+    )
+
     # Parse all the args and save them
     args=parser.parse_args()
     # Standard Options
@@ -214,6 +236,7 @@ def parse_command_line(program_info):
     program_info['encoding']= args.encoding
     program_info['comments'] = args.comments
     program_info['save_sensitive'] = args.save_sensitive
+    program_info['prefixcount'] = args.prefixcount
 
     # OMEN Options
     program_info['ngram'] = args.ngram
@@ -222,6 +245,7 @@ def parse_command_line(program_info):
     # Advanced Options
     #program_info['smoothing'] = args.smoothing
     program_info['coverage'] = args.coverage
+    program_info['multiword'] = args.multiword
 
     ## Sanity checking of values
     #
@@ -278,6 +302,7 @@ def main():
         'encoding':None,
         'comments':'',
         'save_sensitive': False,
+        'prefixcount': False,
 
         # OMEN Options
         'ngram': 4,

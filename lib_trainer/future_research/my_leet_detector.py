@@ -342,16 +342,13 @@ class AsciiL33tDetector:
         file_input = TrainerFileInput(training_set, encoding)
         num_parsed_so_far = 0
         try:
-            password = file_input.read_password()
-            while password:
+            for password in file_input.read_password():
                 # Print status indicator if needed
                 num_parsed_so_far += 1
                 if num_parsed_so_far % 1000000 == 0:
                     print(str(num_parsed_so_far // 1000000) + ' Million')
                 # pcfg_parser.parse(password)
                 self.detect_l33t(password)
-                # Get the next password
-                password = file_input.read_password()
 
         except Exception as msg:
             traceback.print_exc(file=sys.stdout)
