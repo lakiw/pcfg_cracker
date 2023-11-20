@@ -206,7 +206,7 @@ class TrainerFileInput:
 
     """
 
-    def __init__(self, filename, encoding = 'utf-8'):
+    def __init__(self, filename, encoding = 'utf-8', prefixcount = False):
         """
         Open the file for reading
 
@@ -254,6 +254,8 @@ class TrainerFileInput:
         # Number of passwords to read in to check for duplicates
         self.num_to_look_for_duplicates = 100000
 
+        self.prefixcount = prefixcount
+
     def read_password(self):
         """
         Returns one password from the training set. If there are no more passwords returns None
@@ -288,14 +290,26 @@ class TrainerFileInput:
                     return None
 
                 # Remove newlines but leave whitespace
-                clean_password = password.rstrip('\r\n')                
+                clean_password = password.rstrip('\r\n')  
+
+                # Remove the digit when prefixcount is anbled and save it seperate
+                if self.prefixcount == True:
+                    # Something lstrip might cause some issues when a paragraph seperator is in a password
+                    # We simply ignore those lines.
+                    try:
+                        n = int(clean_password.lstrip().split(' ')[0])
+                        clean_password = ' '.join(clean_password.lstrip().split(' ')[1:])
+                    except ValueError:
+                        continue
+                else:
+                    n = 1
 
                 # Check for a $HEX[] encoded password    
                 if clean_password.startswith("$HEX[") and clean_password.endswith("]"):
                     try:
                         clean_password = bytes.fromhex(clean_password[5:-1]).decode(self.encoding)
                     except:
-                        self.num_encoding_errors += 1
+                        self.num_encoding_errors += n
                         continue
                     
                 ## Check the encoding of the file
@@ -311,11 +325,11 @@ class TrainerFileInput:
                     clean_password.encode(self.encoding)
                 except UnicodeEncodeError as msg:
                     if msg.reason == 'surrogates not allowed':
-                        self.num_encoding_errors += 1
+                        self.num_encoding_errors += n
                     else:
                         #print("Hmm, there was a weird problem reading in a line")
                         #print("")
-                        self.num_encoding_errors += 1
+                        self.num_encoding_errors += n
                     continue
 
                 # Checks to see if the password is valid
@@ -323,9 +337,13 @@ class TrainerFileInput:
                     continue
 
                 ## This is a valid password
-                self.num_passwords += 1
-
+                self.num_passwords += n
+                
                 # Perform duplicate check if needed
+                if self.prefixcount:
+                    if n > 1:
+                        self.duplicates_found = True
+
                 if not self.duplicates_found:
                     if self.num_passwords < self.num_to_look_for_duplicates:
                         # It is a duplicate!!
@@ -336,10 +354,10 @@ class TrainerFileInput:
                             self.duplicate_detection.clear()
 
                         # Not a duplicate
-                        self.duplicate_detection[clean_password] = 1
+                        self.duplicate_detection[clean_password] = n
 
-                # Return the password
-                return clean_password
+                for x in range(0, n):
+                    yield clean_password
 
         # File errors *shouldn't* happen but if they do raise them to make
         # sure they don't silently halt the training

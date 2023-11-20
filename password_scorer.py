@@ -236,7 +236,8 @@ def main():
     # Re-using the TrainerFileInput from the trainer
     file_input = TrainerFileInput(
                     program_info['input_file'],
-                    pw_parser.encoding)
+                    pw_parser.encoding,
+                    program_info['prefixcount'])
 
     # Open file for output
     writer = FileOutput(program_info['output_file'], pw_parser.encoding)
