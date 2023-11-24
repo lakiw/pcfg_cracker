@@ -83,6 +83,18 @@ def run_trainer(program_info, base_directory):
                             min_len = 4,
                             max_len = 21)
 
+    if program_info['multiword']:
+        print("-------------------------------------------------")
+        print("Pretraining multiword detection.")
+        print("-------------------------------------------------")
+        print("")
+        multiword_input = TrainerFileInput(
+            program_info['multiword'],
+            program_info['encoding']
+        )
+        for multiword in multiword_input.read_password():
+            multiword_detector.train(multiword, set_threshold=True)
+
     # Loop until we hit the end of the file
     try:
         for password in file_input.read_password():

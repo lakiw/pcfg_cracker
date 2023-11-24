@@ -218,6 +218,16 @@ def parse_command_line(program_info):
         default = program_info['coverage'],
         type = float
     )
+
+    # Multiword training file
+    parser.add_argument(
+        '--multiword',
+        '-m',
+        help = '<ADVANCED> File containing words to pre-train multiword detection',
+        metavar = 'MULTIWORD',
+        required = False,
+    )
+
     # Parse all the args and save them
     args=parser.parse_args()
     # Standard Options
@@ -235,6 +245,7 @@ def parse_command_line(program_info):
     # Advanced Options
     #program_info['smoothing'] = args.smoothing
     program_info['coverage'] = args.coverage
+    program_info['multiword'] = args.multiword
 
     ## Sanity checking of values
     #
@@ -302,6 +313,7 @@ def main():
         'smoothing': 0.01,
         'coverage':0.6,
         'max_len':21,
+        'multiword': False
     }
 
     print_banner()
