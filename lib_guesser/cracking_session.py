@@ -140,7 +140,7 @@ class CrackingSession:
             self.report.pt_item = pt_item
 
             try:
-                num_generated_guesses = self.pcfg.create_guesses(pt_item['pt'], limit)
+                num_generated_guesses = self.pcfg.create_guesses(pt_item['pt'], limit = limit)
                 self.report.num_guesses += num_generated_guesses
 
                 # Check if a limit was defined
