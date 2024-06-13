@@ -142,6 +142,18 @@ def parse_command_line(program_info):
         type = int,
     )
 
+    # Prefix count
+    parser.add_argument(
+        '--prefixcount',
+        help = 'When enabled lines must be prefixed with a occurrences counter. Example:' +
+        '5 password123!. Meaning that password123! was 5 times in the dataset. This can happen ' +
+        'for dataset which were sorted and uniqued with sort | uniq -c | sort -rn for example. Default: ' +
+        str(program_info['prefixcount']),
+        default = program_info['prefixcount'],
+        action = 'store_true',
+        required = False,
+    )
+
     # Parse all the args and save them
     args=parser.parse_args()
 
@@ -151,6 +163,7 @@ def parse_command_line(program_info):
     program_info['output_file']= args.output
     program_info['limit'] = args.limit
     program_info['max_omen_level'] = args.max_omen
+    program_info['prefixcount'] = args.prefixcount
 
     # Sanity checking of values
 
@@ -188,6 +201,7 @@ def main():
         'rule_name':'Default',
         'output_file':None,
         'limit':0,
+        'prefixcount': False,
 
         # OMEN Options
         #
@@ -248,8 +262,7 @@ def main():
 
     false_negative = 0
     try:
-        input_value = file_input.read_password()
-        while input_value:
+        for input_value in file_input.read_password():
 
             result = pw_parser.parse(input_value)
 
