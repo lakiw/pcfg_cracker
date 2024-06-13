@@ -164,6 +164,7 @@ class PCFGPasswordScorer:
         """
 
         # Parse the OMEN score
+        print(password)
         omen_score = self.omen.parse(password)
 
         # Since keyboard combos can look like many other parsings, filter them
