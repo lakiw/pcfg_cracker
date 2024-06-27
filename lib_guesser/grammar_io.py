@@ -373,7 +373,7 @@ def _load_config(ruleset_info, base_directory, config):
 
     # Attempt to read the config from disk
     try:
-        config.readfp(open(os.path.join(base_directory,"config.ini")))
+        config.read_file(open(os.path.join(base_directory,"config.ini")))
 
         ## Check the version
         #
