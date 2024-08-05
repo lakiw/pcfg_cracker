@@ -39,7 +39,7 @@ def load_grammar(grammar, rule_directory):
     config = configparser.ConfigParser()
 
     try:
-        config.readfp(open(os.path.join(rule_directory,"config.ini")))
+        config.read_file(open(os.path.join(rule_directory,"config.ini")))
 
         # Find the encoding for the config file
         grammar.encoding = config.get('TRAINING_DATASET_DETAILS','encoding')
