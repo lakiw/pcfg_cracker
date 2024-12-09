@@ -292,7 +292,7 @@ def main():
 
         # Program and Contact Info
         'name':'PCFG Trainer',
-        'version': '4.4',
+        'version': '4.7',
         'author':'Matt Weir',
         'contact':'cweir@vt.edu',
 

@@ -384,10 +384,11 @@ class PcfgGrammar:
                         return num_guesses
 
             else:
-                num_guesses += self._honeyword_recursive_guess(new_guess, pt[1:], limit)
+                num_recursive_guesses = self._honeyword_recursive_guess(new_guess, pt[1:], limit)
+                num_guesses += num_recursive_guesses
                 
                 if limit:
-                    limit = limit - num_guesses
+                    limit = limit - num_recursive_guesses
                     if limit <= 0:
                         return num_guesses
 
@@ -408,9 +409,11 @@ class PcfgGrammar:
                         return num_guesses
 
             else:
-                num_guesses += self._honeyword_recursive_guess(new_guess, pt[1:], limit)
+                num_recursive_guesses = self._honeyword_recursive_guess(new_guess, pt[1:], limit)
+                num_guesses += num_recursive_guesses
+
                 if limit:
-                    limit = limit - num_guesses
+                    limit = limit - num_recursive_guesses
                     if limit <= 0:
                         return num_guesses
 

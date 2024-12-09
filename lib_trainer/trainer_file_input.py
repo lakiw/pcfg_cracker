@@ -131,7 +131,7 @@ def detect_file_encoding(training_file, file_encoding, max_passwords = 500000):
         print()
 
         # Manually overriding ASCII to UTF-8 to deal with $HEX[] encoded files
-        if file_encoding[0] is "ascii":
+        if file_encoding[0] == "ascii":
             print("Overriding ASCII and converting it to UTF-8 to deal with $HEX[] encoded training files")
             print("If you really want to have an ASCII encoded file you can specify it on the command line")
             print("But there shouldn't be any downside with using UTF-8")
