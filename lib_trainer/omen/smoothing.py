@@ -30,8 +30,8 @@ def smooth_grammar(grammar, ip_total, ep_total):
                 ep_count: 3,    //the number of times they have shown up in the ep (end)
                 cp_count: 100,  //the number of times they have shown up total in passwords (for cp)
                 next_letter:{   //the next letter for cp
-                    a:5           //represents the cp 'aaaa' with the count of the times that cp has been seen
-                    b:12,         //represents the cp 'aaab'
+                    a:5         //represents the cp 'aaaa' with the count of the times that cp has been seen
+                    b:12,       //represents the cp 'aaab'
                     ...,
                 },
             },
@@ -101,12 +101,33 @@ def smooth_length(ln_lookup, ln_counter, max_level = 10):
 
     """
 
+    # Used to normalize the length level costs so at least one lenght
+    # has a level cost of 0.
+    min_level = max_level
+
     # Smooth the level lengths
     for length, count in enumerate(ln_lookup):
 
         # Calculate the level
         try:
             level = _calc_level(count, ln_counter, 1)
+
+            # Update level cost based on length
+            # Using a length cost factor of 1 so that for every
+            # character, the level goes up by one. Leaving in
+            # the part to modify the level_cost here to make
+            # updating it on the fly easier.
+            level_cost = 1
+            level += length * level_cost
+
+            # Take the floor of the level to avoid levels such as 3.5
+            # Not necessary for a cost of 1, but leaving this in here
+            # in case I make the level cost have a fraction in it.
+            level = int(level)
+
+            if level < min_level:
+                min_level = level
+
             ln_lookup[length] = (level, count)
 
         # Will throw a divide by 0 exception if there is length items
@@ -116,6 +137,16 @@ def smooth_length(ln_lookup, ln_counter, max_level = 10):
             #          responsibility of the guess generator. The trainer
             #          should just say that this length is really unlikely
             ln_lookup[length] = (max_level,0)
+
+    # Normalize length to have at least one be at 0 level
+    for length, count in enumerate(ln_lookup):
+        new_level = ln_lookup[length][0] - min_level
+
+        # With the length cost added on, some of the levels might
+        # be above max_level, so reduce them to be max_level
+        new_level = min(new_level, max_level)
+
+        ln_lookup[length] = (new_level, count)
 
 
 def _calc_level(base_count, total_count, level_adjust_factor, max_level = 10):

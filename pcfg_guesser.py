@@ -222,7 +222,7 @@ def main():
 
         # Program and Contact Info
         'name':'PCFG Guesser',
-        'version': '4.7',
+        'version': '4.8',
         'author':'Matt Weir',
         'contact':'cweir@vt.edu',
 
