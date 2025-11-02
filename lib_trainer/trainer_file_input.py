@@ -9,7 +9,7 @@ Contains all the file reading logic for the python pcfg trainer
 
 
 import codecs
-
+import gzip
 
 def get_confirmation(warningtext):
     """
@@ -39,6 +39,11 @@ def get_confirmation(warningtext):
         print("The option: " + str(user_input) + " : is not a valid input")
         print("Valid options: [Y]es or [N]o")
 
+
+def is_gzipped(filename: str) -> bool:
+    with open(filename, "rb") as f:
+        magic = f.read(2)
+    return magic == b'\x1f\x8b'
 
 def detect_file_encoding(training_file, file_encoding, max_passwords = 500000):
     """
@@ -97,10 +102,20 @@ def detect_file_encoding(training_file, file_encoding, max_passwords = 500000):
 
     try:
         cur_count = 0
-        with open(training_file, 'rb') as file:
+        file = None
+
+        if is_gzipped(training_file):
+            file = gzip.open(training_file, 'rb')
+        else:
+            file = open(training_file, 'rb')
+
+        if file is not None:
             for line in file.readlines():
-            
-                # Check for a $HEX[] encoded password 
+
+                if len(line.strip()) == 0:
+                    continue
+
+                # Check for a $HEX[] encoded password
                 end_bracket_pos = line.find(bytes("]", "ascii"))
                 if line.startswith(bytes("$HEX[","ascii")) and end_bracket_pos:
                     try:
@@ -229,12 +244,11 @@ class TrainerFileInput:
         #
         self.encoding = encoding
         self.filename = filename
-        self.file = codecs.open(
-            self.filename,
-            'r',
-            encoding= self.encoding,
-            errors= 'surrogateescape'
-        )
+
+        if is_gzipped(self.filename):
+            self.file = gzip.open(filename, 'rt', encoding=self.encoding, errors='surrogateescape')
+        else:
+            self.file = codecs.open(self.filename, 'r', encoding= self.encoding, errors='surrogateescape')
 
         # Keep track of the number of encoding errors
         self.num_encoding_errors = 0
