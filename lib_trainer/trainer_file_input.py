@@ -98,7 +98,7 @@ def detect_file_encoding(training_file, file_encoding, max_passwords = 500000):
     try:
         cur_count = 0
         with open(training_file, 'rb') as file:
-            for line in file.readlines():
+            for line in file:
             
                 # Check for a $HEX[] encoded password 
                 end_bracket_pos = line.find(bytes("]", "ascii"))
@@ -369,3 +369,4 @@ class TrainerFileInput:
             print (error)
             print ("Error reading file " + self.filename)
             raise
+
